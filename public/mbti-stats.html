@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="title" content="MBTI 認知幾何與高壓解析 V1版">
+    <meta name="description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mbti.chiyigo.com/">
+    <meta property="og:title" content="MBTI 認知幾何與高壓解析 V1版">
+    <meta property="og:description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+    <meta property="og:image" content="https://mbti.chiyigo.com/og-image.jpg">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mbti.chiyigo.com/">
+    <meta property="twitter:title" content="MBTI 認知幾何與高壓解析 V1版">
+    <meta property="twitter:description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+    <meta property="twitter:image" content="https://mbti.chiyigo.com/og-image.jpg">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>MBTI 演化策略與全域資料庫 - 認知幾何 V1</title>
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="component.css">
+    <link rel="stylesheet" href="landing.css">
+    <style>
+        .data-card { background: linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.4)); border: 1px solid #1e293b; border-radius: 16px; padding: 30px; margin-bottom: 30px; }
+        .data-card h2 { font-size: 1.5rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 12px; }
+        .data-card h3 { font-size: 1.1rem; color: #bae6fd; margin-top: 25px; margin-bottom: 10px; }
+        .data-card p, .data-card li { color: #cbd5e1; line-height: 1.7; font-size: 0.95rem; margin-bottom: 10px; }
+        .data-card ul { padding-left: 20px; }
+        .data-card strong { color: #38bdf8; }
+        .color-1 { color: #a855f7; border-left: 4px solid #a855f7; padding-left: 10px; }
+        .color-2 { color: #10b981; border-left: 4px solid #10b981; padding-left: 10px; }
+        .color-3 { color: #38bdf8; border-left: 4px solid #38bdf8; padding-left: 10px; }
+        .color-4 { color: #f59e0b; border-left: 4px solid #f59e0b; padding-left: 10px; }
+        .color-5 { color: #ec4899; border-left: 4px solid #ec4899; padding-left: 10px; }
+        .color-6 { color: #64748b; border-left: 4px solid #64748b; padding-left: 10px; }
+        .flex-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 25px; }
+        .quote-box { background: rgba(56, 189, 248, 0.05); border-left: 4px solid #38bdf8; padding: 20px; border-radius: 0 8px 8px 0; margin-bottom: 40px; font-style: italic; color: #94a3b8; font-size: 1.05rem; }
+        
+        /* 針對長條圖列表的緊湊優化 */
+        .compact-bar-group { margin-bottom: 8px; }
+        .compact-bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 3px; }
+        .compact-bar-bg { background: #0f172a; height: 6px; border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 3px; width: 0; transition: width 1.5s ease-out; }
+    </style>
+</head>
+<body class="landing-body">
+    <header class="landing-header">
+        <div class="logo" style="cursor:pointer;" onclick="window.location.href='index.html'">🧠 認知幾何 V1</div>
+        <div class="header-actions">
+            <button class="btn-outline" id="dash-nav-btn" style="display: none; background: #38bdf8; color: #0f172a; border-color: #38bdf8;" onclick="window.location.href='dashboard.html'">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'">登入 / 註冊</button>
+            <div class="hamburger" onclick="toggleSidebar()">☰</div>
+        </div>
+    </header>
+
+    <div class="quick-nav-bar" style="display: flex; justify-content: center; gap: 10px; padding: 10px 15px; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #1e293b; overflow-x: auto; white-space: nowrap;">
+        <a href="assessment.html?v=D&new=1" style="color: #fde047; font-size: 0.85rem; font-weight: bold; border: 1px solid #fde047; padding: 5px 12px; border-radius: 20px; text-decoration: none;">▶ 模組 D (日常行為)</a>
+        <a href="assessment.html?v=E&new=1" style="color: #fde047; font-size: 0.85rem; font-weight: bold; border: 1px solid #fde047; padding: 5px 12px; border-radius: 20px; text-decoration: none;">▶ 模組 E (決策情境)</a>
+        <a href="assessment.html?v=F&new=1" style="color: #fde047; font-weight: bold; border: 1px solid #fde047; padding: 5px 12px; border-radius: 20px; text-decoration: none;">▶ 模組 F (認知偏好)</a>
+    </div>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span>導覽選單</span>
+            <button class="close-btn" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div class="sidebar-content">
+            <a href="index.html">首頁 (Home)</a>
+            <a href="assessment.html?v=A&new=1">模組 A：日常舒適圈 (已開放)</a>
+            <a href="assessment.html?v=B&new=1">模組 B：高壓防禦 (已開放)</a>
+            <a href="assessment.html?v=C&new=1">模組 C：覺醒願景 (已開放)</a>
+            <hr>
+            <a href="assessment.html?v=D&new=1" style="color: #fde047; font-weight: bold;">模組 D：日常行為量表 (全新開放)</a>
+            <a href="assessment.html?v=E&new=1" style="color: #fde047; font-weight: bold;">模組 E：決策情境量表 (全新開放)</a>
+            <a href="assessment.html?v=F&new=1" style="color: #fde047; font-weight: bold;">模組 F：認知偏好量表 (全新開放)</a>
+            <hr>
+            <a href="jung-theory.html">📖 榮格八維科普 (Jungian Theory)</a>
+            <a href="beebe-model.html">📖 畢比模型科普 (Beebe Model)</a>
+            <a href="mbti-types.html">👥 MBTI 16人格特質</a>
+            <a href="mbti-stats.html" class="active">📊 MBTI 有趣數據</a>
+            <hr>
+            <a href="dashboard.html">會員儀表板 (Dashboard)</a>
+        </div>
+    </div>
+    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <main class="theory-container">
+        <div class="theory-header">
+            <h1>MBTI 演化策略與認知演算法全域資料庫</h1>
+            <p>撕下刻板印象的標籤。透過全球統計數據與腦神經科學底層邏輯，帶你重新認識這 16 種心智架構的真實樣貌。</p>
+        </div>
+
+        <div class="quote-box">
+            "MBTI 數據的本質，是人類為適應環境而形成的認知策略比例分佈。這並非能力的差異，而是物種為了生存的<strong>功能分工、風險分散與動態平衡</strong>。"
+        </div>
+
+        <div class="data-card">
+            <h2 class="color-1">壹、 全球人口學與統計分佈</h2>
+            <h3>1. 四大向度比例 (全球常規)</h3>
+            <ul>
+                <li><strong>能量分配：</strong> E (外向 55-60%) ＞ I (內向 40-45%)</li>
+                <li><strong>資訊感知：</strong> S (實感 70-75%) ＞ N (直覺 25-30%)</li>
+                <li><strong>決策邏輯：</strong> F (情感 55-60%) ＞ T (思考 40-45%)</li>
+                <li><strong>執行協議：</strong> J (判斷 55-60%) ＞ P (感知 40-45%)</li>
+            </ul>
+
+            <h3>2. 16型人格階層比例與性別偏移</h3>
+            <ul>
+                <li><strong>社會基石 (最大宗)：</strong> ISFJ (13.8%)、ESFJ (12.3%)、ISTJ (11.6%)</li>
+                <li><strong>極端稀有：</strong> INTJ (2.1%)、ENTJ (1.8%)、INFJ (1.5%)</li>
+                <li><strong>性別與文化：</strong> F 女性顯著偏多，T 男性顯著偏多。最高稀缺度為 INTJ 女性 (約 0.8%)。亞洲文化偏 J (秩序) 與 I (內斂)；西方偏 E (表達) 與 N (創新)。</li>
+                <li><strong>智商與生育：</strong> 門薩高智商關聯中 INTJ、INTP 佔比最高。高 N 傾向延後或低生育，SFJ 群體具備最高家庭導向與生育穩定性。</li>
+            </ul>
+
+            <div class="flex-charts">
+                <div style="background: rgba(15,23,42,0.5); padding: 20px; border-radius: 12px; border: 1px solid #334155;">
+                    <h4 style="color:#e0f2fe; margin-top:0;">📊 全球 16 型人格稀有度分佈</h4>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px;">數據依據粗略全球平均估值排列 (藍色為最常見，紫色為最稀有)</p>
+                    
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>1. ISFJ (守衛者)</span><span style="color:#38bdf8;">13.8%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 85%; background: linear-gradient(90deg, #0284c7, #38bdf8);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>2. ESFJ (執政官)</span><span style="color:#38bdf8;">12.3%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 75%; background: linear-gradient(90deg, #0284c7, #38bdf8);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>3. ISTJ (物流師)</span><span style="color:#38bdf8;">11.6%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 70%; background: linear-gradient(90deg, #0284c7, #38bdf8);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>4. ISFP (探險家)</span><span style="color:#6ee7b7;">8.8%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 53%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>5. ESTJ (總經理)</span><span style="color:#6ee7b7;">8.7%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 52%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>6. ESFP (表演者)</span><span style="color:#6ee7b7;">8.5%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 51%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>7. ENFP (競選者)</span><span style="color:#6ee7b7;">8.1%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 48%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>8. ISTP (鑑賞家)</span><span style="color:#fde047;">5.4%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 32%; background: linear-gradient(90deg, #78350f, #eab308);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>9. INFP (調停者)</span><span style="color:#fde047;">4.4%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 26%; background: linear-gradient(90deg, #78350f, #eab308);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>10. ESTP (企業家)</span><span style="color:#fde047;">4.3%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 25%; background: linear-gradient(90deg, #78350f, #eab308);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>11. INTP (邏輯學家)</span><span style="color:#a855f7;">3.3%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 19%; background: linear-gradient(90deg, #1e1b4b, #a855f7);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>12. ENTP (辯論家)</span><span style="color:#a855f7;">3.2%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 18%; background: linear-gradient(90deg, #1e1b4b, #a855f7);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>13. ENFJ (主人翁)</span><span style="color:#a855f7;">2.5%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 14%; background: linear-gradient(90deg, #1e1b4b, #a855f7);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>14. INTJ (建築師)</span><span style="color:#c084fc;">2.1%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 11%; background: linear-gradient(90deg, #3b0764, #d8b4fe);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>15. ENTJ (指揮官)</span><span style="color:#c084fc;">1.8%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 9%; background: linear-gradient(90deg, #3b0764, #d8b4fe);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>16. INFJ (提倡者)</span><span style="color:#c084fc;">1.5%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 7%; background: linear-gradient(90deg, #3b0764, #d8b4fe);"></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-card">
+            <h2 class="color-2">貳、 演化動力學與文明進程</h2>
+            <h3>1. 生物學演化趨勢</h3>
+            <ul>
+                <li><strong>S 群體 (70-75%)：</strong> 負責環境生存、農業社會穩定與常規資源採集，這是人類文明的「系統基礎算力」。</li>
+                <li><strong>N 群體 (25-30%)：</strong> 負責環境劇變時的突變變數與非線性解法，這是物種的「災備與創新系統」。</li>
+            </ul>
+            <h3>2. 文明發展週期映射</h3>
+            <ul>
+                <li><strong>創建期：</strong> NT 構築系統架構 / SP 執行物理探索。</li>
+                <li><strong>擴張期：</strong> TJ 進行標準化與效率拓展。</li>
+                <li><strong>高峰期：</strong> SJ 維持龐大社會機器的穩定運作。</li>
+                <li><strong>衰退期：</strong> 當 SJ 協議過度僵化，喪失對新環境的適應力時，文明需要 N 型重新介入。</li>
+            </ul>
+        </div>
+
+        <div class="data-card">
+            <h2 class="color-3">參、 腦神經科學與底層物理機制</h2>
+            <h3>1. 腦電圖 (EEG) 映射</h3>
+            <ul>
+                <li><strong>Ni (內傾直覺)：</strong> 呈現「全腦同步」，能以極低耗能進入心流與直覺閃現，瞬間收斂資訊。</li>
+                <li><strong>Ne (外傾直覺)：</strong> 呈現「聖誕樹效應」，大腦各區高頻、隨機地瘋狂點亮，以進行發散式的跨界碰撞。</li>
+            </ul>
+            <h3>2. 能量代謝與記憶編碼</h3>
+            <ul>
+                <li><strong>充電介面：</strong> I 型為實體線纜充電 (社交純耗電，需斷開連線獨處)；E 型為無線感應充電 (身處人群網路即啟動背景回充)。</li>
+                <li><strong>記憶協議：</strong> <strong>Si</strong> 採「差異壓縮」(手動分配記憶體)；<strong>Se</strong> 採「無損快取」(高幀率不留存歷史)；<strong>Ni</strong> 採「追蹤式垃圾回收」(無情抹除與願景無關的記憶)。</li>
+            </ul>
+            <h3>3. 動力與情緒運算架構</h3>
+            <ul>
+                <li><strong>驅動激素：</strong> J 型為皮質醇迴避 (提前規劃以降低焦慮)；P 型為多巴胺依賴 (死線逼近榨取專注力)。</li>
+                <li><strong>情緒拓撲：</strong> <strong>Fe</strong> 為網狀分佈式網路 (強制同步環境情緒)；<strong>Fi</strong> 為氣隙實體隔離的單機系統 (拒絕外部寫入，僅供內部道德比對)。</li>
+            </ul>
+        </div>
+
+        <div class="data-card">
+            <h2 class="color-4">肆、 系統異常與高敏防禦 (HSP)</h2>
+            <h3>1. 高敏防禦機制 (HSP) 之跨類型拆解</h3>
+            <ul>
+                <li><strong>INxJ (劣勢 Se 瓶頸)：</strong> 環境過濾器失效，對不規則高頻物理摩擦 (如保麗龍、金屬聲) 產生極端生理排斥與神經防禦。</li>
+                <li><strong>ISxJ (主導 Si 警報)：</strong> 內部恆定性極度敏銳，對自身物理狀態或熟悉環境的微幅變異具備極高解析度。</li>
+                <li><strong>INxP (盲區 Se 當機)：</strong> 平時物理斷線，一旦感官刺激累積突破閾值 (如高分貝人群)，系統因無對應處理器而直接強制休眠。</li>
+                <li><strong>IxFx (強 Fe/Fi 溢位)：</strong> 社交情緒高敏。Fe 易下載過多環境毒性；Fi 易因核心價值觀遭侵犯而觸發邊界封鎖。</li>
+            </ul>
+            <h3>2. 心理風險與崩潰向量</h3>
+            <p>高風險群為 高 N + I (如 INFP/INFJ 情緒負荷極高；INTP 易陷存在焦慮)。面臨極端壓力時，大腦拒絕調用輔助功能，將導致主導與第三功能形成不與外界交換數據的 <strong>死結 (Loop)</strong>，例如 INTJ 的 Ni-Fi 偏執迴圈。</p>
+        </div>
+
+        <div class="data-card">
+            <h2 class="color-5">伍、 社會功能與經濟生涯軌跡</h2>
+            <div class="flex-charts">
+                <div style="background: rgba(15,23,42,0.5); padding: 20px; border-radius: 12px; border: 1px solid #334155;">
+                    <h4 style="color:#e0f2fe; margin-top:0; margin-bottom: 15px;">💰 職涯與收入指標</h4>
+                    <div class="compact-bar-group">
+                        <div class="compact-bar-label"><span>1. ENTJ (指揮官)</span><span style="color:#10b981;">最高</span></div>
+                        <div class="compact-bar-bg"><div class="bar-fill" style="width: 95%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div>
+                    </div>
+                    <div class="compact-bar-group">
+                        <div class="compact-bar-label"><span>2. ESTJ (總經理)</span><span style="color:#10b981;">次高</span></div>
+                        <div class="compact-bar-bg"><div class="bar-fill" style="width: 85%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div>
+                    </div>
+                    <div class="compact-bar-group">
+                        <div class="compact-bar-label"><span>3. ENTP (辯論家)</span><span style="color:#10b981;">第三</span></div>
+                        <div class="compact-bar-bg"><div class="bar-fill" style="width: 75%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div>
+                    </div>
+                </div>
+            </div>
+            <h3 style="margin-top: 20px;">1. 經濟軌跡與創業模型</h3>
+            <ul>
+                <li><strong>薪資模型：</strong> Te 主導呈「線性陡升」(完美契合企業標準)；Fi 主導呈「非線性波動」(寧願放棄溢價以換取價值觀對齊)。</li>
+                <li><strong>學術分佈：</strong> INTP、ENTP 霸佔了最高輟學率與最高博士學位取得率 (排斥線性教育，極度適應高自由度研究)。</li>
+            </ul>
+            <h3>2. 人際網路與婚姻穩定度</h3>
+            <ul>
+                <li><strong>婚姻模型：</strong> F + J 具備最高穩定性 (ISFJ/ESFJ 最佳)。伴侶配對在 N/S 維度上一致性最高 (能大幅降低日常溝通的編碼耗能)。</li>
+                <li><strong>社會變色龍：</strong> ENTP、ESTP、INFJ 具備最高適應性，能動態切換社交行為代碼。</li>
+            </ul>
+        </div>
+
+        <div class="data-card" style="margin-bottom: 50px;">
+            <h2 class="color-6">陸、 資訊通訊與分散式網路隱喻</h2>
+            <h3>1. 通訊頻寬與語義編碼</h3>
+            <ul>
+                <li><strong>傳輸協議：</strong> N 型採「封包交換」(跳躍式傳遞，依賴接收端解壓縮)；S 型採「電路交換」(嚴格線性傳輸，確保無損)。</li>
+                <li><strong>自然語言：</strong> S 型偏好實體名詞與絕對時態；N 型偏好抽象隱喻與條件式假設。</li>
+            </ul>
+            <h3>2. 共識演算法與信任機制</h3>
+            <ul>
+                <li><strong>信任驗證：</strong> Te/Fi 依賴「工作量證明」(檢視客觀產出與實際行為)；Ti/Fe 依賴「權益證明」(檢視邏輯共識與社交健康度)。</li>
+                <li><strong>決策演算法：</strong> Te 為啟發式演算法 (追求最快部署落地)；Ti 為窮舉演算法 (追求底層零矛盾)。</li>
+            </ul>
+            <h3>3. 架構防禦與資源調度</h3>
+            <ul>
+                <li><strong>資料庫事務：</strong> TJ 採強一致性模型 (不容許模糊狀態)；FP 採最終一致性模型 (容許軟狀態，具備高擴展性)。</li>
+                <li><strong>負載平衡：</strong> J 型 (線性輸出) 與 P 型 (突發峰值) 混編團隊，必須導入非同步訊息佇列 (如交接日誌)，否則極易導致執行緒阻塞與團隊衝突。</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('open');
+        }
+
+        window.onload = () => {
+            if (localStorage.getItem('mbti_jwt_token')) {
+                document.getElementById('dash-nav-btn').style.display = 'inline-block';
+                const authBtn = document.getElementById('auth-nav-btn');
+                authBtn.innerText = "登出系統";
+                authBtn.style.color = "#ef4444";
+                authBtn.style.borderColor = "#ef4444";
+                authBtn.classList.add('logout-mode');
+                authBtn.onclick = () => {
+                    localStorage.removeItem('mbti_jwt_token');
+                    localStorage.removeItem('mbti_user_id');
+                    localStorage.removeItem('mbti_v1_final');
+                    window.location.href = 'index.html';
+                };
+            }
+            
+            setTimeout(() => {
+                document.querySelectorAll('.bar-fill').forEach(bar => {
+                    bar.style.transform = "scaleX(1)";
+                });
+            }, 100);
+        };
+    </script>
+</body>
+</html>

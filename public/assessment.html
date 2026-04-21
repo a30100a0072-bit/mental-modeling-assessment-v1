@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="title" content="MBTI 認知幾何與高壓解析 V1版">
+    <meta name="description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mbti.chiyigo.com/">
+    <meta property="og:title" content="MBTI 認知幾何與高壓解析 V1版">
+    <meta property="og:description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+    <meta property="og:image" content="https://mbti.chiyigo.com/og-image.jpg">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mbti.chiyigo.com/">
+    <meta property="twitter:title" content="MBTI 認知幾何與高壓解析 V1版">
+    <meta property="twitter:description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+    <meta property="twitter:image" content="https://mbti.chiyigo.com/og-image.jpg">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    
+    <title>MBTI 認知幾何與高壓解析 V1 版</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="component.css">
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body class="landing-body">
+    <header class="landing-header">
+        <div class="logo" style="cursor:pointer;" onclick="window.location.href='index.html'">🧠 認知幾何 V1</div>
+        <div class="header-actions">
+            <button class="btn-outline" id="dash-nav-btn" style="display: none; background: #38bdf8; color: #0f172a; border-color: #38bdf8;" onclick="window.location.href='dashboard.html'">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'">登入 / 註冊</button>
+            <div class="hamburger" onclick="toggleSidebar()">☰</div>
+        </div>
+    </header>
+
+    <div class="quick-nav-bar" style="display: flex; justify-content: center; gap: 10px; padding: 10px 15px; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #1e293b; overflow-x: auto; white-space: nowrap;">
+        <a href="assessment.html?v=D&new=1" style="color: #fde047; font-size: 0.85rem; font-weight: bold; border: 1px solid #fde047; padding: 5px 12px; border-radius: 20px; text-decoration: none;">▶ 模組 D (日常行為)</a>
+        <a href="assessment.html?v=E&new=1" style="color: #fde047; font-size: 0.85rem; font-weight: bold; border: 1px solid #fde047; padding: 5px 12px; border-radius: 20px; text-decoration: none;">▶ 模組 E (決策情境)</a>
+        <a href="assessment.html?v=F&new=1" style="color: #fde047; font-size: 0.85rem; font-weight: bold; border: 1px solid #fde047; padding: 5px 12px; border-radius: 20px; text-decoration: none;">▶ 模組 F (認知偏好)</a>
+    </div>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span>導覽選單</span>
+            <button class="close-btn" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div class="sidebar-content">
+            <a href="index.html">首頁 (Home)</a>
+            <a href="assessment.html?v=A&new=1">模組 A：日常舒適圈 (已開放)</a>
+            <a href="assessment.html?v=B&new=1">模組 B：高壓防禦 (已開放)</a>
+            <a href="assessment.html?v=C&new=1">模組 C：覺醒願景 (已開放)</a>
+            <hr>
+            <a href="assessment.html?v=D&new=1" style="color: #fde047; font-weight: bold;">模組 D：日常行為量表 (全新開放)</a>
+            <a href="assessment.html?v=E&new=1" style="color: #fde047; font-weight: bold;">模組 E：決策情境量表 (全新開放)</a>
+            <a href="assessment.html?v=F&new=1" style="color: #fde047; font-weight: bold;">模組 F：認知偏好量表 (全新開放)</a>
+            <hr>
+            <a href="jung-theory.html">📖 榮格八維科普 (Jungian Theory)</a>
+            <a href="beebe-model.html">📖 畢比模型科普 (Beebe Model)</a>
+            <a href="mbti-types.html">👥 MBTI 16人格特質</a>
+            <a href="mbti-stats.html">📊 MBTI 有趣數據</a>
+            <hr>
+            <a href="dashboard.html">會員儀表板 (Dashboard)</a>
+        </div>
+    </div>
+    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="container" id="capture-area">
+        
+        <div id="dev-console" style="display: none; background: #1a1500; border: 2px dashed #fbbf24; padding: 15px; margin-bottom: 25px; border-radius: 8px;">
+            <h3 style="color: #fbbf24; margin-top: 0; font-size: 1.1rem; display: flex; justify-content: space-between;">
+                <span>🔧 開發者上帝模式 (God Mode)</span>
+                <span style="font-size: 0.8rem; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px;">Testing Only</span>
+            </h3>
+            <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 15px;">一鍵注入邊緣測試數據，強制跳過所有題目並直接呼叫 Cloudflare V1 大腦 API。</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="injectGodMode('INTJ')" style="background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">極端 INTJ 測試</button>
+                <button onclick="injectGodMode('ESFP')" style="background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">極端 ESFP 測試</button>
+                <button onclick="injectGodMode('ZERO')" style="background: #334155; color: #ef4444; border: 1px solid #ef4444; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">全零異常測試 (Zero)</button>
+                <button onclick="injectGodMode('RANDOM')" style="background: #38bdf8; color: #0f172a; border: 1px solid #0284c7; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">🎲 隨機亂數盲測</button>
+            </div>
+        </div>
+
+        <h1 class="main-title">MBTI 認知光譜與決策解析</h1>
+        <div id="watermark" class="hidden">v1 Clinical Geometry Model | Validated Assessment</div>
+
+        <div id="login-wall-modal" class="modal hidden" style="z-index: 9999; background: rgba(15,23,42,0.95);">
+            <div class="modal-content" style="text-align: center; max-width: 400px; padding: 40px 20px;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🔒</div>
+                <h2 style="color: #38bdf8; margin-bottom: 15px;">權限鎖定</h2>
+                <p style="color: #cbd5e1; margin-bottom: 25px; line-height: 1.6;">
+                    高壓防禦 (Phase B) 與覺醒願景 (Phase C) 屬於深度解析模組，需建立神經連結檔案後方可解鎖。
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button class="btn-primary" onclick="window.location.href='login.html'">前往註冊 / 登入</button>
+                    <button class="btn-outline" onclick="window.location.href='assessment.html?v=A&new=1'">先測量基礎版 (Phase A)</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-flow">
+            <div class="progress-container"><div id="progress-fill"></div></div>
+            <div id="progress-text">當前進度: 模組 1 / 5</div>
+
+            <div id="quiz-container">
+                <div id="phase-header" class="phase-indicator"></div>
+                <div id="phase-desc" class="phase-desc"></div>
+                <div id="questions-area"></div>
+                <button id="next-btn" class="btn-advance"></button>
+            </div>
+        </div>
+
+        <div id="loading-screen" class="hidden">
+            <div class="spinner"></div>
+            <p class="loading-text">正在將物理變數代入非線性純量矩陣...</p>
+        </div>
+
+        <div id="result-area" class="hidden">
+            <div id="mbti-type">檢測中</div>
+            <div id="spectrum-subtitle"></div>
+            <div id="topology-diagnosis"></div>
+            <div id="grip-warning"></div>
+
+            <div class="charts-flex-container">
+                <div class="chart-box">
+                    <div class="chart-label">◈ 認知功能絕對能量 (雷達契合)</div>
+                    <div class="radar-container"><canvas id="functionChart"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-label">◈ 人格判定概率分佈 (勝率分配)</div>
+                    <div class="pie-container"><canvas id="probabilityChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="score-table-wrapper" id="score-table-container"></div>
+            <div id="analysis-text"></div>
+            
+            <div class="action-buttons" id="action-btns">
+                <button class="btn-primary" onclick="window.location.href='dashboard.html'" style="background: linear-gradient(135deg, #10b981, #059669);">📊 進入會員儀表板</button>
+                <button class="btn-primary" onclick="copyShareLink()">🔗 複製防篡改連結</button>
+                <button class="btn-primary" onclick="generateImageForMobile()">📸 匯出鑑定報告</button>
+            </div>
+            <button class="btn-secondary" id="restart-btn" onclick="restartQuiz()">重新建立大腦模型</button>
+        </div>
+    </div>
+
+    <div id="image-modal" class="modal hidden" onclick="if(event.target === this) closeImageModal()">
+        <div class="modal-content">
+            <div class="close-modal-x" onclick="closeImageModal()">✕</div>
+            <p class="modal-hint">👇 請長按圖片儲存 👇</p>
+            <img id="image-preview" src="" alt="診斷報告">
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="nativeShareImage()">📤 系統原生分享</button>
+                <button class="btn-secondary" onclick="closeImageModal()">✖ 關閉視窗</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js?v=8"></script>
+    <script src="engine.js?v=8"></script>
+    <script src="api.js?v=8"></script>
+    <script src="script.js?v=8"></script>
+    
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('open');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('mbti_jwt_token')) {
+                const dashBtn = document.getElementById('dash-nav-btn');
+                if(dashBtn) dashBtn.style.display = 'inline-block';
+                
+                const authBtn = document.getElementById('auth-nav-btn');
+                if(authBtn) {
+                    authBtn.innerText = "登出系統";
+                    authBtn.style.color = "#ef4444";
+                    authBtn.style.borderColor = "#ef4444";
+                    authBtn.classList.add('logout-mode');
+                    
+                    authBtn.onclick = () => {
+                        localStorage.removeItem('mbti_jwt_token');
+                        localStorage.removeItem('mbti_user_id');
+                        localStorage.removeItem('mbti_v1_final');
+                        localStorage.removeItem('mbti_guest_id'); 
+                        window.location.href = 'index.html';
+                    };
+                }
+            }
+        });
+    </script>
+</body>
+</html>
