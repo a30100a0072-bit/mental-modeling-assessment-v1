@@ -10,11 +10,14 @@ routes = [
 
 [vars]
 ENGINE_VERSION = "V1"
-# 【金鑰正式化】換上正式的保險箱金鑰
-HMAC_SECRET = "Chiyigo_V1_8f9a2c3b4e5d6f7a8b9c0d1e2f"
-# 【演算法參數】已根據你的指示從 0.4 改回 0.3
+# 【演算法參數】
 SOFTMAX_TAU = "0.3"
-# 【Resend 金鑰】必須放在 [vars] 區塊內系統才讀得到！
+# 【API 探針金鑰】用於前端提交測驗時的身份驗證，與 JWT 簽名金鑰完全分離
+# 正式部署請執行: wrangler secret put API_PROBE_KEY
+# 正式部署請執行: wrangler secret put HMAC_SECRET
+# 正式部署請執行: wrangler secret put RESEND_API_KEY
+# 以下僅供本地開發使用，請勿將真實金鑰提交至版本控制
+API_PROBE_KEY = "dev_probe_key_replace_in_production"
 
 [[kv_namespaces]]
 binding = "MM_CACHE_KV"

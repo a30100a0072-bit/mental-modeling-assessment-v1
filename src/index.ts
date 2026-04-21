@@ -3,6 +3,7 @@ import { processAssessmentResult } from "./modules/assessment";
 export interface Env {
   ENGINE_VERSION: string;
   HMAC_SECRET: string;
+  API_PROBE_KEY: string;
   RESEND_API_KEY: string;
   SOFTMAX_TAU: string;
   MM_CACHE_KV: KVNamespace;
@@ -37,7 +38,7 @@ export default {
       if (url.pathname.endsWith("/auth/reset-password")) return await handleResetPassword(request, env);
       if (url.pathname.endsWith("/auth/register")) return await handleRegister(request, env);
       if (url.pathname.endsWith("/auth/login")) return await handleLogin(request, env);
-      if (url.pathname.match(/\/assess\/version-[abc]$/i)) return await handleAssessmentSubmit(request, env, ctx);
+      if (url.pathname.match(/\/assess\/version-[a-f]$/i)) return await handleAssessmentSubmit(request, env, ctx);
     }
     
     if (request.method === "GET" && url.pathname.endsWith("/user/history")) return await handleGetHistory(request, env);
@@ -296,7 +297,7 @@ async function handleDeleteAccount(request: Request, env: Env) {
 
 async function handleAssessmentSubmit(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const clientHmac = request.headers.get("X-HMAC-Signature");
-  if (!clientHmac || clientHmac !== env.HMAC_SECRET) return new Response(JSON.stringify({ error: "Unauthorized Probe" }), { status: 401, headers: corsHeaders });
+  if (!clientHmac || clientHmac !== env.API_PROBE_KEY) return new Response(JSON.stringify({ error: "Unauthorized Probe" }), { status: 401, headers: corsHeaders });
 
   try {
     // [修復]: payload 新增 version 參數接收

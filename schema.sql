@@ -1,14 +1,26 @@
 -- 1. 先摧毀舊有結構 (確保 V1 環境純淨，無舊欄位干擾)
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS assessments;
 DROP TABLE IF EXISTS personality_profiles;
 DROP TABLE IF EXISTS security_logs;
 
 -- 2. 建立 V1 全新表格
+-- 表格：使用者帳號
+CREATE TABLE users (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    status TEXT DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 表格：測驗紀錄 (儲存原始分數、演算法結果、精神能量與時間變數)
 CREATE TABLE assessments (
     id TEXT PRIMARY KEY,
     user_id TEXT, -- 登入者 ID。若為 NULL 則是訪客
     guest_id TEXT, -- 訪客追蹤碼 (LocalStorage 暫存綁定用)
+    assessment_version TEXT DEFAULT 'B', -- 測驗版本 (A/B/C/D/E/F)
     raw_scores TEXT NOT NULL, -- JSON 陣列: [Ni, Ne, Si, Se, Ti, Te, Fi, Fe]
     z_scores TEXT NOT NULL, -- JSON 陣列: 標準化分數
     result_distribution TEXT NOT NULL, -- JSON 物件: 16型 Softmax 機率分佈

@@ -37,9 +37,9 @@ async function proceedToResultAPI() {
             localStorage.setItem('mbti_guest_id', guestId);
         }
 
-        const headers = { 
-            "Content-Type": "application/json", 
-            "X-HMAC-Signature": "Chiyigo_V1_8f9a2c3b4e5d6f7a8b9c0d1e2f" 
+        const headers = {
+            "Content-Type": "application/json",
+            "X-HMAC-Signature": "dev_probe_key_replace_in_production"
         };
         
         if (token) headers["Authorization"] = `Bearer ${token}`;

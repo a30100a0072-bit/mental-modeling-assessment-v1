@@ -196,7 +196,7 @@ function renderPhase(p) {
         
         header.innerText = "PHASE 05: 階層解耦探針 (高增益)";
         desc.innerText = window.TrifurcationWarning ? "系統偵測到三向分岔糾纏現象，啟動邊界剝離。" : `偵測到核心向量 [${sortedF[0]}/${sortedF[1]}] 高度重合，啟動最終判定。`;
-        qArea.innerHTML = probe.map((it, i) => `<div class="question"><p><strong>65. ${it.q}</strong></p><div class="options"><label><input type="radio" name="q5" value="a"> ${it.a}</label><label><input type="radio" name="q5" value="b"> ${it.b}</label></div></div>`).join('');
+        qArea.innerHTML = probe.map((it, i) => `<div class="question"><p><strong>${65 + i}. ${it.q}</strong></p><div class="options"><label><input type="radio" name="q5" value="a"> ${it.a}</label><label><input type="radio" name="q5" value="b"> ${it.b}</label></div></div>`).join('');
         window.mbtiActiveProbe = probe;
         btn.innerText = "提交並連接 Cloudflare V1 引擎";
         btn.onclick = () => {
@@ -372,7 +372,15 @@ window.handleRankingClick = function(qK, optIdx, maxLen) {
 };
 window.resetRanking = function(qK) {
     window.rankingStates[qK] = [];
-    window.handleRankingClick(qK, -1, 0); // 觸發重繪 (傳入無效值)
+    const qIdx = parseInt(qK.split('_')[3]);
+    const itemData = activeRanking[qIdx];
+    const container = document.getElementById(`opts_${qK}`);
+    if (!container) return;
+    container.innerHTML = itemData.items.map((opt, i) => {
+        return `<div class="ranking-item" onclick="handleRankingClick('${qK}', ${i}, ${itemData.items.length})" style="padding:15px; border:1px solid #1e293b; border-radius:10px; background:#162032; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; transition:0.2s;">
+            <span style="line-height:1.4;">${opt.text}</span>
+        </div>`;
+    }).join('');
 };
 
 // ==========================================
