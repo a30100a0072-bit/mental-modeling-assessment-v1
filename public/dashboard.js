@@ -62,7 +62,10 @@ function renderDashboard(records) {
     const versionMap = {
         'A': '日常舒適圈 (Phase A)',
         'B': '高壓防禦 (Phase B)',
-        'C': '覺醒願景 (Phase C)'
+        'C': '覺醒願景 (Phase C)',
+        'D': '日常行為量表 (Phase D)',
+        'E': '決策情境量表 (Phase E)',
+        'F': '認知偏好量表 (Phase F)'
     };
 
     const container = document.getElementById('history-container');

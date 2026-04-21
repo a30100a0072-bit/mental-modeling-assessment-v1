@@ -43,7 +43,7 @@ if (currentVersion === 'D') {
 }
 
 let appScores = { Ti:0, Te:0, Fi:0, Fe:0, Ni:0, Ne:0, Si:0, Se:0 };
-let appState = { phase: 1, answers: {} };
+let appState = { phase: 1, answers: {}, dynamicRoute: null };
 let isSharedView = false;
 let quizStartTime = Date.now(); 
 window.radarChartObj = null;

@@ -152,7 +152,7 @@ async function handleSendVerification(request: Request, env: Env) {
 async function handleRegister(request: Request, env: Env) {
   try {
     const { email, password, verificationCode, guestReportId } = await request.json<{email: string, password: string, verificationCode: string, guestReportId?: string}>();
-    if (!email || password.length < 8 || !verificationCode) throw new Error("無效的輸入資料");
+    if (!email || !password || password.length < 8 || !verificationCode) throw new Error("無效的輸入資料");
     
     const savedCode = await env.MM_CACHE_KV.get(`verify:${email}`);
     if (!savedCode || savedCode !== verificationCode) {

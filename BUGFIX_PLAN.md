@@ -105,6 +105,68 @@ qArea.innerHTML = probe.map((it, i) => `<div class="question"><p><strong>${65 + 
 
 ---
 
+---
+
+## ✅ Bug 7 — handleRegister 未驗證 password 是否存在即呼叫 .length
+
+**嚴重程度**: 🔴 嚴重
+
+**檔案**: `src/index.ts` 第 154 行
+
+**問題**: 若 request body 沒有 password 欄位，`password` 為 `undefined`，`password.length < 8` 直接拋出 TypeError 導致崩潰。
+
+**修復內容**:
+```typescript
+// 修復前
+if (!email || password.length < 8 || !verificationCode)
+
+// 修復後
+if (!email || !password || password.length < 8 || !verificationCode)
+```
+
+---
+
+## ✅ Bug 8 — dashboard 版本名稱對映缺 D/E/F
+
+**嚴重程度**: 🟡 中等
+
+**檔案**: `public/dashboard.js` 第 62–66、88 行
+
+**問題**: `versionMap` 只有 A/B/C，D/E/F 測驗紀錄的版本名稱全部顯示為「高壓防禦 (Phase B)」。
+
+**修復內容**: 在 `versionMap` 補上 D/E/F：
+```javascript
+const versionMap = {
+    'A': '日常舒適圈 (Phase A)',
+    'B': '高壓防禦 (Phase B)',
+    'C': '覺醒願景 (Phase C)',
+    'D': '日常行為量表 (Phase D)',
+    'E': '決策情境量表 (Phase E)',
+    'F': '認知偏好量表 (Phase F)'
+};
+```
+
+---
+
+## ✅ Bug 9 — D/E/F 卷重啟後 dynamicRoute 狀態遺失
+
+**嚴重程度**: 🟡 中等
+
+**檔案**: `public/script.js` 第 46 行
+
+**問題**: `appState` 初始值沒有 `dynamicRoute`，若使用者在 Phase 2 結束後瀏覽器崩潰再回來，Phase 3 因 `dynamicRoute` 為 `undefined` 而直接進入 `FINISH` 分支送出，跳過第三階段題目。
+
+**修復內容**:
+```javascript
+// 修復前
+let appState = { phase: 1, answers: {} };
+
+// 修復後
+let appState = { phase: 1, answers: {}, dynamicRoute: null };
+```
+
+---
+
 ## 完成後動作
 
 1. 所有 Bug 修完後執行 `git commit`
