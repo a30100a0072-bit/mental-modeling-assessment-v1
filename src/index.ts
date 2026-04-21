@@ -190,15 +190,27 @@ async function handleRegister(request: Request, env: Env) {
 async function handleLogin(request: Request, env: Env) {
   try {
     const { email, password } = await request.json<{email: string, password: string}>();
-    const user = await env.MM_DB_D1.prepare("SELECT id, password_hash, salt FROM users WHERE email = ?").bind(email).first();
-    if (!user) throw new Error("Unauthorized");
-    
+    if (!email || !password) return new Response(JSON.stringify({ error: "帳號或密碼錯誤" }), { status: 401, headers: corsHeaders });
+
+    let user: Record<string, unknown> | null;
+    try {
+      user = await env.MM_DB_D1.prepare("SELECT id, password_hash, salt FROM users WHERE email = ?").bind(email).first();
+    } catch (dbErr: any) {
+      console.error("[handleLogin] DB error:", dbErr.message);
+      return new Response(JSON.stringify({ error: "伺服器內部錯誤，請稍後再試" }), { status: 500, headers: corsHeaders });
+    }
+
+    if (!user) return new Response(JSON.stringify({ error: "帳號或密碼錯誤" }), { status: 401, headers: corsHeaders });
+
     const { hash } = await hashPassword(password, user.salt as string);
-    if (hash !== user.password_hash) throw new Error("Unauthorized");
-    
+    if (hash !== user.password_hash) return new Response(JSON.stringify({ error: "帳號或密碼錯誤" }), { status: 401, headers: corsHeaders });
+
     const token = await generateJWT(user.id as string, env.HMAC_SECRET);
     return new Response(JSON.stringify({ status: "Logged In", token, userId: user.id }), { headers: corsHeaders });
-  } catch (err) { return new Response(JSON.stringify({ error: "帳號或密碼錯誤" }), { status: 401, headers: corsHeaders }); }
+  } catch (err: any) {
+    console.error("[handleLogin] Unexpected error:", err.message);
+    return new Response(JSON.stringify({ error: "伺服器內部錯誤，請稍後再試" }), { status: 500, headers: corsHeaders });
+  }
 }
 
 async function handleForgotPassword(request: Request, env: Env) {
@@ -242,7 +254,11 @@ async function handleResetPassword(request: Request, env: Env) {
 
         const { hash, salt } = await hashPassword(newPassword);
         
-        await env.MM_DB_D1.prepare("UPDATE users SET password_hash = ?, salt = ? WHERE email = ?").bind(hash, salt, email).run();
+        const result = await env.MM_DB_D1.prepare("UPDATE users SET password_hash = ?, salt = ? WHERE email = ?").bind(hash, salt, email).run();
+        if (!result.meta || result.meta.changes === 0) {
+            console.error("[handleResetPassword] UPDATE matched 0 rows for email:", email);
+            return new Response(JSON.stringify({ error: "找不到對應帳號，密碼更新失敗" }), { status: 400, headers: corsHeaders });
+        }
         await env.MM_CACHE_KV.delete(`reset:${token}`);
 
         return new Response(JSON.stringify({ status: "Password successfully updated" }), { headers: corsHeaders });

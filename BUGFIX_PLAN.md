@@ -195,6 +195,24 @@ let appState = { phase: 1, answers: {}, dynamicRoute: null };
 
 ---
 
+---
+
+## ✅ Bug 11 — handleResetPassword 不驗證 UPDATE 是否真正更新資料，靜默回傳成功
+
+**嚴重程度**: 🔴 嚴重（直接導致重設密碼後仍無法登入）
+
+**檔案**: `src/index.ts` handleResetPassword、handleLogin
+
+**問題**:
+1. D1 的 `.run()` 在 `WHERE` 不匹配任何資料列時不拋出錯誤，`meta.changes === 0` 但仍回傳 success，前端顯示「密碼已成功更新」，實際上資料庫沒有任何異動。
+2. `handleLogin` 的 catch 把所有例外（包含 DB 連線錯誤、missing table）都包成「帳號或密碼錯誤」，真正原因無從得知。
+
+**修復內容**:
+- `handleResetPassword`: 改用 `.run()` 回傳值檢查 `meta.changes`，若為 0 則回傳明確錯誤
+- `handleLogin`: 分開處理「找不到使用者」vs「密碼錯誤」vs「DB 錯誤」，記錄 console.error
+
+---
+
 ## 完成後動作
 
 1. 所有 Bug 修完後執行 `git commit`
