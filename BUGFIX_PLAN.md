@@ -167,6 +167,34 @@ let appState = { phase: 1, answers: {}, dynamicRoute: null };
 
 ---
 
+---
+
+## ✅ Bug 10 — quick-nav-bar 左右邊界按鈕被截斷
+
+**嚴重程度**: 🟡 中等（UI 顯示異常）
+
+**檔案**: 全部 10 個 HTML 檔案
+
+**問題**: WebKit/Chrome 已知行為：`overflow-x: auto` 的 flex 容器在內容溢出時，`padding-left/right` 不參與捲動空間計算，導致最左側按鈕緊貼螢幕邊緣被截斷（左 border 消失）。
+
+**修復內容**: 移除容器左右 padding，改用首尾 `<span>` 佔位元素確保捲動空間：
+
+```html
+<!-- 修復前 -->
+<div style="...padding: 10px 15px...">
+    <a>模組 A</a> ... <a>模組 F</a>
+</div>
+
+<!-- 修復後 -->
+<div style="...padding: 10px 0...">
+    <span style="flex-shrink:0; min-width:15px;"></span>
+    <a>模組 A</a> ... <a>模組 F</a>
+    <span style="flex-shrink:0; min-width:15px;"></span>
+</div>
+```
+
+---
+
 ## 完成後動作
 
 1. 所有 Bug 修完後執行 `git commit`
