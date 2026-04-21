@@ -213,7 +213,31 @@ let appState = { phase: 1, answers: {}, dynamicRoute: null };
 
 ---
 
+---
+
+## ✅ Bug 12 — HMAC_SECRET 未設定導致註冊/登入崩潰，且驗證碼被靜默消耗
+
+**嚴重程度**: 🔴 嚴重（所有認證功能完全無法使用）
+
+**檔案**: `src/index.ts` handleRegister、handleLogin
+
+**問題**:
+1. `HMAC_SECRET` 在 Cloudflare 線上環境未設定（空字串），`generateJWT` 呼叫 WebCrypto `importKey` 時拋出：`Imported HMAC key length (0) must be a non-zero value...`
+2. `handleRegister` 的執行順序錯誤：DB INSERT 成功 → 驗證碼從 KV 刪除 → 才呼叫 `generateJWT` 崩潰。導致使用者看到錯誤後重試，驗證碼已被消耗，出現「驗證碼錯誤或已過期」。
+
+**修復內容**:
+- `handleRegister` / `handleLogin`：加入 `!env.HMAC_SECRET` 前置檢查，提前回傳明確的 500 錯誤
+- `handleRegister`：將 `generateJWT` 移至 DB batch 寫入之前，確保 JWT 生成失敗時驗證碼不被消耗、使用者可重試
+
+**部署端動作（需手動執行）**:
+```bash
+wrangler secret put HMAC_SECRET   # 輸入 32 字元以上隨機字串
+wrangler deploy
+```
+
+---
+
 ## 完成後動作
 
-1. 所有 Bug 修完後執行 `git commit`
+1. 所有 Bug 修完後執行 `git commit` ✅
 2. 更新 `memory/project_bugs.md` 中每個 Bug 的狀態為 ✅
