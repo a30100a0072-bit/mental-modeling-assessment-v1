@@ -153,7 +153,10 @@ async function handleRegister(request: Request, env: Env) {
   try {
     const { email, password, verificationCode, guestReportId } = await request.json<{email: string, password: string, verificationCode: string, guestReportId?: string}>();
     if (!email || !password || password.length < 8 || !verificationCode) throw new Error("無效的輸入資料");
-    
+
+    // 提前檢查 HMAC_SECRET，避免 DB 寫入後才崩潰導致驗證碼被消耗
+    if (!env.HMAC_SECRET) return new Response(JSON.stringify({ error: "伺服器設定錯誤，請聯繫管理員" }), { status: 500, headers: corsHeaders });
+
     const savedCode = await env.MM_CACHE_KV.get(`verify:${email}`);
     if (!savedCode || savedCode !== verificationCode) {
         return new Response(JSON.stringify({ error: "驗證碼錯誤或已過期" }), { status: 400, headers: corsHeaders });
@@ -162,24 +165,25 @@ async function handleRegister(request: Request, env: Env) {
     const clientIp = request.headers.get("CF-Connecting-IP") || "unknown";
     const recentRegs = await env.MM_DB_D1.prepare("SELECT COUNT(*) as count FROM security_logs WHERE ip_address = ? AND action = 'register' AND timestamp > datetime('now', '-1 hour')").bind(clientIp).first("count") as number;
     if (recentRegs >= 3) return new Response(JSON.stringify({ error: "此 IP 註冊過於頻繁" }), { status: 429, headers: corsHeaders });
-    
+
     const userId = crypto.randomUUID();
     const { hash, salt } = await hashPassword(password);
-    
+
+    // 先生成 JWT，確保 HMAC_SECRET 可用才執行 DB 寫入
+    const token = await generateJWT(userId, env.HMAC_SECRET);
+
     const batchStmts = [
       env.MM_DB_D1.prepare("INSERT INTO users (id, email, password_hash, salt) VALUES (?, ?, ?, ?)").bind(userId, email, hash, salt),
       env.MM_DB_D1.prepare("INSERT INTO security_logs (ip_address, action) VALUES (?, 'register')").bind(clientIp)
     ];
-    
+
     if (guestReportId) {
         batchStmts.push(env.MM_DB_D1.prepare("UPDATE assessments SET user_id = ? WHERE id = ?").bind(userId, guestReportId));
     }
-    
+
     await env.MM_DB_D1.batch(batchStmts);
     await env.MM_CACHE_KV.delete(`verify:${email}`);
 
-    const token = await generateJWT(userId, env.HMAC_SECRET);
-    
     return new Response(JSON.stringify({ status: "Registered", token, userId }), { headers: corsHeaders });
   } catch (err: any) {
     if (err.message.includes("UNIQUE constraint failed")) return new Response(JSON.stringify({ error: "信箱已被註冊" }), { status: 409, headers: corsHeaders });
@@ -191,6 +195,7 @@ async function handleLogin(request: Request, env: Env) {
   try {
     const { email, password } = await request.json<{email: string, password: string}>();
     if (!email || !password) return new Response(JSON.stringify({ error: "帳號或密碼錯誤" }), { status: 401, headers: corsHeaders });
+    if (!env.HMAC_SECRET) return new Response(JSON.stringify({ error: "伺服器設定錯誤，請聯繫管理員" }), { status: 500, headers: corsHeaders });
 
     let user: Record<string, unknown> | null;
     try {
