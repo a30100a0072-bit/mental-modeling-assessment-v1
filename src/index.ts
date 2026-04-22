@@ -188,7 +188,6 @@ async function handleRegister(request: Request, env: Env) {
         return new Response(JSON.stringify({ error: "驗證碼錯誤或已過期" }), { status: 400, headers: corsHeaders });
     }
 
-    const clientIp = request.headers.get("CF-Connecting-IP") || "unknown";
     const recentRegs = await env.MM_DB_D1.prepare("SELECT COUNT(*) as count FROM security_logs WHERE ip_address = ? AND action = 'register' AND timestamp > datetime('now', '-1 hour')").bind(clientIp).first("count") as number;
     if (recentRegs >= 3) return new Response(JSON.stringify({ error: "此 IP 註冊過於頻繁" }), { status: 429, headers: corsHeaders });
 
