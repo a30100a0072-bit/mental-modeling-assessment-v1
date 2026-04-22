@@ -1,6 +1,16 @@
 let currentMode = 'login';
 const API_BASE = "/api/v1";
 
+// 允許接收 JWT 跳轉的合法網域白名單
+const ALLOWED_REDIRECT_ORIGINS = ['https://talo-web.pages.dev'];
+
+function isAllowedRedirect(url) {
+    try {
+        const origin = new URL(url).origin;
+        return ALLOWED_REDIRECT_ORIGINS.includes(origin);
+    } catch { return false; }
+}
+
 let turnstileToken = '';
 function onTurnstileSuccess(token) { turnstileToken = token; }
 function onTurnstileExpired() { turnstileToken = ''; }
@@ -201,15 +211,24 @@ async function handleAuth() {
         // 登入/註冊成功，儲存 JWT Token
         localStorage.setItem('mbti_jwt_token', data.token);
         localStorage.setItem('mbti_user_id', data.userId);
-        
+
         // [修正] 清除遊客所有快取，防止狀態殘留與污染
         localStorage.removeItem('mbti_guest_report_id');
         localStorage.removeItem('mbti_guest_id');
-        
+
         msgBox.style.color = "#6ee7b7";
         msgBox.innerText = "✅ 驗證成功，正在載入核心模組...";
-        
-        // 成功後帶往儀表板
+
+        // SSO 跳轉：若來自白名單網站，帶 token 跳回去
+        const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+        if (redirectUrl && isAllowedRedirect(redirectUrl)) {
+            setTimeout(() => {
+                window.location.href = `${redirectUrl}?mbti_token=${encodeURIComponent(data.token)}&mbti_email=${encodeURIComponent(email)}`;
+            }, 800);
+            return;
+        }
+
+        // 預設：帶往儀表板
         setTimeout(() => {
             window.location.href = 'dashboard.html';
         }, 1000);
