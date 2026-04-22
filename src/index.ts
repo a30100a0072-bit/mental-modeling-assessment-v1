@@ -7,6 +7,7 @@ export interface Env {
   RESEND_API_KEY: string;
   SOFTMAX_TAU: string;
   TURNSTILE_SECRET_KEY: string;
+  SSO_ALLOWED_ORIGINS: string;
   MM_CACHE_KV: KVNamespace;
   MM_DB_D1: D1Database;
   MM_EVENT_QUEUE: Queue;
@@ -24,6 +25,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, X-HMAC-Signature, Authorization",
+  "Access-Control-Expose-Headers": "X-Token-Refresh",
 };
 
 async function verifyTurnstile(token: string, secret: string, ip: string): Promise<boolean> {
@@ -57,6 +59,10 @@ export default {
       if (url.pathname.match(/\/assess\/version-[a-f]$/i)) return await handleAssessmentSubmit(request, env, ctx);
     }
     
+    if (request.method === "GET" && url.pathname.endsWith("/auth/allowed-redirects")) {
+      const origins = (env.SSO_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+      return new Response(JSON.stringify({ origins }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     if (request.method === "GET" && url.pathname.endsWith("/user/history")) return await handleGetHistory(request, env);
     if (request.method === "DELETE" && url.pathname.endsWith("/user/account")) return await handleDeleteAccount(request, env);
     
@@ -117,24 +123,24 @@ async function generateJWT(userId: string, secret: string) {
   return `${header}.${payload}.${signature}`;
 }
 
-async function verifyJWT(token: string, secret: string): Promise<string | null> {
+async function verifyJWT(token: string, secret: string): Promise<{ sub: string; exp: number } | null> {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
     const [header, payload, signature] = parts;
     const enc = new TextEncoder();
-    
+
     const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
     const expectedSigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(`${header}.${payload}`));
     const expectedSig = btoa(String.fromCharCode(...new Uint8Array(expectedSigBuf))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
     if (signature !== expectedSig) return null;
-    
+
     let base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
     const pad = base64.length % 4; if(pad) base64 += '='.repeat(4 - pad);
     const payloadObj = JSON.parse(atob(base64));
     if (payloadObj.exp && Math.floor(Date.now() / 1000) > payloadObj.exp) return null;
-    
-    return payloadObj.sub;
+
+    return { sub: payloadObj.sub, exp: payloadObj.exp ?? 0 };
   } catch (e) { return null; }
 }
 
@@ -314,17 +320,22 @@ async function handleGetHistory(request: Request, env: Env) {
     try {
         const authHeader = request.headers.get("Authorization");
         if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
-        
-        const token = authHeader.split(" ")[1];
-        const userId = await verifyJWT(token, env.HMAC_SECRET);
-        if (!userId) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
 
-        // [修復]: 精準撈出 assessment_version，不再為 undefined
+        const token = authHeader.split(" ")[1];
+        const jwtResult = await verifyJWT(token, env.HMAC_SECRET);
+        if (!jwtResult) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+
         const historyReq = await env.MM_DB_D1.prepare(
             "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC"
-        ).bind(userId).all();
+        ).bind(jwtResult.sub).all();
 
-        return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        const responseHeaders: Record<string, string> = { ...corsHeaders, "Content-Type": "application/json" };
+        // 剩餘有效期 < 2 天時自動簽發新 token，前端無感續期
+        if (jwtResult.exp - Math.floor(Date.now() / 1000) < 172800) {
+            responseHeaders["X-Token-Refresh"] = await generateJWT(jwtResult.sub, env.HMAC_SECRET);
+        }
+
+        return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: responseHeaders });
     } catch (error: any) {
         return new Response(JSON.stringify({ error: "DB Error: " + error.message }), { status: 500, headers: corsHeaders });
     }
@@ -333,14 +344,14 @@ async function handleGetHistory(request: Request, env: Env) {
 async function handleDeleteAccount(request: Request, env: Env) {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
-    
+
     const token = authHeader.split(" ")[1];
-    const userId = await verifyJWT(token, env.HMAC_SECRET);
-    if (!userId) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+    const jwtResult = await verifyJWT(token, env.HMAC_SECRET);
+    if (!jwtResult) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
 
     const batchStmts = [
-        env.MM_DB_D1.prepare("DELETE FROM users WHERE id = ?").bind(userId),
-        env.MM_DB_D1.prepare("DELETE FROM assessments WHERE user_id = ?").bind(userId)
+        env.MM_DB_D1.prepare("DELETE FROM users WHERE id = ?").bind(jwtResult.sub),
+        env.MM_DB_D1.prepare("DELETE FROM assessments WHERE user_id = ?").bind(jwtResult.sub)
     ];
 
     try {
@@ -363,8 +374,8 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     let finalUserId: string | null = null;
     const authHeader = request.headers.get("Authorization");
     if (authHeader && authHeader.startsWith("Bearer ")) {
-        const verifiedId = await verifyJWT(authHeader.split(" ")[1], env.HMAC_SECRET);
-        if (verifiedId) finalUserId = verifiedId;
+        const jwtResult = await verifyJWT(authHeader.split(" ")[1], env.HMAC_SECRET);
+        if (jwtResult) finalUserId = jwtResult.sub;
     }
 
     const result = processAssessmentResult(payload.rawScores, payload.timeSpentMs || 1000);

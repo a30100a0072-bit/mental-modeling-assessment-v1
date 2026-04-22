@@ -1,8 +1,20 @@
 let currentMode = 'login';
 const API_BASE = "/api/v1";
 
-// 允許接收 JWT 跳轉的合法網域白名單
-const ALLOWED_REDIRECT_ORIGINS = ['https://talo-web.pages.dev'];
+let ALLOWED_REDIRECT_ORIGINS = [];
+
+async function loadAllowedOrigins() {
+    const cached = sessionStorage.getItem('sso_allowed_origins');
+    if (cached) { ALLOWED_REDIRECT_ORIGINS = JSON.parse(cached); return; }
+    try {
+        const res = await fetch(`${API_BASE}/auth/allowed-redirects`);
+        if (res.ok) {
+            const data = await res.json();
+            ALLOWED_REDIRECT_ORIGINS = data.origins || [];
+            sessionStorage.setItem('sso_allowed_origins', JSON.stringify(ALLOWED_REDIRECT_ORIGINS));
+        }
+    } catch {}
+}
 
 function isAllowedRedirect(url) {
     try {
@@ -21,7 +33,8 @@ function resetTurnstile() {
 }
 
 // 檢查是否已經登入
-window.onload = () => {
+window.onload = async () => {
+    await loadAllowedOrigins();
     const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
     const existingToken = localStorage.getItem('mbti_jwt_token');
     if (existingToken) {

@@ -319,6 +319,13 @@ wrangler deploy
   - talo-web.pages.dev 已重新部署
 
 ### 🟢 低優先（日後優化）
-- [ ] SSO 白名單改為後端動態設定（目前 hardcode 在 auth.js）
-- [ ] 新增第三個網站時只需加入白名單即可
-- [ ] 考慮加入 refresh token 機制（目前 JWT 固定 7 天）
+- [x] ✅ SSO 白名單後端動態設定（2026-04-23）
+  - `wrangler.toml` 新增 `SSO_ALLOWED_ORIGINS` 環境變數（逗號分隔）
+  - `src/index.ts` 新增 `GET /auth/allowed-redirects` 端點回傳白名單陣列
+  - `public/auth.js` 移除 hardcode，改為 `loadAllowedOrigins()` 非同步載入並以 sessionStorage 快取
+  - 新增網站只需修改 `wrangler.toml` 的 `SSO_ALLOWED_ORIGINS` 並重新 deploy，無需動前端程式碼
+- [x] ✅ Refresh token 無感續期機制（2026-04-23）
+  - `verifyJWT` 改回傳 `{ sub, exp }`，讓 handler 可取得到期時間
+  - `handleGetHistory`：token 剩餘有效期 < 2 天時自動在 `X-Token-Refresh` header 塞新 token
+  - `public/dashboard.js`：讀取 `X-Token-Refresh` header，有值時更新 localStorage，使用者無感續期
+  - 新增 `Access-Control-Expose-Headers: X-Token-Refresh` 確保瀏覽器可讀取

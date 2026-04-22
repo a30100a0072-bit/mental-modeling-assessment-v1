@@ -22,6 +22,9 @@ async function fetchHistory(token) {
         if (response.status === 401) throw new Error("授權過期，請重新登入");
         if (!response.ok) throw new Error("無法連接歷史資料庫");
 
+        const refreshToken = response.headers.get('X-Token-Refresh');
+        if (refreshToken) localStorage.setItem('mbti_jwt_token', refreshToken);
+
         const result = await response.json();
         renderDashboard(result.data);
     } catch (error) {
