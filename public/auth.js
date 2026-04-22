@@ -20,12 +20,20 @@ function resetTurnstile() {
     if (window.turnstile) turnstile.reset();
 }
 
-// 檢查是否已經登入，若已登入則直接跳轉儀表板
+// 檢查是否已經登入
 window.onload = () => {
-    if (localStorage.getItem('mbti_jwt_token')) {
+    const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+    const existingToken = localStorage.getItem('mbti_jwt_token');
+    if (existingToken) {
+        // 若來自白名單跨站跳轉，直接帶 token 返回，不需重新登入
+        if (redirectUrl && isAllowedRedirect(redirectUrl)) {
+            const existingEmail = localStorage.getItem('mbti_email') || '';
+            window.location.href = `${redirectUrl}?mbti_token=${encodeURIComponent(existingToken)}&mbti_email=${encodeURIComponent(existingEmail)}`;
+            return;
+        }
         window.location.href = 'dashboard.html';
+        return;
     }
-    // 初始化 UI 狀態
     switchTab('login');
 };
 
@@ -211,6 +219,7 @@ async function handleAuth() {
         // 登入/註冊成功，儲存 JWT Token
         localStorage.setItem('mbti_jwt_token', data.token);
         localStorage.setItem('mbti_user_id', data.userId);
+        localStorage.setItem('mbti_email', email);
 
         // [修正] 清除遊客所有快取，防止狀態殘留與污染
         localStorage.removeItem('mbti_guest_report_id');

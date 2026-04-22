@@ -241,3 +241,78 @@ wrangler deploy
 
 1. 所有 Bug 修完後執行 `git commit` ✅
 2. 更新 `memory/project_bugs.md` 中每個 Bug 的狀態為 ✅
+
+---
+
+## ✅ Feature 1 — Cloudflare Turnstile 人機驗證防護
+
+**完成日期**: 2026-04-22
+
+**保護端點**:
+- `POST /auth/login` — 防止暴力破解
+- `POST /auth/register` — 防止 bot 批量註冊
+- `POST /auth/send-verification` — 防止 Email 垃圾轟炸
+- `POST /auth/forgot-password` — 防止帳號枚舉攻擊
+
+**實作內容**:
+- 後端 `src/index.ts`：新增 `verifyTurnstile()` helper，四個 handler 均加入 token 驗證
+- 前端 `public/login.html`：嵌入 Turnstile widget（Managed 模式，dark theme）
+- 前端 `public/auth.js`：token callback 管理，submit/send-code 前消耗 token，失敗後自動 reset
+- `wrangler.toml`：加入 `TURNSTILE_SECRET_KEY` 環境變數欄位（dev 用測試金鑰）
+- Cloudflare 生產 secret 已透過 `wrangler secret put TURNSTILE_SECRET_KEY` 設定完畢
+
+**金鑰資訊**:
+- Site Key: `0x4AAAAAADBMJ38IVJxnemhg`（已寫入 login.html）
+- Secret Key: 已上傳至 Cloudflare Workers secrets（不存於 code）
+
+---
+
+## ✅ Feature 2 — 塔羅 × MBTI SSO 帳號整合（方案 B）
+
+**完成日期**: 2026-04-22
+
+**架構**:
+- 兩個 Worker 各自保有 D1，塔羅 Worker 不查 users 表，只驗 JWT 簽名
+- 共用同一個 HMAC_SECRET（HS256），塔羅 Worker 以 verifyJWT() 驗證
+
+**MBTI 側改動** (`public/auth.js`):
+- 新增 `ALLOWED_REDIRECT_ORIGINS` 白名單（防 open redirect）
+- 新增 `isAllowedRedirect()` 驗證函數
+- 登入/註冊成功後若帶 `?redirect=` 參數且在白名單內，跳回目標站並附上 `?mbti_token=...&mbti_email=...`
+
+**塔羅側改動** (`/c/Users/User/Desktop/talo`):
+- `web/script.js`：接收 `?mbti_token` 存入 localStorage，立刻清掉 URL
+- `web/script.js`：`updateAuthUI()` 改用 `mbti_email`、`apiFetch()` 改用 `mbti_jwt_token`
+- `web/script.js`：`loginWithMBTI()` 跳轉至 MBTI 登入頁
+- `web/index.html`：auth modal 移除舊帳號表單，改為「前往 MBTI 登入」按鈕
+- `worker/src/index.ts`：移除 `/api/auth/*` 路由，改用 MBTI verifyJWT()
+
+**✅ 部署完成（2026-04-22）**:
+- talo Worker `HMAC_SECRET` 已設定（值與 MBTI 相同）
+- `wrangler deploy` 完成，Version ID: `52fa0f91`
+
+**Login 流程**:
+```
+塔羅點登入 → mbti.chiyigo.com/login.html?redirect=https://talo-web.pages.dev
+→ MBTI 驗證成功 → 跳回 talo-web.pages.dev?mbti_token=...&mbti_email=...
+→ 塔羅存 token、清 URL → 塔羅 Worker 驗簽名 ✅
+```
+
+---
+
+## 📋 待辦事項
+
+### 🔴 高優先
+- [x] ✅ 修復 SSO 流程兩個關鍵 Bug（2026-04-22）
+  - **Bug A**: `auth.js` `window.onload` 已登入 + `?redirect=` 時錯誤跳到 `dashboard.html`，現在改為直接帶 token 跳回來源站
+  - **Bug B**: 登入/註冊成功後未儲存 `mbti_email` 至 localStorage，導致跨站跳轉時 email 遺失
+
+### 🟡 中優先（功能擴充）
+- [ ] 行銷埋碼（GA4 / Meta Pixel）— 暫置中
+- [ ] MBTI 結果頁新增「前往塔羅占卜」跨站連結
+- [ ] 塔羅歷史記錄頁顯示對應 MBTI 人格類型
+
+### 🟢 低優先（日後優化）
+- [ ] SSO 白名單改為後端動態設定（目前 hardcode 在 auth.js）
+- [ ] 新增第三個網站時只需加入白名單即可
+- [ ] 考慮加入 refresh token 機制（目前 JWT 固定 7 天）
