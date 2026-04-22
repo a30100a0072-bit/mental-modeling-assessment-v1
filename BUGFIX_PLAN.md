@@ -312,7 +312,11 @@ wrangler deploy
 - [x] ✅ MBTI 結果頁新增「前往塔羅占卜」跨站連結（2026-04-22）
   - `assessment.html` 加入紫色「🌟 前往塔羅占卜」按鈕
   - `script.js` `goToTalo()`：已登入自動帶 JWT + email 直接跳入；未登入導向首頁
-- [ ] 塔羅歷史記錄頁顯示對應 MBTI 人格類型
+- [x] ✅ 塔羅歷史記錄頁顯示對應 MBTI 人格類型（2026-04-22）
+  - `talo/web/script.js` 新增 `fetchMBTIType()`，呼叫 `mbti.chiyigo.com/api/v1/user/history`
+  - 取最新一筆 `primary_type`，以 `sessionStorage` 快取避免重複請求
+  - 顯示於歷史記錄儀表板「MBTI 靈魂印記」欄位；未登入或無資料則靜默隱藏
+  - talo-web.pages.dev 已重新部署
 
 ### 🟢 低優先（日後優化）
 - [ ] SSO 白名單改為後端動態設定（目前 hardcode 在 auth.js）
