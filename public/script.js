@@ -543,6 +543,17 @@ function restartQuiz() {
 
 function copyShareLink() { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?s=${encodeScores(appScores)}`).then(()=>alert("防篡改連結已複製")); }
 
+function goToTalo() {
+    const TALO_URL = 'https://talo-web.pages.dev';
+    const token = localStorage.getItem('mbti_jwt_token');
+    const email = localStorage.getItem('mbti_email') || '';
+    if (token) {
+        window.open(`${TALO_URL}?mbti_token=${encodeURIComponent(token)}&mbti_email=${encodeURIComponent(email)}`, '_blank');
+    } else {
+        window.open(TALO_URL, '_blank');
+    }
+}
+
 function generateImageForMobile() {
     window.scrollTo(0,0);
     const target = document.getElementById('capture-area'); 
