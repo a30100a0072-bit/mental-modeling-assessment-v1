@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
@@ -98,6 +99,15 @@
 
                 <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
                     <a href="#" id="forgot-link" onclick="switchTab('forgot')" style="color: #94a3b8; font-size: 0.85rem; text-decoration: underline;">忘記密碼？</a>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                    <div class="cf-turnstile"
+                         data-sitekey="1x00000000000000000000AA"
+                         data-theme="dark"
+                         data-callback="onTurnstileSuccess"
+                         data-expired-callback="onTurnstileExpired"
+                         data-error-callback="onTurnstileError"></div>
                 </div>
 
                 <button class="btn-primary" id="submit-btn" onclick="handleAuth()">啟動神經連結</button>

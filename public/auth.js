@@ -1,6 +1,14 @@
 let currentMode = 'login';
-// [修正]: 統一使用相對路徑，由 Cloudflare 代理，避免跨域或網域寫死問題
 const API_BASE = "/api/v1";
+
+let turnstileToken = '';
+function onTurnstileSuccess(token) { turnstileToken = token; }
+function onTurnstileExpired() { turnstileToken = ''; }
+function onTurnstileError() { turnstileToken = ''; }
+function resetTurnstile() {
+    turnstileToken = '';
+    if (window.turnstile) turnstile.reset();
+}
 
 // 檢查是否已經登入，若已登入則直接跳轉儀表板
 window.onload = () => {
@@ -64,16 +72,24 @@ async function sendVerificationCode() {
         msgBox.innerText = "⚠️ 請先輸入有效的 Email 才能寄送驗證碼。";
         return;
     }
+    if (!turnstileToken) {
+        msgBox.style.color = "#ef4444";
+        msgBox.innerText = "⚠️ 請等待人機驗證完成後再試。";
+        return;
+    }
 
     btnSendCode.disabled = true;
     btnSendCode.innerText = "發送中...";
     msgBox.innerText = "";
 
+    const tsToken = turnstileToken;
+    resetTurnstile();
+
     try {
         const response = await fetch(`${API_BASE}/auth/send-verification`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ email, turnstileToken: tsToken })
         });
 
         const data = await response.json();
@@ -126,6 +142,11 @@ async function handleAuth() {
         msgBox.innerText = "⚠️ 請輸入信箱收到的 6 位數驗證碼。";
         return;
     }
+    if (!turnstileToken) {
+        msgBox.style.color = "#ef4444";
+        msgBox.innerText = "⚠️ 請等待人機驗證完成後再試。";
+        return;
+    }
 
     let guestReportId = null;
     if (currentMode === 'register') {
@@ -136,9 +157,12 @@ async function handleAuth() {
     btn.innerText = "處理中...";
     msgBox.innerText = "";
 
+    const tsToken = turnstileToken;
+    resetTurnstile();
+
     try {
         let endpoint = '';
-        let payload = { email };
+        let payload = { email, turnstileToken: tsToken };
 
         // 依照不同模式決定打哪支 API 與帶什麼資料
         if (currentMode === 'login') {
@@ -194,7 +218,8 @@ async function handleAuth() {
         msgBox.style.color = "#ef4444";
         msgBox.innerText = `❌ ${error.message}`;
         btn.disabled = false;
-        
+        resetTurnstile();
+
         if (currentMode === 'login') btn.innerText = '啟動神經連結 (登入)';
         else if (currentMode === 'register') btn.innerText = '註冊並建立檔案';
         else btn.innerText = '發送重設密碼連結';

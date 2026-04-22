@@ -6,6 +6,7 @@ export interface Env {
   API_PROBE_KEY: string;
   RESEND_API_KEY: string;
   SOFTMAX_TAU: string;
+  TURNSTILE_SECRET_KEY: string;
   MM_CACHE_KV: KVNamespace;
   MM_DB_D1: D1Database;
   MM_EVENT_QUEUE: Queue;
@@ -24,6 +25,21 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, X-HMAC-Signature, Authorization",
 };
+
+async function verifyTurnstile(token: string, secret: string, ip: string): Promise<boolean> {
+  if (!token || !secret) return false;
+  try {
+    const form = new FormData();
+    form.append('secret', secret);
+    form.append('response', token);
+    form.append('remoteip', ip);
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form });
+    const data = await res.json<{ success: boolean }>();
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -124,8 +140,13 @@ async function verifyJWT(token: string, secret: string): Promise<string | null> 
 
 async function handleSendVerification(request: Request, env: Env) {
     try {
-        const { email } = await request.json<{email: string}>();
+        const { email, turnstileToken } = await request.json<{email: string, turnstileToken?: string}>();
         if (!email || !email.includes('@')) throw new Error("無效的 Email 格式");
+
+        const clientIp = request.headers.get("CF-Connecting-IP") || "unknown";
+        if (!await verifyTurnstile(turnstileToken || '', env.TURNSTILE_SECRET_KEY, clientIp)) {
+            return new Response(JSON.stringify({ error: "人機驗證失敗，請重試" }), { status: 400, headers: corsHeaders });
+        }
 
         const existing = await env.MM_DB_D1.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
         if (existing) return new Response(JSON.stringify({ error: "此信箱已經註冊過了" }), { status: 409, headers: corsHeaders });
@@ -151,8 +172,13 @@ async function handleSendVerification(request: Request, env: Env) {
 
 async function handleRegister(request: Request, env: Env) {
   try {
-    const { email, password, verificationCode, guestReportId } = await request.json<{email: string, password: string, verificationCode: string, guestReportId?: string}>();
+    const { email, password, verificationCode, guestReportId, turnstileToken } = await request.json<{email: string, password: string, verificationCode: string, guestReportId?: string, turnstileToken?: string}>();
     if (!email || !password || password.length < 8 || !verificationCode) throw new Error("無效的輸入資料");
+
+    const clientIp = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (!await verifyTurnstile(turnstileToken || '', env.TURNSTILE_SECRET_KEY, clientIp)) {
+        return new Response(JSON.stringify({ error: "人機驗證失敗，請重試" }), { status: 400, headers: corsHeaders });
+    }
 
     // 提前檢查 HMAC_SECRET，避免 DB 寫入後才崩潰導致驗證碼被消耗
     if (!env.HMAC_SECRET) return new Response(JSON.stringify({ error: "伺服器設定錯誤，請聯繫管理員" }), { status: 500, headers: corsHeaders });
@@ -193,9 +219,14 @@ async function handleRegister(request: Request, env: Env) {
 
 async function handleLogin(request: Request, env: Env) {
   try {
-    const { email, password } = await request.json<{email: string, password: string}>();
+    const { email, password, turnstileToken } = await request.json<{email: string, password: string, turnstileToken?: string}>();
     if (!email || !password) return new Response(JSON.stringify({ error: "帳號或密碼錯誤" }), { status: 401, headers: corsHeaders });
     if (!env.HMAC_SECRET) return new Response(JSON.stringify({ error: "伺服器設定錯誤，請聯繫管理員" }), { status: 500, headers: corsHeaders });
+
+    const clientIp = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (!await verifyTurnstile(turnstileToken || '', env.TURNSTILE_SECRET_KEY, clientIp)) {
+        return new Response(JSON.stringify({ error: "人機驗證失敗，請重試" }), { status: 400, headers: corsHeaders });
+    }
 
     let user: Record<string, unknown> | null;
     try {
@@ -220,8 +251,13 @@ async function handleLogin(request: Request, env: Env) {
 
 async function handleForgotPassword(request: Request, env: Env) {
     try {
-        const { email } = await request.json<{email: string}>();
+        const { email, turnstileToken } = await request.json<{email: string, turnstileToken?: string}>();
         if (!email) throw new Error("請輸入有效的 Email");
+
+        const clientIp = request.headers.get("CF-Connecting-IP") || "unknown";
+        if (!await verifyTurnstile(turnstileToken || '', env.TURNSTILE_SECRET_KEY, clientIp)) {
+            return new Response(JSON.stringify({ error: "人機驗證失敗，請重試" }), { status: 400, headers: corsHeaders });
+        }
 
         const existing = await env.MM_DB_D1.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
         
