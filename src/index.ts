@@ -144,49 +144,16 @@ async function verifyJWT(token: string, secret: string): Promise<{ sub: string; 
   } catch (e) { return null; }
 }
 
-// Verify ES256 JWT issued by chiyigo.com IAM via JWKS
+// Verify token by calling chiyigo.com /api/auth/me (server-to-server, no CORS needed)
 async function verifyChiyigoJWT(token: string): Promise<{ sub: string; email: string; role: string } | null> {
   try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const [headerB64, payloadB64, sigB64] = parts;
-
-    const b64decode = (s: string) => {
-      let b = s.replace(/-/g, '+').replace(/_/g, '/');
-      const pad = b.length % 4; if (pad) b += '='.repeat(4 - pad);
-      return atob(b);
-    };
-
-    const headerJson = JSON.parse(b64decode(headerB64));
-
-    // Fetch JWKS with 1-hour Cloudflare cache
-    const jwksRes = await fetch('https://chiyigo.com/.well-known/jwks.json', {
-      cf: { cacheTtl: 3600, cacheEverything: true } as RequestInitCfProperties
-    } as RequestInit);
-    if (!jwksRes.ok) return null;
-    const jwks = await jwksRes.json<{ keys: JsonWebKey[] }>();
-
-    const jwk = jwks.keys.find((k: any) => k.kid === headerJson.kid && k.alg === 'ES256');
-    if (!jwk) return null;
-
-    const cryptoKey = await crypto.subtle.importKey(
-      'jwk', jwk,
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      false, ['verify']
-    );
-
-    const sigBytes = Uint8Array.from(b64decode(sigB64), (c: string) => c.charCodeAt(0));
-    const signingInput = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-    const valid = await crypto.subtle.verify(
-      { name: 'ECDSA', hash: 'SHA-256' },
-      cryptoKey, sigBytes, signingInput
-    );
-    if (!valid) return null;
-
-    const payload = JSON.parse(b64decode(payloadB64));
-    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) return null;
-
-    return { sub: String(payload.sub), email: payload.email || '', role: payload.role || 'user' };
+    const res = await fetch('https://chiyigo.com/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return null;
+    const data = await res.json<{ user_id: number; email: string; role: string; status: string }>();
+    if (!data.user_id) return null;
+    return { sub: String(data.user_id), email: data.email || '', role: data.role || 'player' };
   } catch { return null; }
 }
 
