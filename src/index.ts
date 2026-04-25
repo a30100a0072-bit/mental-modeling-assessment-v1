@@ -144,6 +144,52 @@ async function verifyJWT(token: string, secret: string): Promise<{ sub: string; 
   } catch (e) { return null; }
 }
 
+// Verify ES256 JWT issued by chiyigo.com IAM via JWKS
+async function verifyChiyigoJWT(token: string): Promise<{ sub: string; email: string; role: string } | null> {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const [headerB64, payloadB64, sigB64] = parts;
+
+    const b64decode = (s: string) => {
+      let b = s.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = b.length % 4; if (pad) b += '='.repeat(4 - pad);
+      return atob(b);
+    };
+
+    const headerJson = JSON.parse(b64decode(headerB64));
+
+    // Fetch JWKS with 1-hour Cloudflare cache
+    const jwksRes = await fetch('https://chiyigo.com/.well-known/jwks.json', {
+      cf: { cacheTtl: 3600, cacheEverything: true } as RequestInitCfProperties
+    } as RequestInit);
+    if (!jwksRes.ok) return null;
+    const jwks = await jwksRes.json<{ keys: JsonWebKey[] }>();
+
+    const jwk = jwks.keys.find((k: any) => k.kid === headerJson.kid && k.alg === 'ES256');
+    if (!jwk) return null;
+
+    const cryptoKey = await crypto.subtle.importKey(
+      'jwk', jwk,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false, ['verify']
+    );
+
+    const sigBytes = Uint8Array.from(b64decode(sigB64), (c: string) => c.charCodeAt(0));
+    const signingInput = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
+    const valid = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      cryptoKey, sigBytes, signingInput
+    );
+    if (!valid) return null;
+
+    const payload = JSON.parse(b64decode(payloadB64));
+    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) return null;
+
+    return { sub: String(payload.sub), email: payload.email || '', role: payload.role || 'user' };
+  } catch { return null; }
+}
+
 async function handleSendVerification(request: Request, env: Env) {
     try {
         const { email, turnstileToken } = await request.json<{email: string, turnstileToken?: string}>();
@@ -322,20 +368,14 @@ async function handleGetHistory(request: Request, env: Env) {
         if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
 
         const token = authHeader.split(" ")[1];
-        const jwtResult = await verifyJWT(token, env.HMAC_SECRET);
+        const jwtResult = await verifyChiyigoJWT(token);
         if (!jwtResult) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
 
         const historyReq = await env.MM_DB_D1.prepare(
             "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC"
         ).bind(jwtResult.sub).all();
 
-        const responseHeaders: Record<string, string> = { ...corsHeaders, "Content-Type": "application/json" };
-        // 剩餘有效期 < 2 天時自動簽發新 token，前端無感續期
-        if (jwtResult.exp - Math.floor(Date.now() / 1000) < 172800) {
-            responseHeaders["X-Token-Refresh"] = await generateJWT(jwtResult.sub, env.HMAC_SECRET);
-        }
-
-        return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: responseHeaders });
+        return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (error: any) {
         return new Response(JSON.stringify({ error: "DB Error: " + error.message }), { status: 500, headers: corsHeaders });
     }
@@ -346,11 +386,10 @@ async function handleDeleteAccount(request: Request, env: Env) {
     if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
 
     const token = authHeader.split(" ")[1];
-    const jwtResult = await verifyJWT(token, env.HMAC_SECRET);
+    const jwtResult = await verifyChiyigoJWT(token);
     if (!jwtResult) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
 
     const batchStmts = [
-        env.MM_DB_D1.prepare("DELETE FROM users WHERE id = ?").bind(jwtResult.sub),
         env.MM_DB_D1.prepare("DELETE FROM assessments WHERE user_id = ?").bind(jwtResult.sub)
     ];
 
@@ -374,7 +413,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     let finalUserId: string | null = null;
     const authHeader = request.headers.get("Authorization");
     if (authHeader && authHeader.startsWith("Bearer ")) {
-        const jwtResult = await verifyJWT(authHeader.split(" ")[1], env.HMAC_SECRET);
+        const jwtResult = await verifyChiyigoJWT(authHeader.split(" ")[1]);
         if (jwtResult) finalUserId = jwtResult.sub;
     }
 

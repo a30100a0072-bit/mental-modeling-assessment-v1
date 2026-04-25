@@ -69,8 +69,8 @@ window.injectGodMode = function(mode) {
 };
 
 function initApp() {
-    const token = localStorage.getItem('mbti_jwt_token');
-    
+    const token = sessionStorage.getItem('chiyigo_access_token');
+
     // 權限管控 (Login-wall) - B, C, D, E, F 皆為進階模組，需要登入
     if (!token && ['B', 'C', 'D', 'E', 'F'].includes(currentVersion)) {
         const wallModal = document.getElementById('login-wall-modal');
@@ -545,10 +545,9 @@ function copyShareLink() { navigator.clipboard.writeText(`${window.location.orig
 
 function goToTalo() {
     const TALO_URL = 'https://talo-web.pages.dev';
-    const token = localStorage.getItem('mbti_jwt_token');
-    const email = localStorage.getItem('mbti_email') || '';
+    const token = sessionStorage.getItem('chiyigo_access_token');
     if (token) {
-        window.open(`${TALO_URL}?mbti_token=${encodeURIComponent(token)}&mbti_email=${encodeURIComponent(email)}`, '_blank');
+        window.open(`${TALO_URL}?chiyigo_token=${encodeURIComponent(token)}`, '_blank');
     } else {
         window.open(TALO_URL, '_blank');
     }

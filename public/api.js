@@ -29,7 +29,7 @@ async function proceedToResultAPI() {
     }
 
     try {
-        const token = localStorage.getItem('mbti_jwt_token');
+        const token = sessionStorage.getItem('chiyigo_access_token');
         
         let guestId = localStorage.getItem('mbti_guest_id');
         if (!guestId) {

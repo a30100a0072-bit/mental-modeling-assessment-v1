@@ -1,268 +1,95 @@
-let currentMode = 'login';
-const API_BASE = "/api/v1";
+// PKCE OAuth 2.0 client — chiyigo.com IAM
+const CHIYIGO_AUTHORIZE = 'https://chiyigo.com/api/auth/oauth/authorize'
+const CHIYIGO_TOKEN     = 'https://chiyigo.com/api/auth/oauth/token'
+const REDIRECT_URI      = 'https://mbti.chiyigo.com/login.html'
 
-let ALLOWED_REDIRECT_ORIGINS = [];
-
-async function loadAllowedOrigins() {
-    const cached = sessionStorage.getItem('sso_allowed_origins');
-    if (cached) { ALLOWED_REDIRECT_ORIGINS = JSON.parse(cached); return; }
-    try {
-        const res = await fetch(`${API_BASE}/auth/allowed-redirects`);
-        if (res.ok) {
-            const data = await res.json();
-            ALLOWED_REDIRECT_ORIGINS = data.origins || [];
-            sessionStorage.setItem('sso_allowed_origins', JSON.stringify(ALLOWED_REDIRECT_ORIGINS));
-        }
-    } catch {}
+function b64url(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
-function isAllowedRedirect(url) {
-    try {
-        const origin = new URL(url).origin;
-        return ALLOWED_REDIRECT_ORIGINS.includes(origin);
-    } catch { return false; }
+async function startLogin() {
+  const verifier  = b64url(crypto.getRandomValues(new Uint8Array(32)))
+  const hash      = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
+  const challenge = b64url(hash)
+  const state     = b64url(crypto.getRandomValues(new Uint8Array(16)))
+
+  sessionStorage.setItem('pkce_verifier', verifier)
+  sessionStorage.setItem('pkce_state', state)
+
+  const url = new URL(CHIYIGO_AUTHORIZE)
+  url.searchParams.set('response_type', 'code')
+  url.searchParams.set('redirect_uri', REDIRECT_URI)
+  url.searchParams.set('code_challenge', challenge)
+  url.searchParams.set('code_challenge_method', 'S256')
+  url.searchParams.set('state', state)
+
+  window.location.href = url.toString()
 }
 
-let turnstileToken = '';
-function onTurnstileSuccess(token) { turnstileToken = token; }
-function onTurnstileExpired() { turnstileToken = ''; }
-function onTurnstileError() { turnstileToken = ''; }
-function resetTurnstile() {
-    turnstileToken = '';
-    if (window.turnstile) turnstile.reset();
+function setStatus(msg, isError) {
+  const el = document.getElementById('auth-status')
+  if (!el) return
+  el.textContent = msg
+  el.style.color = isError ? '#ef4444' : '#94a3b8'
 }
 
-// 檢查是否已經登入
-window.onload = async () => {
-    await loadAllowedOrigins();
-    const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
-    const existingToken = localStorage.getItem('mbti_jwt_token');
-    if (existingToken) {
-        // 若來自白名單跨站跳轉，直接帶 token 返回，不需重新登入
-        if (redirectUrl && isAllowedRedirect(redirectUrl)) {
-            const existingEmail = localStorage.getItem('mbti_email') || '';
-            window.location.href = `${redirectUrl}?mbti_token=${encodeURIComponent(existingToken)}&mbti_email=${encodeURIComponent(existingEmail)}`;
-            return;
-        }
-        window.location.href = 'dashboard.html';
-        return;
-    }
-    switchTab('login');
-};
-
-function switchTab(mode) {
-    currentMode = mode;
-    const msgBox = document.getElementById('auth-msg');
-    msgBox.innerText = '';
-
-    const tabLogin = document.getElementById('tab-login');
-    const tabRegister = document.getElementById('tab-register');
-    const tabsContainer = document.getElementById('auth-tabs-container');
-    const btnSendCode = document.getElementById('send-code-btn');
-    const grpVerify = document.getElementById('verify-group');
-    const grpPassword = document.getElementById('password-group');
-    const linkForgot = document.getElementById('forgot-link');
-    const btnSubmit = document.getElementById('submit-btn');
-    const backToLogin = document.getElementById('back-to-login');
-
-    // 重置全部 UI
-    tabLogin.classList.remove('active');
-    tabRegister.classList.remove('active');
-    tabsContainer.style.display = 'flex';
-    btnSendCode.style.display = 'none';
-    grpVerify.style.display = 'none';
-    grpPassword.style.display = 'block';
-    linkForgot.style.display = 'none';
-    backToLogin.style.display = 'none';
-
-    if (mode === 'login') {
-        tabLogin.classList.add('active');
-        linkForgot.style.display = 'inline-block';
-        btnSubmit.innerText = '啟動神經連結 (登入)';
-    } else if (mode === 'register') {
-        tabRegister.classList.add('active');
-        btnSendCode.style.display = 'block';
-        grpVerify.style.display = 'block'; // 顯示驗證碼輸入框
-        btnSubmit.innerText = '註冊並建立檔案';
-    } else if (mode === 'forgot') {
-        tabsContainer.style.display = 'none'; // 隱藏頁籤
-        grpPassword.style.display = 'none'; // 隱藏密碼框
-        btnSubmit.innerText = '發送重設密碼連結';
-        backToLogin.style.display = 'block';
-    }
+function showLoginBtn() {
+  const btn     = document.getElementById('login-btn')
+  const spinner = document.getElementById('auth-spinner')
+  if (btn) btn.style.display = 'block'
+  if (spinner) spinner.style.display = 'none'
 }
 
-// 發送註冊驗證碼邏輯
-async function sendVerificationCode() {
-    const email = document.getElementById('email').value;
-    const msgBox = document.getElementById('auth-msg');
-    const btnSendCode = document.getElementById('send-code-btn');
+window.addEventListener('DOMContentLoaded', async () => {
+  if (sessionStorage.getItem('chiyigo_access_token')) {
+    window.location.href = 'dashboard.html'
+    return
+  }
 
-    if (!email || !email.includes('@')) {
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = "⚠️ 請先輸入有效的 Email 才能寄送驗證碼。";
-        return;
-    }
-    if (!turnstileToken) {
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = "⚠️ 請等待人機驗證完成後再試。";
-        return;
-    }
+  const params = new URLSearchParams(window.location.search)
+  const code   = params.get('code')
+  const state  = params.get('state')
 
-    btnSendCode.disabled = true;
-    btnSendCode.innerText = "發送中...";
-    msgBox.innerText = "";
+  if (!code) {
+    showLoginBtn()
+    return
+  }
 
-    const tsToken = turnstileToken;
-    resetTurnstile();
+  setStatus('正在完成登入...')
 
-    try {
-        const response = await fetch(`${API_BASE}/auth/send-verification`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, turnstileToken: tsToken })
-        });
+  const savedState = sessionStorage.getItem('pkce_state')
+  const verifier   = sessionStorage.getItem('pkce_verifier')
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "發送失敗");
+  if (!verifier || state !== savedState) {
+    setStatus('狀態驗證失敗，請重試。', true)
+    showLoginBtn()
+    return
+  }
 
-        msgBox.style.color = "#10b981";
-        msgBox.innerText = "✅ 驗證碼已發送至信箱，15分鐘內有效。";
-        
-        // 按鈕倒數冷卻
-        let countdown = 60;
-        const timer = setInterval(() => {
-            countdown--;
-            btnSendCode.innerText = `${countdown}s 後重試`;
-            if (countdown <= 0) {
-                clearInterval(timer);
-                btnSendCode.disabled = false;
-                btnSendCode.innerText = "取得驗證碼";
-            }
-        }, 1000);
+  sessionStorage.removeItem('pkce_state')
+  sessionStorage.removeItem('pkce_verifier')
 
-    } catch (error) {
-        btnSendCode.disabled = false;
-        btnSendCode.innerText = "取得驗證碼";
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = `❌ ${error.message}`;
-    }
-}
+  try {
+    const res = await fetch(CHIYIGO_TOKEN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, code_verifier: verifier, redirect_uri: REDIRECT_URI })
+    })
 
-// 統整登入、註冊、忘記密碼的三合一邏輯
-async function handleAuth() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password') ? document.getElementById('password').value : '';
-    const verificationCode = document.getElementById('verificationCode') ? document.getElementById('verificationCode').value : '';
-    const msgBox = document.getElementById('auth-msg');
-    const btn = document.getElementById('submit-btn');
-
-    // 基礎防呆
-    if (!email) {
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = "⚠️ 格式錯誤：Email 為必填。";
-        return;
-    }
-    if (currentMode !== 'forgot' && password.length < 8) {
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = "⚠️ 格式錯誤：密碼至少 8 碼。";
-        return;
-    }
-    if (currentMode === 'register' && !verificationCode) {
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = "⚠️ 請輸入信箱收到的 6 位數驗證碼。";
-        return;
-    }
-    if (!turnstileToken) {
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = "⚠️ 請等待人機驗證完成後再試。";
-        return;
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || `HTTP ${res.status}`)
     }
 
-    let guestReportId = null;
-    if (currentMode === 'register') {
-        guestReportId = localStorage.getItem('mbti_guest_report_id') || null;
-    }
+    const data = await res.json()
+    sessionStorage.setItem('chiyigo_access_token', data.access_token)
+    if (data.refresh_token) localStorage.setItem('chiyigo_refresh_token', data.refresh_token)
 
-    btn.disabled = true;
-    btn.innerText = "處理中...";
-    msgBox.innerText = "";
-
-    const tsToken = turnstileToken;
-    resetTurnstile();
-
-    try {
-        let endpoint = '';
-        let payload = { email, turnstileToken: tsToken };
-
-        // 依照不同模式決定打哪支 API 與帶什麼資料
-        if (currentMode === 'login') {
-            endpoint = '/auth/login';
-            payload.password = password;
-        } else if (currentMode === 'register') {
-            endpoint = '/auth/register';
-            payload.password = password;
-            payload.verificationCode = verificationCode;
-            payload.guestReportId = guestReportId;
-        } else if (currentMode === 'forgot') {
-            endpoint = '/auth/forgot-password';
-        }
-
-        const response = await fetch(`${API_BASE}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || "連線異常");
-        }
-
-        // 忘記密碼特別處理 (不跳轉，只顯示成功)
-        if (currentMode === 'forgot') {
-            msgBox.style.color = "#10b981";
-            msgBox.innerText = "✅ 若信箱存在，密碼重設連結已發送。";
-            btn.disabled = false;
-            btn.innerText = "發送重設密碼連結";
-            return;
-        }
-
-        // 登入/註冊成功，儲存 JWT Token
-        localStorage.setItem('mbti_jwt_token', data.token);
-        localStorage.setItem('mbti_user_id', data.userId);
-        localStorage.setItem('mbti_email', email);
-
-        // [修正] 清除遊客所有快取，防止狀態殘留與污染
-        localStorage.removeItem('mbti_guest_report_id');
-        localStorage.removeItem('mbti_guest_id');
-
-        msgBox.style.color = "#6ee7b7";
-        msgBox.innerText = "✅ 驗證成功，正在載入核心模組...";
-
-        // SSO 跳轉：若來自白名單網站，帶 token 跳回去
-        const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
-        if (redirectUrl && isAllowedRedirect(redirectUrl)) {
-            setTimeout(() => {
-                window.location.href = `${redirectUrl}?mbti_token=${encodeURIComponent(data.token)}&mbti_email=${encodeURIComponent(email)}`;
-            }, 800);
-            return;
-        }
-
-        // 預設：帶往儀表板
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1000);
-
-    } catch (error) {
-        msgBox.style.color = "#ef4444";
-        msgBox.innerText = `❌ ${error.message}`;
-        btn.disabled = false;
-        resetTurnstile();
-
-        if (currentMode === 'login') btn.innerText = '啟動神經連結 (登入)';
-        else if (currentMode === 'register') btn.innerText = '註冊並建立檔案';
-        else btn.innerText = '發送重設密碼連結';
-    }
-}
+    window.history.replaceState({}, '', 'login.html')
+    window.location.href = 'dashboard.html'
+  } catch (err) {
+    setStatus('登入失敗：' + err.message, true)
+    showLoginBtn()
+  }
+})

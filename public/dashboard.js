@@ -3,7 +3,7 @@ Chart.register(ChartDataLabels);
 const API_BASE = "/api/v1";
 
 window.onload = () => {
-    const token = localStorage.getItem('mbti_jwt_token');
+    const token = sessionStorage.getItem('chiyigo_access_token');
     if (!token) {
         alert("未偵測到神經連結授權，請重新登入。");
         window.location.href = 'login.html';
@@ -21,9 +21,6 @@ async function fetchHistory(token) {
 
         if (response.status === 401) throw new Error("授權過期，請重新登入");
         if (!response.ok) throw new Error("無法連接歷史資料庫");
-
-        const refreshToken = response.headers.get('X-Token-Refresh');
-        if (refreshToken) localStorage.setItem('mbti_jwt_token', refreshToken);
 
         const result = await response.json();
         renderDashboard(result.data);
@@ -164,10 +161,10 @@ function renderAggregatedCharts(records, total) {
 }
 
 function handleLogout() {
-    localStorage.removeItem('mbti_jwt_token');
-    localStorage.removeItem('mbti_user_id');
+    sessionStorage.removeItem('chiyigo_access_token');
+    localStorage.removeItem('chiyigo_refresh_token');
     localStorage.removeItem('mbti_v1_final');
-    localStorage.removeItem('mbti_guest_id'); 
+    localStorage.removeItem('mbti_guest_id');
     window.location.href = 'index.html';
 }
 
@@ -175,7 +172,7 @@ async function handleDeleteAccount() {
     const confirmDelete = confirm("⚠️ 警告：這將永久刪除您的帳號與所有測驗歷史。此操作不可逆。確定執行嗎？");
     if (!confirmDelete) return;
 
-    const token = localStorage.getItem('mbti_jwt_token');
+    const token = sessionStorage.getItem('chiyigo_access_token');
     try {
         const response = await fetch(`${API_BASE}/user/account`, {
             method: 'DELETE',

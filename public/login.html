@@ -22,7 +22,6 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
@@ -73,49 +72,14 @@
     <div class="auth-container">
         <h1 class="main-title" style="cursor:pointer;" onclick="window.location.href='index.html'">MBTI 認知幾何模型</h1>
         <div class="auth-box">
-            <div class="auth-tabs" id="auth-tabs-container">
-                <div class="tab active" id="tab-login" onclick="switchTab('login')">系統登入</div>
-                <div class="tab" id="tab-register" onclick="switchTab('register')">建立大腦檔案</div>
-            </div>
-
-            <div id="form-area">
-                <div class="input-group">
-                    <label>電子郵件 (Email)</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="email" id="email" placeholder="agent@example.com" style="flex: 1;">
-                        <button id="send-code-btn" class="btn-secondary" style="display: none; padding: 0 15px; width: auto; font-size:0.9rem;" onclick="sendVerificationCode()">取得驗證碼</button>
-                    </div>
+            <div style="text-align:center; padding: 30px 20px;">
+                <div id="auth-spinner" style="margin-bottom:18px;">
+                    <div class="spinner" style="margin:0 auto 12px;"></div>
                 </div>
-                
-                <div class="input-group" id="verify-group" style="display: none;">
-                    <label>6 位數驗證碼</label>
-                    <input type="text" id="verificationCode" placeholder="請至信箱收取驗證碼" maxlength="6" style="letter-spacing: 2px;">
-                </div>
-
-                <div class="input-group" id="password-group">
-                    <label>存取金鑰 (Password)</label>
-                    <input type="password" id="password" placeholder="至少 8 碼">
-                </div>
-
-                <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
-                    <a href="#" id="forgot-link" onclick="switchTab('forgot')" style="color: #94a3b8; font-size: 0.85rem; text-decoration: underline;">忘記密碼？</a>
-                </div>
-
-                <div style="display: flex; justify-content: center; margin-bottom: 15px;">
-                    <div class="cf-turnstile"
-                         data-sitekey="0x4AAAAAADBMJ38IVJxnemhg"
-                         data-theme="dark"
-                         data-callback="onTurnstileSuccess"
-                         data-expired-callback="onTurnstileExpired"
-                         data-error-callback="onTurnstileError"></div>
-                </div>
-
-                <button class="btn-primary" id="submit-btn" onclick="handleAuth()">啟動神經連結</button>
-                <div class="auth-msg" id="auth-msg"></div>
-
-                <div style="text-align: center; margin-top: 15px; display: none;" id="back-to-login">
-                    <a href="#" onclick="switchTab('login')" style="color: #38bdf8; font-size: 0.9rem;">🔙 返回登入</a>
-                </div>
+                <p id="auth-status" style="color:#94a3b8; margin-bottom:20px; min-height:1.4em;">初始化中...</p>
+                <button id="login-btn" class="btn-primary" style="display:none;" onclick="startLogin()">
+                    使用 Chiyigo.com 帳號登入
+                </button>
             </div>
         </div>
         <p style="color:#64748b; font-size: 0.8rem; margin-top: 20px;">V1 Clinical Geometry Model</p>
@@ -127,12 +91,6 @@
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('sidebar-overlay').classList.toggle('open');
         }
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('mbti_jwt_token')) {
-                // 若已登入，強制導向儀表板，避免重複登入
-                window.location.href = 'dashboard.html';
-            }
-        });
     </script>
 </body>
 </html>
