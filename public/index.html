@@ -2,6 +2,22 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
+    <!-- ── 跨站 SSO：接收來自 chiyigo.com 的 JWT (mbti_token / mbti_email) ── -->
+    <script>
+    (function () {
+      try {
+        var p = new URLSearchParams(location.search);
+        var t = p.get('mbti_token');
+        if (!t) return;
+        var e = p.get('mbti_email');
+        sessionStorage.setItem('chiyigo_access_token', t);
+        if (e) sessionStorage.setItem('chiyigo_email', e);
+        p.delete('mbti_token'); p.delete('mbti_email');
+        var qs = p.toString();
+        history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+      } catch (_) {}
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="title" content="MBTI 認知幾何與高壓解析 V1版">
     <meta name="description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
