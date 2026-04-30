@@ -166,3 +166,7 @@ dist
 !.env.example
 .wrangler/
 BUGFIX_PLAN.md
+
+# Per-machine local settings — should not be shared
+.claude/settings.local.json
+.vscode/settings.json
