@@ -29,13 +29,15 @@ migrations_dir = "migrations"
 queue = "mm-assessment-events"
 binding = "MM_EVENT_QUEUE"
 
-[[durable_objects.bindings]]
-name = "MM_SESSION_DO"
-class_name = "AssessmentSession"
-
+# AssessmentSession Durable Object 從未實際使用，v2 migration 將其刪除。
+# 保留 v1 tag 作為歷史紀錄，wrangler 會比對 tag 差異判斷需執行哪些 DO migration。
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["AssessmentSession"]
+
+[[migrations]]
+tag = "v2"
+deleted_classes = ["AssessmentSession"]
 
 [observability]
 enabled = true

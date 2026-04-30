@@ -9,14 +9,6 @@ export interface Env {
   MM_CACHE_KV: KVNamespace;
   MM_DB_D1: D1Database;
   MM_EVENT_QUEUE: Queue;
-  MM_SESSION_DO: DurableObjectNamespace;
-}
-
-export class AssessmentSession {
-  state: DurableObjectState;
-  env: Env;
-  constructor(state: DurableObjectState, env: Env) { this.state = state; this.env = env; }
-  async fetch(request: Request) { return new Response("Session Active"); }
 }
 
 // CORS 白名單：本站 + SSO 跨站合作站。SSO_ALLOWED_ORIGINS 由 wrangler.toml 提供，
@@ -157,6 +149,21 @@ async function handleDeleteAccount(request: Request, env: Env, corsHeaders: Reco
 // 訪客作答時 assessments.user_id 為 NULL、guest_id 為瀏覽器產生的隨機字串。
 // 註冊/登入完成後呼叫此 endpoint，把同一瀏覽器留下的訪客紀錄綁回 SSO sub。
 // 只更新 user_id IS NULL 的列，避免別的使用者誤領；guest_id 清空避免重複認領。
+// Rate limit：每個 SSO sub 每 60 秒最多 5 次合併呼叫。
+// 並非加密保護，只是降低惡意 / bug 的反覆認領噪音；KV 計數有竸爭視窗但此端點低頻寫入可接受。
+async function checkClaimRateLimit(sub: string, env: Env): Promise<boolean> {
+    const key = `rl:claim:${sub}`;
+    try {
+        const cur = parseInt((await env.MM_CACHE_KV.get(key)) || "0", 10);
+        if (cur >= 5) return false;
+        await env.MM_CACHE_KV.put(key, String(cur + 1), { expirationTtl: 60 });
+        return true;
+    } catch {
+        // KV 異常時放行，避免外部依賴抖動把正常登入流程擋掉
+        return true;
+    }
+}
+
 async function handleClaimGuestResults(request: Request, env: Env, corsHeaders: Record<string, string>) {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
@@ -164,6 +171,10 @@ async function handleClaimGuestResults(request: Request, env: Env, corsHeaders: 
     const token = authHeader.split(" ")[1];
     const jwtResult = await verifyChiyigoJWT(token, env);
     if (!jwtResult) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+
+    if (!(await checkClaimRateLimit(jwtResult.sub, env))) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+    }
 
     let body: { guestIds?: string[] };
     try { body = await request.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: corsHeaders }); }

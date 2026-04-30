@@ -10,7 +10,6 @@
 - **資料庫**：D1 (`mm_assessment_db`)，binding `MM_DB_D1`。
 - **快取**：KV (`MM_CACHE_KV`)，主要快取 SSO token introspection 結果（TTL 60s）。
 - **訊息佇列**：Queue (`MM_EVENT_QUEUE`)，目前只有空骨架。
-- **Durable Object**：`AssessmentSession`，目前是空殼，預留給未來 session-bound 邏輯。
 
 ## 2. 認證模型 — chiyigo.com SSO（OAuth 2.0 PKCE）
 
@@ -129,8 +128,10 @@
 
 ## 9. 已知技術債
 
-1. **`/user/claim-guest-results` 沒做 rate limit**：guestIds 上限 20，但同 token 短時間反覆呼叫沒擋。
-2. **`AssessmentSession` Durable Object** 是空殼，未實際使用。
+（目前無重大未處理項目。）
+
+`/user/claim-guest-results` 已加 KV-based rate limit：每 SSO sub 60 秒上限 5 次呼叫，
+KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
 
 ## 10. 部署
 
