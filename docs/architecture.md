@@ -126,18 +126,29 @@
 
 **Secrets（不在 repo）**：目前 Worker 已不需要 secret — 認證委託 chiyigo.com、無自家 JWT 簽名、無 Resend、無 Turnstile。
 
-## 9. 已知技術債
-
-（目前無重大未處理項目。）
+## 9. 已知技術債 / 待辦
 
 `/user/claim-guest-results` 已加 KV-based rate limit：每 SSO sub 60 秒上限 5 次呼叫，
 KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
 
+### 待辦
+
+1. **Pages 部署管道未自動化**：master push 不會自動更新 production，目前需手動
+   `npx wrangler pages deploy public`。需到 Cloudflare Dashboard → Pages →
+   Settings → Builds & deployments 接 GitHub 自動部署。⚠️ 注意：production custom
+   domain 可能掛在不同 project alias 上，要確認對應的 project 名稱。
+2. **沒有真實的測試**：boilerplate 已刪。要補測試需先升級
+   `@cloudflare/vitest-pool-workers` 或加 `wrangler.jsonc` shim
+   （新版 vitest pool workers 找的是 .jsonc 而非 .toml）。
+3. **`public/` 死檔掃描**：master 已刪但 production Pages 可能還掛著的舊檔
+   未做完整盤點。下次自動化部署接好後就會自然消失，不急。
+4. **端到端瀏覽器手測**（從上一輪留下）：訪客 A → 註冊 → dashboard 看到那筆，
+   驗 `/user/claim-guest-results` merge 端到端正確。
+
 ## 10. 部署
 
 ```bash
-npx wrangler deploy           # 部署 Worker
-npx wrangler d1 migrations apply mm_assessment_db --remote  # 套 D1 migration
+npx wrangler deploy                                           # Worker
+npx wrangler d1 migrations apply mm_assessment_db --remote    # D1 migration
+npx wrangler pages deploy public                              # Pages（目前手動）
 ```
-
-Pages 由 Cloudflare 自動從 git 部署（看 dashboard 設定）。
