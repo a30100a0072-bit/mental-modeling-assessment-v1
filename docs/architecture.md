@@ -90,14 +90,16 @@
 
 ## 7. 資料庫 Schema（D1 `mm_assessment_db`）
 
-> Migration 0001 建立的 `assessments` 表後續欄位被手動 ALTER 過、有 schema drift；migration `0007` 補上漂移文件（已對 prod 標記為已套用，未實際執行 ALTER 因為欄位已存在）。
+> Migration 0001 建立的 `assessments` 表經多次手動 ALTER 後 production schema 已乾淨；
+> `0007` 把漂移正式記錄、`0008` 用 CREATE NEW + INSERT SELECT + DROP + RENAME 重建為 canonical 版本，
+> 讓任何環境跑完所有 migration 後 schema 100% 一致。
 
 ### `assessments`（核心紀錄表）
 
 | 欄位 | 類型 | 備註 |
 |------|------|------|
 | id | TEXT PK | UUID |
-| user_id | TEXT | NULL 為訪客（**0001 寫 NOT NULL，prod 已被改為允許 NULL，未對齊**）|
+| user_id | TEXT | NULL 為訪客 |
 | guest_id | TEXT | 訪客識別，登入後 merge 時清成 NULL |
 | assessment_version | TEXT | 'A'–'F' |
 | raw_scores | TEXT (JSON) | 8 維原始分數陣列 |
@@ -127,10 +129,8 @@
 
 ## 9. 已知技術債
 
-1. **`assessments.user_id NOT NULL` 約束未對齊**：production 已允許 NULL，repo migration 仍寫 NOT NULL。SQLite 改 column constraint 需重建表，待維護窗處理。
-2. **舊欄位殘骸可能仍在 prod**：`raw_responses` / `calculated_scores` / `mbti_result` / `enneagram_result` 是 0001 建的死欄位，現在沒人寫。可寫 0008 用 `ALTER TABLE DROP COLUMN` 清掉（D1 較新版本支援）。
-3. **`/user/claim-guest-results` 沒做 rate limit**：guestIds 上限 20，但同 token 短時間反覆呼叫沒擋。
-4. **`AssessmentSession` Durable Object** 是空殼，未實際使用。
+1. **`/user/claim-guest-results` 沒做 rate limit**：guestIds 上限 20，但同 token 短時間反覆呼叫沒擋。
+2. **`AssessmentSession` Durable Object** 是空殼，未實際使用。
 
 ## 10. 部署
 
