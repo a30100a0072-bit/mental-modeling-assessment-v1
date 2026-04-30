@@ -2,14 +2,15 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <!-- ── 跨站 SSO：若帶 mbti_token 直接寫入並跳 dashboard，跳過 PKCE ── -->
+    <!-- ── 跨站 SSO：若帶 mbti_token（fragment 或 query）直接寫入並跳 dashboard，跳過 PKCE ── -->
     <script>
     (function () {
       try {
-        var p = new URLSearchParams(location.search);
-        var t = p.get('mbti_token');
+        var q = new URLSearchParams(location.search);
+        var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+        var t = h.get('mbti_token') || q.get('mbti_token');
         if (!t) return;
-        var e = p.get('mbti_email');
+        var e = h.get('mbti_email') || q.get('mbti_email');
         sessionStorage.setItem('chiyigo_access_token', t);
         if (e) sessionStorage.setItem('chiyigo_email', e);
         location.replace('dashboard.html');

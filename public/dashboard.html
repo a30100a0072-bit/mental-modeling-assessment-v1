@@ -2,19 +2,20 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <!-- ── 跨站 SSO：接收來自 chiyigo.com 的 JWT，須在 dashboard.js 之前 ── -->
+    <!-- ── 跨站 SSO：接收來自 chiyigo.com 的 JWT。優先讀 fragment（不進 Referer/log），相容舊 query ── -->
     <script>
     (function () {
       try {
-        var p = new URLSearchParams(location.search);
-        var t = p.get('mbti_token');
+        var q = new URLSearchParams(location.search);
+        var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+        var t = h.get('mbti_token') || q.get('mbti_token');
         if (!t) return;
-        var e = p.get('mbti_email');
+        var e = h.get('mbti_email') || q.get('mbti_email');
         sessionStorage.setItem('chiyigo_access_token', t);
         if (e) sessionStorage.setItem('chiyigo_email', e);
-        p.delete('mbti_token'); p.delete('mbti_email');
-        var qs = p.toString();
-        history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+        q.delete('mbti_token'); q.delete('mbti_email');
+        var qs = q.toString();
+        history.replaceState({}, '', location.pathname + (qs ? '?' + qs : ''));
       } catch (_) {}
     })();
     </script>
