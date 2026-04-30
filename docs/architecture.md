@@ -1,0 +1,142 @@
+# 認知幾何 V1 — 架構文件
+
+> 取代舊的「全局上下文交接文檔」。SSO 遷移後架構大改，舊文檔多處已失準。
+> 本文件以 master 分支實際程式碼為準，最後校正：2026-04-30。
+
+## 1. 技術棧與部署形態
+
+- **前端**：Cloudflare Pages，`public/` 目錄下原生 HTML/CSS/JS（無建置步驟）。
+- **後端**：Cloudflare Worker (`src/index.ts`)，路由 `mbti.chiyigo.com/api/*` 由 Worker 接管。
+- **資料庫**：D1 (`mm_assessment_db`)，binding `MM_DB_D1`。
+- **快取**：KV (`MM_CACHE_KV`)，主要快取 SSO token introspection 結果（TTL 60s）。
+- **訊息佇列**：Queue (`MM_EVENT_QUEUE`)，目前只有空骨架。
+- **Durable Object**：`AssessmentSession`，目前是空殼，預留給未來 session-bound 邏輯。
+
+## 2. 認證模型 — chiyigo.com SSO（OAuth 2.0 PKCE）
+
+**Worker 不簽 JWT、不存密碼、不寄信。** 所有身分判定全部委託給 `chiyigo.com` IAM。
+
+### 2.1 登入流程（`public/auth.js`）
+1. `login.html` → `startLogin()` 產 PKCE verifier/challenge/state，導向 `https://chiyigo.com/api/auth/oauth/authorize`。
+2. chiyigo.com 完成登入後 redirect 回 `https://mbti.chiyigo.com/login.html?code=...&state=...`。
+3. 前端用 verifier + code 換 token (`POST https://chiyigo.com/api/auth/oauth/token`)。
+4. `access_token` 存 `sessionStorage.chiyigo_access_token`，`refresh_token` 存 `localStorage`。
+5. 換到 token 後立刻呼叫 `/api/v1/user/claim-guest-results` 把訪客留下的紀錄綁回 SSO sub（best-effort）。
+
+### 2.2 Worker 端 token 驗證（`src/index.ts` 中的 `verifyChiyigoJWT`）
+- 命名是 JWT 但實際是 **token introspection**：對 `https://chiyigo.com/api/auth/me` 帶 Bearer token 反查身分。
+- 結果以 SHA-256(token) 為 key 快取在 KV，TTL 60 秒。**注意：token 在 chiyigo 端被撤銷後最多 60 秒才會被本 Worker 拒絕**。
+- 回傳 `{ sub, email, role }`，下游所有路由用 `sub` 當 user_id。
+
+### 2.3 跨站 SSO snippet
+- chiyigo.com 首頁可透過 URL fragment / query 帶 `mbti_token` 進來，在 mbti.chiyigo.com 自動寫入 sessionStorage（commits `0f991d2`、`69c51d1`）。
+- CORS 白名單：`STATIC_ALLOWED_ORIGINS` + `env.SSO_ALLOWED_ORIGINS`（後者逗號分隔，免改程式即可加合作站）。
+
+## 3. API 路由總覽（Worker `src/index.ts`）
+
+所有路由都在 `mbti.chiyigo.com/api/*` 底下。
+
+| Method | Path                              | 認證    | 說明 |
+|--------|-----------------------------------|---------|------|
+| POST   | `/api/v1/assess/version-[a-f]`    | 可選¹   | 提交測驗、跑 8 維演算法、寫入 `assessments` |
+| POST   | `/api/v1/user/claim-guest-results`| 必須    | 把訪客 `guest_id` 列綁回 SSO `sub` |
+| GET    | `/api/v1/user/history`            | 必須    | 取目前使用者的歷史測驗 |
+| DELETE | `/api/v1/user/account`            | 必須    | 刪除目前使用者所有 `assessments` |
+| GET    | `/api/v1/auth/allowed-redirects`  | 無      | 回傳 `SSO_ALLOWED_ORIGINS` 給前端做白名單檢查 |
+
+¹ A、B 訪客可作答；C/D/E/F 無 token 一律 401（硬牆，commit `ec54785`）。
+
+## 4. 前端模組（`public/`）
+
+| 檔案 | 職責 |
+|------|------|
+| `assessment.html` + `script.js` + `engine.js` | 測驗主流程；本地端 8 維算分（Z-score → cosine → softmax τ=0.3） |
+| `api.js` | `proceedToResultAPI` 把 8 維分數送後端 |
+| `questions.js` | 模組 A–F 題庫與動態 probe |
+| `login.html` + `auth.js` | PKCE OAuth 流程 + guest merge 觸發 |
+| `dashboard.html` + `dashboard.js` | 歷史紀錄 + 綜合圖表，依賴 `/user/history` |
+| `index.html` + `landing.css` | 著陸頁與導覽 |
+| `type-detail.html` / `jung-theory.html` / `mbti-stats.html` / `mbti-types.html` / `beebe-model.html` | 結果詳情與科普頁 |
+
+**雙端演算法強對齊**：`engine.js` 與 `src/modules/assessment.ts` 邏輯必須 1:1 一致。前端最終渲染強制依賴 `window.backendPrimaryType`（後端權威），前端只負責畫面。
+
+## 5. 商業權限管控（Login-wall）
+
+| 模組 | 需登入？ | 觸發 |
+|------|---------|------|
+| Phase A（日常舒適圈）| ❌ | 訪客可玩 |
+| Phase B（高壓防禦）  | ❌ | 訪客可玩 |
+| Phase C–F            | ✅ | 進頁就擋（`script.js:initApp` 跳 modal）+ 後端 401 硬牆 |
+
+**雙層防禦**：前端 modal 是 UX，後端 `handleAssessmentSubmit` 對 C/D/E/F 強制檢查 token，防止繞過 modal 直接打 API。
+
+**Guest 合併**：訪客作答時 `assessments` 的 `user_id=NULL`、`guest_id=瀏覽器隨機字串`（存 `localStorage.mbti_guest_id`）。註冊/登入完成後 `auth.js` 呼叫 `/user/claim-guest-results`，後端 `UPDATE assessments SET user_id=?, guest_id=NULL WHERE user_id IS NULL AND guest_id IN (...)`，best-effort，失敗不擋登入流程。
+
+**目前不分層**：登入即解鎖 C–F 全部，沒有付費 entitlement claim。若要做付費分層，需要 chiyigo.com IAM 在 token 帶 claim、本 Worker 多一層判斷。
+
+## 6. 演算法（核心）
+
+8 個維度（Ni, Ne, Si, Se, Ti, Te, Fi, Fe），16 型理想向量存於 `personality_profiles` 表（migration `0002`）。
+
+```
+原始分數 → Z-score 標準化 → 與 16 型理想向量算 cosine similarity → softmax(τ=0.3) → 機率分佈
+                                                                              ↓
+                                                                        primary_type
+```
+
+**平手防呆**：當多個型號機率相等時，前後端皆強制 `localeCompare` 字母序排序（避免亂數場景下前後端各自挑不同代表）。
+
+**God Mode（測試）**：URL 帶 `?dev=god` 喚出測試面板，可一鍵注入 INTJ / ESFP / ZERO / RANDOM 極端分數，繞過正常算分直接打 API。
+
+## 7. 資料庫 Schema（D1 `mm_assessment_db`）
+
+> Migration 0001 建立的 `assessments` 表後續欄位被手動 ALTER 過、有 schema drift；migration `0007` 補上漂移文件（已對 prod 標記為已套用，未實際執行 ALTER 因為欄位已存在）。
+
+### `assessments`（核心紀錄表）
+
+| 欄位 | 類型 | 備註 |
+|------|------|------|
+| id | TEXT PK | UUID |
+| user_id | TEXT | NULL 為訪客（**0001 寫 NOT NULL，prod 已被改為允許 NULL，未對齊**）|
+| guest_id | TEXT | 訪客識別，登入後 merge 時清成 NULL |
+| assessment_version | TEXT | 'A'–'F' |
+| raw_scores | TEXT (JSON) | 8 維原始分數陣列 |
+| z_scores | TEXT (JSON) | Z-score 標準化結果 |
+| result_distribution | TEXT (JSON) | 16 型機率 |
+| primary_type | TEXT | 後端權威判定 |
+| psychic_energy_index | REAL | 行為訊號 |
+| time_spent_ms | INTEGER | 答題耗時 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP |
+
+**索引**：`idx_assessments_guest_id`、`idx_assessments_user_id`（migration `0007` 建立）。
+
+### 其他表
+
+- `personality_profiles`：16 型 8 維理想向量（migration `0002`）。
+- `question_matrix` / `system_config`：題庫與全域配置（migration `0001`，目前未廣用）。
+- `users` / `security_logs`：**已 DROP**（migration `0006`，SSO 化後自家會員系統殘骸）。
+
+## 8. 環境變數（`wrangler.toml` + secrets）
+
+`wrangler.toml [vars]`：
+- `ENGINE_VERSION = "V1"`
+- `SOFTMAX_TAU = "0.3"`
+- `SSO_ALLOWED_ORIGINS`：跨站合作白名單（逗號分隔）
+
+**Secrets（不在 repo）**：目前 Worker 已不需要 secret — 認證委託 chiyigo.com、無自家 JWT 簽名、無 Resend、無 Turnstile。
+
+## 9. 已知技術債
+
+1. **`assessments.user_id NOT NULL` 約束未對齊**：production 已允許 NULL，repo migration 仍寫 NOT NULL。SQLite 改 column constraint 需重建表，待維護窗處理。
+2. **舊欄位殘骸可能仍在 prod**：`raw_responses` / `calculated_scores` / `mbti_result` / `enneagram_result` 是 0001 建的死欄位，現在沒人寫。可寫 0008 用 `ALTER TABLE DROP COLUMN` 清掉（D1 較新版本支援）。
+3. **`/user/claim-guest-results` 沒做 rate limit**：guestIds 上限 20，但同 token 短時間反覆呼叫沒擋。
+4. **`AssessmentSession` Durable Object** 是空殼，未實際使用。
+
+## 10. 部署
+
+```bash
+npx wrangler deploy           # 部署 Worker
+npx wrangler d1 migrations apply mm_assessment_db --remote  # 套 D1 migration
+```
+
+Pages 由 Cloudflare 自動從 git 部署（看 dashboard 設定）。
