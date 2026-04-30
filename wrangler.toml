@@ -14,14 +14,6 @@ ENGINE_VERSION = "V1"
 SSO_ALLOWED_ORIGINS = "https://talo-web.pages.dev"
 # 【演算法參數】
 SOFTMAX_TAU = "0.3"
-# 【API 探針金鑰】用於前端提交測驗時的身份驗證，與 JWT 簽名金鑰完全分離
-# 正式部署請執行: wrangler secret put API_PROBE_KEY
-# 正式部署請執行: wrangler secret put HMAC_SECRET
-# 正式部署請執行: wrangler secret put RESEND_API_KEY
-# 以下僅供本地開發使用，請勿將真實金鑰提交至版本控制
-API_PROBE_KEY = "dev_probe_key_replace_in_production"
-# 【Turnstile 人機驗證】測試金鑰，永遠通過，部署前執行: wrangler secret put TURNSTILE_SECRET_KEY
-TURNSTILE_SECRET_KEY = "1x0000000000000000000000000000000AA"
 
 [[kv_namespaces]]
 binding = "MM_CACHE_KV"

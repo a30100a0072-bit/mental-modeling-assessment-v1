@@ -38,10 +38,9 @@ async function proceedToResultAPI() {
         }
 
         const headers = {
-            "Content-Type": "application/json",
-            "X-HMAC-Signature": "dev_probe_key_replace_in_production"
+            "Content-Type": "application/json"
         };
-        
+
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
         const apiUrl = `/api/v1/assess/version-${currentVersion.toLowerCase()}`;

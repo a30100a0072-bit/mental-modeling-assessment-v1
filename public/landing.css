@@ -1,10 +1,11 @@
 /* public/landing.css */
 /* [修復點] 加入 padding-top: 80px，確保所有頁面內容都不會被 Fixed 導覽列遮擋 */
-.landing-body { background-color: #0b1120; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 80px 0 0 0; overflow-x: hidden; }
+.landing-body { background-color: #0b1120; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 90px 0 0 0; overflow-x: hidden; }
 
 .landing-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid #1e293b; position: fixed; top: 0; width: 100%; box-sizing: border-box; z-index: 100; }
 .logo { font-size: 1.5rem; font-weight: 900; color: #38bdf8; letter-spacing: 1px; }
-.header-actions { display: flex; align-items: center; gap: 20px; }
+.header-actions { display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; }
+.header-actions button { width: auto; white-space: nowrap; }
 .btn-outline { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
 .btn-outline:hover { background: #38bdf8; color: #0f172a; }
 .hamburger { font-size: 1.8rem; color: #cbd5e1; cursor: pointer; transition: 0.3s; }
@@ -46,5 +47,5 @@
 
 /* [手機版修復] 手機導覽列高度較窄，所以微調 body 推擠距離 */
 @media (max-width: 480px) {
-    .landing-body { padding-top: 60px; }
+    .landing-body { padding-top: 70px; }
 }
