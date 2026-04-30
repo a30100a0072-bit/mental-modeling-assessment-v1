@@ -71,8 +71,8 @@ window.injectGodMode = function(mode) {
 function initApp() {
     const token = sessionStorage.getItem('chiyigo_access_token');
 
-    // 權限管控 (Login-wall) - B, C, D, E, F 皆為進階模組，需要登入
-    if (!token && ['B', 'C', 'D', 'E', 'F'].includes(currentVersion)) {
+    // 權限管控 (Login-wall) - A、B 開放訪客；C、D、E、F 為進階模組需登入
+    if (!token && ['C', 'D', 'E', 'F'].includes(currentVersion)) {
         const wallModal = document.getElementById('login-wall-modal');
         if (wallModal) {
             wallModal.classList.remove('hidden');

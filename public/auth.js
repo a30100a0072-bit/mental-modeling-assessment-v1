@@ -27,6 +27,20 @@ async function startLogin() {
   window.location.href = url.toString()
 }
 
+async function claimGuestResults(token) {
+  const guestId = localStorage.getItem('mbti_guest_id')
+  if (!guestId) return
+  const res = await fetch('/api/v1/user/claim-guest-results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ guestIds: [guestId] })
+  })
+  if (res.ok) {
+    localStorage.removeItem('mbti_guest_id')
+    localStorage.removeItem('mbti_guest_report_id')
+  }
+}
+
 function setStatus(msg, isError) {
   const el = document.getElementById('auth-status')
   if (!el) return
@@ -85,6 +99,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     const data = await res.json()
     sessionStorage.setItem('chiyigo_access_token', data.access_token)
     if (data.refresh_token) localStorage.setItem('chiyigo_refresh_token', data.refresh_token)
+
+    // 訪客身分留下的 A/B 結果在這裡綁回 SSO 帳號；失敗也不擋登入流程，
+    // 因為合併屬於 best-effort（下次登入仍會再試）。
+    await claimGuestResults(data.access_token).catch(err => console.warn('claim guest failed:', err))
 
     window.history.replaceState({}, '', 'login.html')
     window.location.href = 'dashboard.html'

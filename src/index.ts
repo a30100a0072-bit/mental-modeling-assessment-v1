@@ -50,6 +50,7 @@ export default {
     // --- 路由分發器 ---
     if (request.method === "POST") {
       if (url.pathname.match(/\/assess\/version-[a-f]$/i)) return await handleAssessmentSubmit(request, env, ctx, corsHeaders);
+      if (url.pathname.endsWith("/user/claim-guest-results")) return await handleClaimGuestResults(request, env, corsHeaders);
     }
 
     if (request.method === "GET" && url.pathname.endsWith("/auth/allowed-redirects")) {
@@ -151,6 +152,39 @@ async function handleDeleteAccount(request: Request, env: Env, corsHeaders: Reco
 }
 
 // ==========================================
+// [模組 2.5] Guest 結果合併
+// ==========================================
+// 訪客作答時 assessments.user_id 為 NULL、guest_id 為瀏覽器產生的隨機字串。
+// 註冊/登入完成後呼叫此 endpoint，把同一瀏覽器留下的訪客紀錄綁回 SSO sub。
+// 只更新 user_id IS NULL 的列，避免別的使用者誤領；guest_id 清空避免重複認領。
+async function handleClaimGuestResults(request: Request, env: Env, corsHeaders: Record<string, string>) {
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+
+    const token = authHeader.split(" ")[1];
+    const jwtResult = await verifyChiyigoJWT(token, env);
+    if (!jwtResult) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+
+    let body: { guestIds?: string[] };
+    try { body = await request.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: corsHeaders }); }
+
+    const guestIds = (body.guestIds || []).filter(s => typeof s === "string" && s.length > 0 && s.length < 64).slice(0, 20);
+    if (guestIds.length === 0) return new Response(JSON.stringify({ status: "Noop", claimed: 0 }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    try {
+        const placeholders = guestIds.map(() => "?").join(",");
+        const stmt = env.MM_DB_D1.prepare(
+            `UPDATE assessments SET user_id = ?, guest_id = NULL WHERE user_id IS NULL AND guest_id IN (${placeholders})`
+        ).bind(jwtResult.sub, ...guestIds);
+        const res = await stmt.run();
+        const claimed = (res as any)?.meta?.changes ?? 0;
+        return new Response(JSON.stringify({ status: "Claimed", claimed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    } catch (err: any) {
+        return new Response(JSON.stringify({ error: "DB Error: " + err.message }), { status: 500, headers: corsHeaders });
+    }
+}
+
+// ==========================================
 // [模組 3] 測驗結果提交
 // ==========================================
 async function handleAssessmentSubmit(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>): Promise<Response> {
@@ -173,7 +207,13 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     const reportId = crypto.randomUUID();
 
     // 防呆：前端沒傳的話預設為 B
-    const submitVersion = payload.version || "B";
+    const submitVersion = (payload.version || "B").toUpperCase();
+
+    // 商業權限管控：A/B 開放訪客作答；C/D/E/F 必須登入
+    // 前端 modal 是 UX 防護，這裡是硬牆，防止繞過 modal 直接打 API
+    if (!finalUserId && ["C", "D", "E", "F"].includes(submitVersion)) {
+        return new Response(JSON.stringify({ error: "此模組需登入後方可作答" }), { status: 401, headers: corsHeaders });
+    }
 
     await env.MM_DB_D1.prepare(
         `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, psychic_energy_index, time_spent_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
