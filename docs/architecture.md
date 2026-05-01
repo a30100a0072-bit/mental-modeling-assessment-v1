@@ -137,13 +137,15 @@ KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
    驗 `/user/claim-guest-results` merge 端到端正確。
 2. **行銷埋碼（GA4 / Meta Pixel）**：暫置中，待行銷需求明確再接。
 
-> 部署管道刻意保持手動 `npx wrangler pages deploy`（已設 `pages_build_output_dir`），
-> 不接 GitHub auto-deploy — 維持 production 上線時機由人掌控。
+> 部署管道刻意保持手動 `npx wrangler pages deploy public`，不接 GitHub auto-deploy
+> — 維持 production 上線時機由人掌控。`wrangler.toml` 是 Worker 設定檔
+> （含 `main`、`routes`、`migrations`），不能加 `pages_build_output_dir`，
+> 所以 Pages deploy 必須帶 `public` 參數。
 
 ## 10. 部署
 
 ```bash
 npx wrangler deploy                                           # Worker
 npx wrangler d1 migrations apply mm_assessment_db --remote    # D1 migration
-npx wrangler pages deploy                                     # Pages（手動，刻意）
+npx wrangler pages deploy public                              # Pages（手動，刻意）
 ```
