@@ -1,11 +1,23 @@
-// PKCE OAuth 2.0 client — chiyigo.com IAM
+// OIDC PKCE client — chiyigo.com IAM
+// scope=openid email：拿 id_token 含 email；nonce 防 replay
+// refresh_token 不再存 localStorage — chiyigo 用 Domain=.chiyigo.com cookie 跨子網域共享
 const CHIYIGO_AUTHORIZE = 'https://chiyigo.com/api/auth/oauth/authorize'
 const CHIYIGO_TOKEN     = 'https://chiyigo.com/api/auth/oauth/token'
 const REDIRECT_URI      = 'https://mbti.chiyigo.com/login.html'
+const SCOPE             = 'openid email'
 
 function b64url(buf) {
   return btoa(String.fromCharCode(...new Uint8Array(buf)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+}
+
+function decodeJwtPayload(jwt) {
+  const part = jwt.split('.')[1]
+  if (!part) return null
+  const pad = part.length % 4 === 0 ? '' : '='.repeat(4 - (part.length % 4))
+  try {
+    return JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/') + pad))
+  } catch { return null }
 }
 
 async function startLogin() {
@@ -13,9 +25,11 @@ async function startLogin() {
   const hash      = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const challenge = b64url(hash)
   const state     = b64url(crypto.getRandomValues(new Uint8Array(16)))
+  const nonce     = b64url(crypto.getRandomValues(new Uint8Array(16)))
 
   sessionStorage.setItem('pkce_verifier', verifier)
   sessionStorage.setItem('pkce_state', state)
+  sessionStorage.setItem('pkce_nonce', nonce)
 
   const url = new URL(CHIYIGO_AUTHORIZE)
   url.searchParams.set('response_type', 'code')
@@ -23,6 +37,8 @@ async function startLogin() {
   url.searchParams.set('code_challenge', challenge)
   url.searchParams.set('code_challenge_method', 'S256')
   url.searchParams.set('state', state)
+  url.searchParams.set('scope', SCOPE)
+  url.searchParams.set('nonce', nonce)
 
   window.location.href = url.toString()
 }
@@ -73,6 +89,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   setStatus('正在完成登入...')
 
   const savedState = sessionStorage.getItem('pkce_state')
+  const savedNonce = sessionStorage.getItem('pkce_nonce')
   const verifier   = sessionStorage.getItem('pkce_verifier')
 
   if (!verifier || state !== savedState) {
@@ -82,12 +99,15 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   sessionStorage.removeItem('pkce_state')
+  sessionStorage.removeItem('pkce_nonce')
   sessionStorage.removeItem('pkce_verifier')
 
   try {
+    // credentials:'include' → 接收 chiyigo 種的 Domain=.chiyigo.com refresh cookie
     const res = await fetch(CHIYIGO_TOKEN, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ code, code_verifier: verifier, redirect_uri: REDIRECT_URI })
     })
 
@@ -97,11 +117,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     const data = await res.json()
-    sessionStorage.setItem('chiyigo_access_token', data.access_token)
-    if (data.refresh_token) localStorage.setItem('chiyigo_refresh_token', data.refresh_token)
 
-    // 訪客身分留下的 A/B 結果在這裡綁回 SSO 帳號；失敗也不擋登入流程，
-    // 因為合併屬於 best-effort（下次登入仍會再試）。
+    // 驗 id_token nonce（OIDC 防 replay）；簽章驗證在 worker（resource server）做
+    if (data.id_token) {
+      const payload = decodeJwtPayload(data.id_token)
+      if (!payload || payload.nonce !== savedNonce) {
+        throw new Error('id_token nonce 不符')
+      }
+    }
+
+    sessionStorage.setItem('chiyigo_access_token', data.access_token)
+    if (data.id_token) sessionStorage.setItem('chiyigo_id_token', data.id_token)
+
     await claimGuestResults(data.access_token).catch(err => console.warn('claim guest failed:', err))
 
     window.history.replaceState({}, '', 'login.html')
