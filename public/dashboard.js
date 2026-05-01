@@ -1,6 +1,26 @@
 Chart.register(ChartDataLabels);
 
 const API_BASE = "/api/v1";
+const CHIYIGO_REFRESH = 'https://chiyigo.com/api/auth/refresh';
+
+// 用 localStorage.chiyigo_refresh_token 跟 chiyigo 換新 access_token
+// 成功 → 寫回 sessionStorage 並回傳 new token；失敗 → 回傳 null
+async function chiyigoRefresh() {
+    const rt = localStorage.getItem('chiyigo_refresh_token');
+    if (!rt) return null;
+    try {
+        const r = await fetch(CHIYIGO_REFRESH, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: rt, aud: 'mbti' }),
+        });
+        if (!r.ok) return null;
+        const data = await r.json();
+        if (data.access_token)  sessionStorage.setItem('chiyigo_access_token', data.access_token);
+        if (data.refresh_token) localStorage.setItem('chiyigo_refresh_token', data.refresh_token);
+        return data.access_token || null;
+    } catch { return null; }
+}
 
 window.onload = () => {
     const token = sessionStorage.getItem('chiyigo_access_token');
@@ -14,12 +34,21 @@ window.onload = () => {
 
 async function fetchHistory(token) {
     try {
-        const response = await fetch(`${API_BASE}/user/history`, {
+        let response = await fetch(`${API_BASE}/user/history`, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (response.status === 401) throw new Error("授權過期，請重新登入");
+        if (response.status === 401) {
+            // 嘗試 refresh 一次再重試；refresh 失敗才登出
+            const newToken = await chiyigoRefresh();
+            if (!newToken) throw new Error("授權過期，請重新登入");
+            response = await fetch(`${API_BASE}/user/history`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${newToken}` }
+            });
+            if (response.status === 401) throw new Error("授權過期，請重新登入");
+        }
         if (!response.ok) throw new Error("無法連接歷史資料庫");
 
         const result = await response.json();
