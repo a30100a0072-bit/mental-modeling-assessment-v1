@@ -124,7 +124,7 @@ function initApp() {
         updateProgress(p, 3);
         
         if (activeLikert.length === 0) {
-            alert("⚠️ 偵測到手機瀏覽器快取異常，請清除快取重新載入。");
+            (window.toast || alert)("偵測到手機瀏覽器快取異常，請清除快取重新載入。", { type: 'warn', duration: 5000 });
             return;
         }
         renderPhaseDEF(p);
@@ -133,7 +133,7 @@ function initApp() {
         if(p > 5) p = 5; 
         updateProgress(p, 5);
         if (m1Data.length === 0) {
-            alert("⚠️ 偵測到手機瀏覽器快取異常，請清除快取重新載入。");
+            (window.toast || alert)("偵測到手機瀏覽器快取異常，請清除快取重新載入。", { type: 'warn', duration: 5000 });
             return;
         }
         renderPhase(p);
@@ -180,7 +180,7 @@ function renderPhase(p) {
         btn.innerText = p < 4 ? `確認選項 (${p}/5)` : "掃描核心維度 (4/5)";
         btn.onclick = () => {
             const qs = qArea.querySelectorAll('.question');
-            for (let q of qs) { if(!q.querySelector('input:checked')) { alert("請完成所有題目以利精準建模。"); q.scrollIntoView({ behavior:'smooth', block:'center' }); return; } }
+            for (let q of qs) { if(!q.querySelector('input:checked')) { (window.toast || alert)("請完成所有題目以利精準建模。", { type: 'warn' }); q.scrollIntoView({ behavior:'smooth', block:'center' }); return; } }
             for(let i=0; i<lists[p-1].length; i++) { 
                 const sel = document.querySelector(`input[name="q_${p}_${i}"]:checked`);
                 if(sel) appState.answers[`q_${p}_${i}`] = sel.value; 
@@ -201,7 +201,7 @@ function renderPhase(p) {
         btn.innerText = "提交並連接 Cloudflare V1 引擎";
         btn.onclick = () => {
             const sel = document.querySelector('input[name="q5"]:checked');
-            if(!sel) return alert("請完成最後的校準題目。");
+            if(!sel) return (window.toast || alert)("請完成最後的校準題目。", { type: 'warn' });
             appState.answers.phase5 = { val: sel.value, dA: window.mbtiActiveProbe[0].dA, dB: window.mbtiActiveProbe[0].dB };
             saveState(); proceedToResultAPI(); 
         };
@@ -319,7 +319,7 @@ function renderPhaseDEF(p) {
                 for(let i=0; i < activeRanking.length; i++){
                     let qK = `q_3_rank_${i}`;
                     if(window.rankingStates[qK].length !== activeRanking[i].items.length){
-                        alert(`請完成第 ${i+1} 題的所有選項排序。`);
+                        (window.toast || alert)(`請完成第 ${i+1} 題的所有選項排序。`, { type: 'warn' });
                         document.getElementById(`container_${qK}`).scrollIntoView({ behavior:'smooth', block:'center' });
                         return;
                     }
@@ -337,7 +337,7 @@ function validateAndSaveDEF(prefix, max) {
         let qK = `q_${prefix}_${i}`;
         let sel = document.querySelector(`input[name="${qK}"]:checked`);
         if(!sel){
-            alert("請完成所有題目以利精準建模。");
+            (window.toast || alert)("請完成所有題目以利精準建模。", { type: 'warn' });
             document.querySelector(`input[name="${qK}"]`).closest('.question').scrollIntoView({ behavior:'smooth', block:'center' });
             return false;
         }
@@ -541,7 +541,7 @@ function restartQuiz() {
     window.location.reload(); 
 }
 
-function copyShareLink() { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?s=${encodeScores(appScores)}`).then(()=>alert("防篡改連結已複製")); }
+function copyShareLink() { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?s=${encodeScores(appScores)}`).then(()=>(window.toast || alert)("防篡改連結已複製", { type: 'success' })); }
 
 function goToTalo() {
     const TALO_URL = 'https://talo-web.pages.dev';
@@ -572,7 +572,7 @@ function generateImageForMobile() {
             document.getElementById('action-btns').style.display='flex'; 
             document.getElementById('restart-btn').style.display='block'; 
             document.getElementById('watermark').classList.add('hidden'); 
-            alert('圖片生成失敗，請稍後重試。');
+            (window.toast || alert)('圖片生成失敗，請稍後重試。', { type: 'error' });
         });
     }, 600);
 }
@@ -582,7 +582,7 @@ async function nativeShareImage() {
         const r = await fetch(document.getElementById('image-preview').src); 
         const b = await r.blob(); 
         if(navigator.share) await navigator.share({files:[new File([b], 'MBTI_V1.jpg', {type:'image/jpeg'})], title:'我的認知光譜'}); 
-        else alert('請長按圖片儲存。'); 
+        else (window.toast || alert)('請長按圖片儲存。', { type: 'info' }); 
     } catch(e) {} 
 }
 

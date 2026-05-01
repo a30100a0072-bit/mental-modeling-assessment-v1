@@ -235,6 +235,20 @@ td { color: var(--c-cyan); padding: 10px; border-top: 1px solid var(--bd-subtle)
 .btn-danger { background: #991b1b; color: white; }
 .btn-danger:hover { background: #b91c1c; }
 
+/* Dashboard 空狀態 */
+.empty-state {
+    text-align: center;
+    padding: 50px 24px;
+    background: var(--bg-card-2);
+    border: 1px dashed var(--bd-default);
+    border-radius: 16px;
+}
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state h3 { font-size: 1.15rem; color: var(--tx-bright); margin: 0 0 8px 0; }
+.empty-state p { color: var(--tx-muted); font-size: 0.9rem; line-height: 1.7; margin: 0 0 20px 0; }
+.empty-state .empty-actions { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto; }
+.empty-state .empty-actions .btn-primary { padding: 12px 18px; text-decoration: none; text-align: center; display: inline-block; font-size: 0.95rem; }
+
 /* 心智演化軌跡 timeline */
 .timeline-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.78rem; color: var(--tx-muted); margin-bottom: 16px; }
 .timeline-legend > span { display: inline-flex; align-items: center; gap: 6px; }

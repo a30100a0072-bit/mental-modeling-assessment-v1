@@ -93,7 +93,7 @@ async function proceedToResultAPI() {
         }
     } catch (error) {
         console.error(error);
-        alert("演算法引擎連接失敗。請確認 Cloudflare Worker 已發布最新代碼。");
+        (window.toast || alert)("演算法引擎連接失敗。請確認 Cloudflare Worker 已發布最新代碼。", { type: 'error', duration: 5000 });
         document.getElementById('loading-screen').classList.add('hidden'); 
         document.getElementById('quiz-flow').classList.remove('hidden');
     }

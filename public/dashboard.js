@@ -6,8 +6,8 @@ const API_BASE = "/api/v1";
 window.onload = () => {
     const token = sessionStorage.getItem('chiyigo_access_token');
     if (!token) {
-        alert("未偵測到神經連結授權，請重新登入。");
-        window.location.href = 'login.html';
+        (window.toast || alert)("未偵測到神經連結授權，請重新登入。", { type: 'warn' });
+        setTimeout(() => { window.location.href = 'login.html'; }, 1200);
         return;
     }
     fetchHistory();
@@ -22,8 +22,8 @@ async function fetchHistory() {
         const result = await response.json();
         renderDashboard(result.data);
     } catch (error) {
-        alert(error.message);
-        handleLogout();
+        (window.toast || alert)(error.message, { type: 'error' });
+        setTimeout(handleLogout, 1500);
     }
 }
 
@@ -32,7 +32,17 @@ function renderDashboard(records) {
     document.getElementById('dashboard-content').classList.remove('hidden');
 
     if (!records || records.length === 0) {
-        document.getElementById('history-container').innerHTML = '<p style="text-align:center; color:#64748b;">尚未存有任何建模紀錄。</p>';
+        document.getElementById('history-container').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🧬</div>
+                <h3>尚未建立任何神經模型</h3>
+                <p>從下方任一模組開始你的第一次自我建模，結果會被記錄在這裡。</p>
+                <div class="empty-actions">
+                    <a class="btn-primary" href="assessment.html?v=A&new=1">▶ 模組 A · 日常舒適圈</a>
+                    <a class="btn-primary" href="assessment.html?v=B&new=1">▶ 模組 B · 高壓防禦</a>
+                </div>
+            </div>
+        `;
         return;
     }
 
@@ -202,15 +212,15 @@ async function handleDeleteAccount() {
     try {
         const response = await chiyigoFetch(`${API_BASE}/user/account`, { method: 'DELETE' });
         if (response.ok) {
-            alert("✅ 您的神經連結檔案已從系統中永久銷毀。");
-            handleLogout();
+            (window.toast || alert)("您的神經連結檔案已從系統中永久銷毀。", { type: 'success' });
+            setTimeout(handleLogout, 1500);
         } else if (response.status === 401) {
-            alert("授權過期，請重新登入。");
-            handleLogout();
+            (window.toast || alert)("授權過期，請重新登入。", { type: 'warn' });
+            setTimeout(handleLogout, 1200);
         } else {
             throw new Error("銷毀失敗，請稍後再試。");
         }
     } catch (error) {
-        alert(error.message);
+        (window.toast || alert)(error.message, { type: 'error' });
     }
 }
