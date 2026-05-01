@@ -137,9 +137,10 @@ KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
    `npx wrangler pages deploy public`。需到 Cloudflare Dashboard → Pages →
    Settings → Builds & deployments 接 GitHub 自動部署。⚠️ 注意：production custom
    domain 可能掛在不同 project alias 上，要確認對應的 project 名稱。
-2. **沒有真實的測試**：boilerplate 已刪。要補測試需先升級
-   `@cloudflare/vitest-pool-workers` 或加 `wrangler.jsonc` shim
-   （新版 vitest pool workers 找的是 .jsonc 而非 .toml）。
+2. ~~沒有真實的測試~~：已補 `test/index.spec.ts` smoke suite
+   （CORS preflight、404、`/auth/allowed-redirects`、CORS fallback）。
+   `vitest.config.mts` 直接把 `configPath` 指向 `wrangler.toml` 即可，
+   .jsonc shim 不需要。
 3. **`public/` 死檔掃描**：master 已刪但 production Pages 可能還掛著的舊檔
    未做完整盤點。下次自動化部署接好後就會自然消失，不急。
 4. **端到端瀏覽器手測**（從上一輪留下）：訪客 A → 註冊 → dashboard 看到那筆，
