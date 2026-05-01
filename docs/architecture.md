@@ -136,10 +136,8 @@ KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
 1. **端到端瀏覽器手測**：訪客 A → 註冊 → dashboard 看到那筆，
    驗 `/user/claim-guest-results` merge 端到端正確。
 2. **行銷埋碼（GA4 / Meta Pixel）**：暫置中，待行銷需求明確再接。
-3. **Result 頁 chart 區塊重新編排**：assessment.html 結果頁內容多
-   （兩張圖 + 分數表 + 報告文字 + CTA 區塊），需重新規劃視覺層級。
-4. **Skeleton loading**：dashboard 載入歷史時改用骨架屏取代純 spinner。
-5. **Print stylesheet**：`@media print` 處理結果頁與 dashboard 的列印樣式。
+3. **Skeleton loading**：dashboard 載入歷史時改用骨架屏取代純 spinner。
+4. **Print stylesheet**：`@media print` 處理結果頁與 dashboard 的列印樣式。
 
 > 部署管道刻意保持手動 `npx wrangler pages deploy public --branch=main`，不接 GitHub
 > auto-deploy — 維持 production 上線時機由人掌控。`wrangler.toml` 是 Worker 設定檔
