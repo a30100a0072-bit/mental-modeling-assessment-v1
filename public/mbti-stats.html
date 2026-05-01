@@ -40,9 +40,24 @@
         
         /* 針對長條圖列表的緊湊優化 */
         .compact-bar-group { margin-bottom: 8px; }
-        .compact-bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 3px; }
-        .compact-bar-bg { background: #0f172a; height: 6px; border-radius: 3px; overflow: hidden; }
+        .compact-bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--tx-default); margin-bottom: 3px; }
+        .compact-bar-bg { background: var(--bg-card-2); height: 6px; border-radius: 3px; overflow: hidden; }
         .bar-fill { height: 100%; border-radius: 3px; width: 0; transition: width 1.5s ease-out; }
+
+        /* 圖表面板與 tier 配色 */
+        .stat-panel { background: rgba(15,23,42,0.5); padding: 20px; border-radius: 12px; border: 1px solid var(--bd-default); }
+        .stat-panel h4 { color: var(--tx-bright); margin-top: 0; }
+        .compact-bar-label .tier-1 { color: var(--c-cyan); }
+        .compact-bar-label .tier-2 { color: var(--c-green-soft); }
+        .compact-bar-label .tier-3 { color: var(--c-yellow); }
+        .compact-bar-label .tier-4 { color: var(--c-purple); }
+        .compact-bar-label .tier-5 { color: #c084fc; }
+        .compact-bar-label .tier-2-strong { color: var(--c-green); }
+        .bar-fill.tier-1 { background: linear-gradient(90deg, var(--c-cyan-deep), var(--c-cyan)); }
+        .bar-fill.tier-2 { background: linear-gradient(90deg, #064e3b, var(--c-green)); }
+        .bar-fill.tier-3 { background: linear-gradient(90deg, #78350f, var(--c-yellow-deep)); }
+        .bar-fill.tier-4 { background: linear-gradient(90deg, #1e1b4b, var(--c-purple)); }
+        .bar-fill.tier-5 { background: linear-gradient(90deg, #3b0764, var(--c-purple-soft)); }
     </style>
 </head>
 <body class="landing-body">
@@ -120,26 +135,26 @@
             </ul>
 
             <div class="flex-charts">
-                <div style="background: rgba(15,23,42,0.5); padding: 20px; border-radius: 12px; border: 1px solid #334155;">
-                    <h4 style="color:#e0f2fe; margin-top:0;">📊 全球 16 型人格稀有度分佈</h4>
+                <div class="stat-panel">
+                    <h4>📊 全球 16 型人格稀有度分佈</h4>
                     <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px;">數據依據粗略全球平均估值排列 (藍色為最常見，紫色為最稀有)</p>
                     
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>1. ISFJ (守衛者)</span><span style="color:#38bdf8;">13.8%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 85%; background: linear-gradient(90deg, #0284c7, #38bdf8);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>2. ESFJ (執政官)</span><span style="color:#38bdf8;">12.3%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 75%; background: linear-gradient(90deg, #0284c7, #38bdf8);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>3. ISTJ (物流師)</span><span style="color:#38bdf8;">11.6%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 70%; background: linear-gradient(90deg, #0284c7, #38bdf8);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>4. ISFP (探險家)</span><span style="color:#6ee7b7;">8.8%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 53%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>5. ESTJ (總經理)</span><span style="color:#6ee7b7;">8.7%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 52%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>6. ESFP (表演者)</span><span style="color:#6ee7b7;">8.5%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 51%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>7. ENFP (競選者)</span><span style="color:#6ee7b7;">8.1%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 48%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>8. ISTP (鑑賞家)</span><span style="color:#fde047;">5.4%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 32%; background: linear-gradient(90deg, #78350f, #eab308);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>9. INFP (調停者)</span><span style="color:#fde047;">4.4%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 26%; background: linear-gradient(90deg, #78350f, #eab308);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>10. ESTP (企業家)</span><span style="color:#fde047;">4.3%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 25%; background: linear-gradient(90deg, #78350f, #eab308);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>11. INTP (邏輯學家)</span><span style="color:#a855f7;">3.3%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 19%; background: linear-gradient(90deg, #1e1b4b, #a855f7);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>12. ENTP (辯論家)</span><span style="color:#a855f7;">3.2%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 18%; background: linear-gradient(90deg, #1e1b4b, #a855f7);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>13. ENFJ (主人翁)</span><span style="color:#a855f7;">2.5%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 14%; background: linear-gradient(90deg, #1e1b4b, #a855f7);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>14. INTJ (建築師)</span><span style="color:#c084fc;">2.1%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 11%; background: linear-gradient(90deg, #3b0764, #d8b4fe);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>15. ENTJ (指揮官)</span><span style="color:#c084fc;">1.8%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 9%; background: linear-gradient(90deg, #3b0764, #d8b4fe);"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>16. INFJ (提倡者)</span><span style="color:#c084fc;">1.5%</span></div><div class="compact-bar-bg"><div class="bar-fill" style="width: 7%; background: linear-gradient(90deg, #3b0764, #d8b4fe);"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>1. ISFJ (守衛者)</span><span class="tier-1">13.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" style="width: 85%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>2. ESFJ (執政官)</span><span class="tier-1">12.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" style="width: 75%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>3. ISTJ (物流師)</span><span class="tier-1">11.6%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" style="width: 70%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>4. ISFP (探險家)</span><span class="tier-2">8.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 53%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>5. ESTJ (總經理)</span><span class="tier-2">8.7%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 52%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>6. ESFP (表演者)</span><span class="tier-2">8.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 51%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>7. ENFP (競選者)</span><span class="tier-2">8.1%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 48%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>8. ISTP (鑑賞家)</span><span class="tier-3">5.4%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" style="width: 32%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>9. INFP (調停者)</span><span class="tier-3">4.4%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" style="width: 26%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>10. ESTP (企業家)</span><span class="tier-3">4.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" style="width: 25%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>11. INTP (邏輯學家)</span><span class="tier-4">3.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" style="width: 19%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>12. ENTP (辯論家)</span><span class="tier-4">3.2%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" style="width: 18%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>13. ENFJ (主人翁)</span><span class="tier-4">2.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" style="width: 14%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>14. INTJ (建築師)</span><span class="tier-5">2.1%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" style="width: 11%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>15. ENTJ (指揮官)</span><span class="tier-5">1.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" style="width: 9%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>16. INFJ (提倡者)</span><span class="tier-5">1.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" style="width: 7%;"></div></div></div>
                 </div>
             </div>
         </div>
@@ -195,19 +210,19 @@
         <div class="data-card">
             <h2 class="color-5">伍、 社會功能與經濟生涯軌跡</h2>
             <div class="flex-charts">
-                <div style="background: rgba(15,23,42,0.5); padding: 20px; border-radius: 12px; border: 1px solid #334155;">
-                    <h4 style="color:#e0f2fe; margin-top:0; margin-bottom: 15px;">💰 職涯與收入指標</h4>
+                <div class="stat-panel">
+                    <h4 style="margin-bottom: 15px;">💰 職涯與收入指標</h4>
                     <div class="compact-bar-group">
-                        <div class="compact-bar-label"><span>1. ENTJ (指揮官)</span><span style="color:#10b981;">最高</span></div>
-                        <div class="compact-bar-bg"><div class="bar-fill" style="width: 95%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div>
+                        <div class="compact-bar-label"><span>1. ENTJ (指揮官)</span><span class="tier-2-strong">最高</span></div>
+                        <div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 95%;"></div></div>
                     </div>
                     <div class="compact-bar-group">
-                        <div class="compact-bar-label"><span>2. ESTJ (總經理)</span><span style="color:#10b981;">次高</span></div>
-                        <div class="compact-bar-bg"><div class="bar-fill" style="width: 85%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div>
+                        <div class="compact-bar-label"><span>2. ESTJ (總經理)</span><span class="tier-2-strong">次高</span></div>
+                        <div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 85%;"></div></div>
                     </div>
                     <div class="compact-bar-group">
-                        <div class="compact-bar-label"><span>3. ENTP (辯論家)</span><span style="color:#10b981;">第三</span></div>
-                        <div class="compact-bar-bg"><div class="bar-fill" style="width: 75%; background: linear-gradient(90deg, #064e3b, #10b981);"></div></div>
+                        <div class="compact-bar-label"><span>3. ENTP (辯論家)</span><span class="tier-2-strong">第三</span></div>
+                        <div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 75%;"></div></div>
                     </div>
                 </div>
             </div>

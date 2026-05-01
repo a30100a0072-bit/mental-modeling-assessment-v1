@@ -66,6 +66,8 @@ button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-wei
 .btn-advance:hover, .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5); }
 .btn-secondary { background: var(--bd-subtle); color: var(--tx-muted); margin-top: 20px; }
 .btn-secondary:hover { background: var(--bd-default); color: var(--tx-default); }
+.btn-primary.is-success { background: linear-gradient(135deg, var(--c-green), #059669); }
+.btn-primary.is-talo { background: linear-gradient(135deg, #7c3aed, #4c1d95); }
 
 /* --- 側邊欄與登出按鈕 --- */
 .sidebar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
