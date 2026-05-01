@@ -35,9 +35,57 @@ label:has(input[type="radio"]:checked) {
 .ranking-item:hover { border-color: var(--c-cyan) !important; background: var(--bd-subtle) !important; transform: translateY(-2px); }
 .ranking-item:active { transform: scale(0.98); }
 
-/* --- 測驗結果與診斷警示 --- */
-#mbti-type { font-size: 4.5rem; font-weight: 900; color: var(--c-cyan); text-align: center; line-height: 1; text-shadow: 0 0 20px rgba(56, 189, 248, 0.3); margin-top: 10px; }
-#spectrum-subtitle { text-align: center; margin-bottom: 15px; color: var(--tx-muted); font-weight: bold; letter-spacing: 1px; font-size: 0.95rem; }
+/* --- 測驗結果頭部 --- */
+.result-hero {
+    text-align: center;
+    padding: 28px 16px 24px;
+    margin: 8px -10px 24px;
+    background: radial-gradient(ellipse at center top, rgba(56, 189, 248, 0.12), transparent 70%);
+    border-bottom: 1px solid var(--bd-subtle);
+    position: relative;
+}
+.result-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 2px;
+    background: var(--c-cyan);
+    box-shadow: 0 0 12px var(--c-cyan);
+}
+.result-hero-label {
+    font-size: 0.7rem;
+    color: var(--tx-faint);
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+#mbti-type { font-size: 4.5rem; font-weight: 900; color: var(--c-cyan); text-align: center; line-height: 1; text-shadow: 0 0 24px rgba(56, 189, 248, 0.45); margin-top: 6px; letter-spacing: 4px; animation: result-type-glow 2.4s ease-in-out infinite alternate; }
+@keyframes result-type-glow {
+    from { text-shadow: 0 0 24px rgba(56, 189, 248, 0.35); }
+    to   { text-shadow: 0 0 36px rgba(56, 189, 248, 0.7); }
+}
+#spectrum-subtitle { text-align: center; margin-bottom: 8px; color: var(--tx-muted); font-weight: bold; letter-spacing: 2px; font-size: 0.9rem; }
+
+/* --- 結果頁區塊容器 --- */
+.result-block {
+    margin-bottom: 26px;
+    padding-top: 6px;
+}
+.result-block-title {
+    font-size: 0.92rem;
+    color: var(--c-cyan);
+    margin: 0 0 14px 0;
+    letter-spacing: 1.5px;
+    border-left: 3px solid var(--c-cyan);
+    padding-left: 10px;
+    font-weight: 700;
+}
+.result-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--bd-subtle);
+}
 
 #topology-diagnosis, #grip-warning { margin-bottom: 15px; font-size: 0.85rem; text-align: center; padding: 12px; border-radius: 10px; line-height: 1.6; }
 .diag-warning { background: rgba(120, 53, 15, 0.2); border: 1px solid #b45309; color: #fde68a; }
@@ -90,7 +138,8 @@ td { color: var(--c-cyan); padding: 10px; border-top: 1px solid var(--bd-subtle)
 .close-modal-x:hover { color: var(--tx-default); transform: scale(1.1); }
 .modal-hint { color: var(--c-cyan); font-weight: 700; margin-bottom: 15px; font-size: 0.9rem; margin-top: 10px; }
 #image-preview { width: 100%; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--bd-default); }
-.action-buttons { display: flex; gap: 15px; margin: 20px 0; }
+.action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 16px 0; }
+.action-buttons button { font-size: 0.88rem; padding: 14px 12px; }
 
 /* RWD 響應式 (手機版清單單排) */
 @media (max-width: 480px) { .match-list { grid-template-columns: 1fr; } }
@@ -105,7 +154,7 @@ td { color: var(--c-cyan); padding: 10px; border-top: 1px solid var(--bd-subtle)
 
     /* 結果頁 */
     #mbti-type { font-size: 3.2rem; }
-    .action-buttons { flex-direction: column; gap: 10px; }
+    .action-buttons { grid-template-columns: 1fr; gap: 10px; }
     .action-buttons button { font-size: 0.9rem; }
 
     /* 表格橫向捲動避免溢出 */

@@ -128,32 +128,48 @@
         </div>
 
         <div id="result-area" class="hidden">
-            <div id="mbti-type">檢測中</div>
-            <div id="spectrum-subtitle"></div>
+            <div class="result-hero">
+                <div class="result-hero-label">YOUR COGNITIVE TYPE</div>
+                <div id="mbti-type">--</div>
+                <div id="spectrum-subtitle"></div>
+            </div>
+
             <div id="topology-diagnosis"></div>
             <div id="grip-warning"></div>
 
-            <div class="charts-flex-container">
-                <div class="chart-box">
-                    <div class="chart-label">◈ 認知功能絕對能量 (雷達契合)</div>
-                    <div class="radar-container"><canvas id="functionChart"></canvas></div>
+            <section class="result-block">
+                <h3 class="result-block-title">📊 視覺分析 (Visual Analysis)</h3>
+                <div class="charts-flex-container">
+                    <div class="chart-box">
+                        <div class="chart-label">◈ 認知功能絕對能量 (雷達契合)</div>
+                        <div class="radar-container"><canvas id="functionChart"></canvas></div>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-label">◈ 人格判定概率分佈 (勝率分配)</div>
+                        <div class="pie-container"><canvas id="probabilityChart"></canvas></div>
+                    </div>
                 </div>
-                <div class="chart-box">
-                    <div class="chart-label">◈ 人格判定概率分佈 (勝率分配)</div>
-                    <div class="pie-container"><canvas id="probabilityChart"></canvas></div>
-                </div>
-            </div>
+            </section>
 
-            <div class="score-table-wrapper" id="score-table-container"></div>
-            <div id="analysis-text"></div>
-            
-            <div class="action-buttons" id="action-btns">
-                <button class="btn-primary is-success" onclick="window.location.href='dashboard.html'">📊 進入會員儀表板</button>
-                <button class="btn-primary" onclick="copyShareLink()">🔗 複製防篡改連結</button>
-                <button class="btn-primary" onclick="generateImageForMobile()">📸 匯出鑑定報告</button>
-                <button class="btn-primary is-talo" onclick="goToTalo()">🌟 前往塔羅占卜</button>
+            <section class="result-block">
+                <h3 class="result-block-title">🔬 八維度分數 (Function Scores)</h3>
+                <div class="score-table-wrapper" id="score-table-container"></div>
+            </section>
+
+            <section class="result-block">
+                <h3 class="result-block-title">📝 深度解析 (Deep Analysis)</h3>
+                <div id="analysis-text"></div>
+            </section>
+
+            <div class="result-actions">
+                <div class="action-buttons" id="action-btns">
+                    <button class="btn-primary is-success" onclick="window.location.href='dashboard.html'">📊 進入會員儀表板</button>
+                    <button class="btn-primary" onclick="copyShareLink()">🔗 複製防篡改連結</button>
+                    <button class="btn-primary" onclick="generateImageForMobile()">📸 匯出鑑定報告</button>
+                    <button class="btn-primary is-talo" onclick="goToTalo()">🌟 前往塔羅占卜</button>
+                </div>
+                <button class="btn-secondary" id="restart-btn" onclick="restartQuiz()">重新建立大腦模型</button>
             </div>
-            <button class="btn-secondary" id="restart-btn" onclick="restartQuiz()">重新建立大腦模型</button>
         </div>
     </div>
 
