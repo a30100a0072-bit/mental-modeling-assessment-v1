@@ -2,33 +2,76 @@
    GLOBAL.CSS - 全域骨架、基礎排版與導覽列
    ========================================= */
 
-body { background-color: #0b1120; color: #cbd5e1; font-family: -apple-system, sans-serif; padding: 15px; margin: 0; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
+:root {
+    /* 背景層級 (由深到淺) */
+    --bg-base: #0b1120;
+    --bg-card-2: #0f172a;
+    --bg-elevated: var(--bg-elevated);
+    --bg-card: #162032;
+
+    /* 邊框與分隔線 */
+    --bd-subtle: var(--bd-subtle);
+    --bd-default: var(--bd-default);
+    --bd-strong: #475569;
+
+    /* 文字層級 */
+    --tx-faint: #64748b;
+    --tx-muted: var(--tx-muted);
+    --tx-default: var(--tx-default);
+    --tx-bright: #e0f2fe;
+    --tx-heading: #f1f5f9;
+    --tx-brightest: #f8fafc;
+
+    /* 主品牌 (cyan) — A/SJ/儀表板 */
+    --c-cyan: var(--c-cyan);
+    --c-cyan-deep: var(--c-cyan-deep);
+    --c-cyan-soft: #7dd3fc;
+    --c-cyan-pale: #bae6fd;
+    --c-blue: var(--c-blue);
+
+    /* 模組強調色 */
+    --c-yellow: #fde047;        /* D / SP */
+    --c-yellow-deep: #eab308;
+    --c-yellow-amber: #facc15;
+    --c-purple: #a855f7;        /* 塔羅 / NT */
+    --c-purple-soft: #d8b4fe;
+    --c-green: #10b981;         /* E / NF */
+    --c-green-soft: #6ee7b7;
+
+    /* 警示 / 危險 */
+    --c-red: var(--c-red);
+    --c-red-soft: #fca5a5;
+    --c-red-pale: #fecaca;
+    --c-rose: #fb7185;
+}
+
+body { background-color: var(--bg-base); color: var(--tx-default); font-family: -apple-system, sans-serif; padding: 15px; margin: 0; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
 
 /* 共用主容器 */
 /* [修復點] margin 調整為 '40px auto 20px'，讓框框往下移，避開導覽列 */
-.container { max-width: 600px; margin: 40px auto 20px; background: #111827; padding: 25px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
-.main-title { text-align: center; color: #e0f2fe; margin-bottom: 20px; font-size: 1.4rem; font-weight: 800; letter-spacing: 1px; }
+.container { max-width: 600px; margin: 40px auto 20px; background: var(--bg-elevated); padding: 25px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
+.main-title { text-align: center; color: var(--tx-bright); margin-bottom: 20px; font-size: 1.4rem; font-weight: 800; letter-spacing: 1px; }
 
 /* 核心狀態控制 */
 .hidden { display: none !important; }
 
 /* --- 載入動畫 --- */
 #loading-screen { text-align: center; padding: 60px 0; }
-.spinner { width: 50px; height: 50px; border: 4px solid #1e293b; border-top: 4px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+.spinner { width: 50px; height: 50px; border: 4px solid var(--bd-subtle); border-top: 4px solid var(--c-cyan); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* --- 按鈕系統 --- */
 button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem; }
-.btn-advance, .btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3); }
+.btn-advance, .btn-primary { background: linear-gradient(135deg, var(--c-cyan-deep), var(--c-blue)); color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3); }
 .btn-advance:hover, .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5); }
-.btn-secondary { background: #1e293b; color: #94a3b8; margin-top: 20px; }
-.btn-secondary:hover { background: #334155; color: #cbd5e1; }
+.btn-secondary { background: var(--bd-subtle); color: var(--tx-muted); margin-top: 20px; }
+.btn-secondary:hover { background: var(--bd-default); color: var(--tx-default); }
 
 /* --- 側邊欄與登出按鈕 --- */
 .sidebar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .sidebar-content { padding-bottom: 80px; }
 .sidebar-content a { padding: 12px 25px; }
-#auth-nav-btn.logout-mode:hover { background: #ef4444; color: white; border-color: #ef4444; }
+#auth-nav-btn.logout-mode:hover { background: var(--c-red); color: white; border-color: var(--c-red); }
 
 /* =========================================
    手機版 (RWD) 導覽列終極修復
