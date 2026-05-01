@@ -1,22 +1,73 @@
 // OIDC PKCE client — chiyigo.com IAM
-// scope=openid email：拿 id_token 含 email；nonce 防 replay
+// 全合規：Discovery + PKCE + state + nonce + id_token 完整驗證（簽章/iss/aud/exp/nonce）
 // refresh_token 不再存 localStorage — chiyigo 用 Domain=.chiyigo.com cookie 跨子網域共享
-const CHIYIGO_AUTHORIZE = 'https://chiyigo.com/api/auth/oauth/authorize'
-const CHIYIGO_TOKEN     = 'https://chiyigo.com/api/auth/oauth/token'
-const REDIRECT_URI      = 'https://mbti.chiyigo.com/login.html'
-const SCOPE             = 'openid email'
+const ISSUER       = 'https://chiyigo.com'
+const DISCOVERY    = `${ISSUER}/.well-known/openid-configuration`
+const REDIRECT_URI = 'https://mbti.chiyigo.com/login.html'
+const SCOPE        = 'openid email'
+const AUD          = 'mbti'
 
 function b64url(buf) {
   return btoa(String.fromCharCode(...new Uint8Array(buf)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
+function b64urlToBytes(s) {
+  const pad = s.length % 4 === 0 ? '' : '='.repeat(4 - (s.length % 4))
+  return Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + pad), c => c.charCodeAt(0))
+}
 
-function decodeJwtPayload(jwt) {
-  const part = jwt.split('.')[1]
-  if (!part) return null
-  const pad = part.length % 4 === 0 ? '' : '='.repeat(4 - (part.length % 4))
+let _discoveryPromise = null
+function getDiscovery() {
+  if (!_discoveryPromise) {
+    _discoveryPromise = fetch(DISCOVERY)
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('discovery failed')))
+      .catch(e => { _discoveryPromise = null; throw e })
+  }
+  return _discoveryPromise
+}
+
+const _jwksKeyCache = new Map()
+const _JWKS_TTL_MS  = 60 * 60 * 1000
+async function getPublicKey(kid) {
+  const cacheKey = kid || '__default__'
+  const cached = _jwksKeyCache.get(cacheKey)
+  if (cached && cached.expiresAt > Date.now()) return cached.key
+  const disc = await getDiscovery()
+  const res = await fetch(disc.jwks_uri)
+  if (!res.ok) return null
+  const { keys } = await res.json()
+  if (!Array.isArray(keys) || keys.length === 0) return null
+  const jwk = kid ? keys.find(k => k.kid === kid) : keys[0]
+  if (!jwk) return null
+  const key = await crypto.subtle.importKey('jwk', jwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify'])
+  _jwksKeyCache.set(cacheKey, { key, expiresAt: Date.now() + _JWKS_TTL_MS })
+  return key
+}
+
+// 完整驗 id_token：ES256 簽章 + iss + aud + exp + nonce
+async function verifyIdToken(idToken, expectedNonce) {
   try {
-    return JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/') + pad))
+    const parts = idToken.split('.')
+    if (parts.length !== 3) return null
+    const [h64, p64, s64] = parts
+    const header = JSON.parse(new TextDecoder().decode(b64urlToBytes(h64)))
+    if (header.alg !== 'ES256') return null
+    const key = await getPublicKey(header.kid)
+    if (!key) return null
+    const valid = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      key,
+      b64urlToBytes(s64),
+      new TextEncoder().encode(`${h64}.${p64}`)
+    )
+    if (!valid) return null
+    const payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(p64)))
+    if (payload.iss !== ISSUER) return null
+    const audOk = Array.isArray(payload.aud) ? payload.aud.includes(AUD) : payload.aud === AUD
+    if (!audOk) return null
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null
+    if (expectedNonce && payload.nonce !== expectedNonce) return null
+    return payload
   } catch { return null }
 }
 
@@ -31,7 +82,8 @@ async function startLogin() {
   sessionStorage.setItem('pkce_state', state)
   sessionStorage.setItem('pkce_nonce', nonce)
 
-  const url = new URL(CHIYIGO_AUTHORIZE)
+  const disc = await getDiscovery()
+  const url = new URL(disc.authorization_endpoint)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('redirect_uri', REDIRECT_URI)
   url.searchParams.set('code_challenge', challenge)
@@ -104,7 +156,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   try {
     // credentials:'include' → 接收 chiyigo 種的 Domain=.chiyigo.com refresh cookie
-    const res = await fetch(CHIYIGO_TOKEN, {
+    const disc = await getDiscovery()
+    const res = await fetch(disc.token_endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -118,12 +171,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     const data = await res.json()
 
-    // 驗 id_token nonce（OIDC 防 replay）；簽章驗證在 worker（resource server）做
+    // OIDC 完整驗 id_token：ES256 簽章 + iss + aud + exp + nonce
     if (data.id_token) {
-      const payload = decodeJwtPayload(data.id_token)
-      if (!payload || payload.nonce !== savedNonce) {
-        throw new Error('id_token nonce 不符')
-      }
+      const payload = await verifyIdToken(data.id_token, savedNonce)
+      if (!payload) throw new Error('id_token 驗證失敗')
     }
 
     sessionStorage.setItem('chiyigo_access_token', data.access_token)
