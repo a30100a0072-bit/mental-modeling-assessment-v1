@@ -235,6 +235,59 @@ td { color: var(--c-cyan); padding: 10px; border-top: 1px solid var(--bd-subtle)
 .btn-danger { background: #991b1b; color: white; }
 .btn-danger:hover { background: #b91c1c; }
 
+/* 心智演化軌跡 timeline */
+.timeline-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.78rem; color: var(--tx-muted); margin-bottom: 16px; }
+.timeline-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.timeline-track {
+    position: relative;
+    height: 40px;
+    background: linear-gradient(90deg, var(--bg-card-2), var(--bg-card), var(--bg-card-2));
+    border-radius: 20px;
+    border: 1px solid var(--bd-subtle);
+    padding: 0 18px;
+}
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 18px; right: 18px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--bd-default), transparent);
+}
+.tl-dot {
+    position: absolute;
+    top: 50%;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 3px var(--bg-card-2), 0 0 12px currentColor;
+    cursor: help;
+    transition: transform var(--t-fast) ease;
+}
+.tl-dot:hover { transform: translate(-50%, -50%) scale(1.4); z-index: 2; }
+.tl-dot::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-base);
+    color: var(--tx-bright);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border: 1px solid currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t-fast) ease;
+}
+.tl-dot:hover::after { opacity: 1; }
+.timeline-legend .tl-dot { position: static; transform: none; width: 10px; height: 10px; box-shadow: 0 0 6px currentColor; }
+.tl-nt { background: var(--c-purple); color: var(--c-purple); }
+.tl-nf { background: var(--c-green);  color: var(--c-green); }
+.tl-sj { background: var(--c-cyan);   color: var(--c-cyan); }
+.tl-sp { background: var(--c-yellow); color: var(--c-yellow); }
+
 /* -----------------------------------------
    [模塊 7] 登入頁專屬 (login.html)
    ----------------------------------------- */

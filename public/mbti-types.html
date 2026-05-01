@@ -57,6 +57,43 @@
         /* 防止邊緣卡片的 Tooltip 被切斷 */
         .type-card:nth-child(even) .t-stack span:last-child:hover::after { left: auto; right: 0; transform: translateX(0); }
         .type-card:nth-child(odd) .t-stack span:first-child:hover::after { left: 0; transform: translateX(0); }
+
+        /* 氣質頁內快速跳轉 sticky bar */
+        .temp-jumpbar {
+            position: sticky;
+            top: 80px;
+            z-index: 50;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px 12px;
+            background: rgba(11, 17, 32, 0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--bd-subtle);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .tj-item {
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 18px;
+            text-decoration: none;
+            border: 1px solid var(--bd-default);
+            color: var(--tx-muted);
+            transition: color var(--t-fast) ease, border-color var(--t-fast) ease, background var(--t-fast) ease, transform var(--t-fast) ease;
+        }
+        .tj-item:hover { transform: translateY(-1px); }
+        .tj-nt:hover, .tj-nt.active { color: var(--c-purple); border-color: var(--c-purple); background: rgba(168, 85, 247, 0.1); }
+        .tj-nf:hover, .tj-nf.active { color: var(--c-green);  border-color: var(--c-green);  background: rgba(16, 185, 129, 0.1); }
+        .tj-sj:hover, .tj-sj.active { color: var(--c-cyan);   border-color: var(--c-cyan);   background: rgba(56, 189, 248, 0.1); }
+        .tj-sp:hover, .tj-sp.active { color: var(--c-yellow); border-color: var(--c-yellow); background: rgba(253, 224, 71, 0.1); }
+        section.temperament-section { scroll-margin-top: 150px; }
+        @media (max-width: 480px) {
+            .temp-jumpbar { top: 70px; padding: 8px; }
+            .tj-item { font-size: 0.72rem; padding: 5px 10px; }
+        }
     </style>
 </head>
 <body class="landing-body">
@@ -112,7 +149,14 @@
             <p style="color:#fde047; font-size: 0.9rem; margin-top: 10px;">💡 提示：滑鼠游標停留在卡片中的英文代碼 (如 Ni, Te) 上，可查看底層運算邏輯解說。</p>
         </div>
 
-        <section class="temperament-section nt-group">
+        <nav class="temp-jumpbar" id="temp-jumpbar">
+            <a href="#sec-nt" data-target="sec-nt" class="tj-item tj-nt">🟣 NT 分析家</a>
+            <a href="#sec-nf" data-target="sec-nf" class="tj-item tj-nf">🟢 NF 外交家</a>
+            <a href="#sec-sj" data-target="sec-sj" class="tj-item tj-sj">🔵 SJ 守護者</a>
+            <a href="#sec-sp" data-target="sec-sp" class="tj-item tj-sp">🟡 SP 探險家</a>
+        </nav>
+
+        <section id="sec-nt" class="temperament-section nt-group">
             <div class="temp-title">🟣 分析家 (Analysts) - NT 氣質</div>
             <div class="temp-desc">直覺 (N) 與思考 (T) 的結合。這群人是天生的系統構建者與解構者，他們依靠冰冷的邏輯與長遠的戰略眼光來理解並征服世界。</div>
             <div class="type-grid">
@@ -163,7 +207,7 @@
             </div>
         </section>
 
-        <section class="temperament-section nf-group">
+        <section id="sec-nf" class="temperament-section nf-group">
             <div class="temp-title">🟢 外交家 (Diplomats) - NF 氣質</div>
             <div class="temp-desc">直覺 (N) 與情感 (F) 的結合。他們是靈魂的探索者與意義的賦予者，追求深層的人際共振、道德純粹性以及人類整體的精神進化。</div>
             <div class="type-grid">
@@ -214,7 +258,7 @@
             </div>
         </section>
 
-        <section class="temperament-section sj-group">
+        <section id="sec-sj" class="temperament-section sj-group">
             <div class="temp-title">🔵 守護者 (Sentinels) - SJ 氣質</div>
             <div class="temp-desc">感覺 (S) 與判斷 (J) 的結合。他們是社會運轉的基石，極度重視傳統、秩序、歷史經驗與責任感，是抵禦系統崩潰的最後防線。</div>
             <div class="type-grid">
@@ -265,7 +309,7 @@
             </div>
         </section>
 
-        <section class="temperament-section sp-group">
+        <section id="sec-sp" class="temperament-section sp-group">
             <div class="temp-title">🟡 探險家 (Explorers) - SP 氣質</div>
             <div class="temp-desc">感覺 (S) 與感知 (P) 的結合。他們活在絕對的當下，是物理世界的大師，憑藉極致的反應力、適應性與美感直覺來應對瞬息萬變的現實。</div>
             <div class="type-grid">
@@ -339,6 +383,23 @@
                     window.location.href = 'index.html';
                 };
             }
+
+            // 氣質 sticky nav 隨捲動高亮
+            const items = document.querySelectorAll('.tj-item');
+            const map = {};
+            items.forEach(it => map[it.dataset.target] = it);
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting && map[e.target.id]) {
+                        items.forEach(i => i.classList.remove('active'));
+                        map[e.target.id].classList.add('active');
+                    }
+                });
+            }, { rootMargin: '-40% 0px -55% 0px' });
+            ['sec-nt','sec-nf','sec-sj','sec-sp'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) observer.observe(el);
+            });
         };
     </script>
     <script src="chiyigo-app-switcher.js?v=1"></script>

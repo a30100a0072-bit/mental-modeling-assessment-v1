@@ -488,7 +488,7 @@ function updateCharts(p, norm, probs, sorted) {
                 {label:'全球常模', data:ENGINE.dimKeys.map(k=>ENGINE.popNorm[k]), borderColor:'rgba(250, 204, 21, 0.3)', borderWidth:1, borderDash:[2,2], pointRadius:0, order:3}
             ] 
         }, 
-        options:{ scales:{r:{suggestedMin:0, suggestedMax:100, grid:{color:'#1e293b'}, angleLines:{color:'#1e293b'}, ticks:{display:false}, pointLabels:{color:'#cbd5e1', font:{weight:'bold'}}}}, plugins:{legend:{display:false}, datalabels:{display:false}}, maintainAspectRatio:false }
+        options:{ scales:{r:{suggestedMin:0, suggestedMax:100, grid:{color:'#1e293b'}, angleLines:{color:'#1e293b'}, ticks:{display:false}, pointLabels:{color:'#cbd5e1', font:{weight:'bold'}}}}, plugins:{legend:{display:false}, datalabels:{display:false}}, maintainAspectRatio:false, animation:{duration:1400, easing:'easeOutQuart'}, animations:{numbers:{from:0, duration:1400, easing:'easeOutQuart'}} }
     });
 
     const top5 = sorted.slice(0,5); const otherP = sorted.slice(5).reduce((s,k)=>s+(probs[k]||0),0);
