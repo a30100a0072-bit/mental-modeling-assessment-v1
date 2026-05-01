@@ -114,8 +114,33 @@
     <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
 
     <div class="container">
-        <div id="loading-state" style="text-align: center; padding: 50px 0; color: #38bdf8;">
-            <div class="spinner"></div><p>同步雲端數據中...</p>
+        <div id="loading-state" class="dashboard-skeleton" aria-busy="true" aria-label="同步雲端數據中">
+            <div class="skel-h2 skeleton"></div>
+            <div class="stats-grid">
+                <div class="stat-card skel-card">
+                    <div class="skel-line skeleton skel-line--xl"></div>
+                    <div class="skel-line skeleton skel-line--sm"></div>
+                </div>
+                <div class="stat-card skel-card">
+                    <div class="skel-line skeleton skel-line--xl"></div>
+                    <div class="skel-line skeleton skel-line--sm"></div>
+                </div>
+                <div class="stat-card skel-card">
+                    <div class="skel-line skeleton skel-line--xl"></div>
+                    <div class="skel-line skeleton skel-line--sm"></div>
+                </div>
+            </div>
+            <div class="skel-h2 skeleton"></div>
+            <div class="charts-flex-container">
+                <div class="chart-box"><div class="skel-chart skeleton"></div></div>
+                <div class="chart-box"><div class="skel-chart skeleton"></div></div>
+            </div>
+            <div class="skel-h2 skeleton"></div>
+            <div class="skel-history">
+                <div class="skel-item skeleton"></div>
+                <div class="skel-item skeleton"></div>
+                <div class="skel-item skeleton"></div>
+            </div>
         </div>
 
         <div id="dashboard-content" class="hidden">
