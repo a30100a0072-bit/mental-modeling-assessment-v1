@@ -86,19 +86,24 @@
     <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
 
     <div class="auth-container">
-        <h1 class="main-title" style="cursor:pointer;" onclick="window.location.href='index.html'">MBTI 認知幾何模型</h1>
+        <div class="auth-hero">🧠</div>
+        <h1 class="main-title auth-clickable" onclick="window.location.href='index.html'">MBTI 認知幾何模型</h1>
         <div class="auth-box">
-            <div style="text-align:center; padding: 30px 20px;">
-                <div id="auth-spinner" style="margin-bottom:18px;">
-                    <div class="spinner" style="margin:0 auto 12px;"></div>
-                </div>
-                <p id="auth-status" style="color:#94a3b8; margin-bottom:20px; min-height:1.4em;">初始化中...</p>
-                <button id="login-btn" class="btn-primary" style="display:none;" onclick="startLogin()">
-                    使用 Chiyigo.com 帳號登入
-                </button>
+            <p class="auth-pitch">透過 <strong style="color:var(--c-cyan);">Chiyigo SSO</strong> 一個帳號，串連認知測驗、塔羅占卜與帳號中心，所有結果雲端同步。</p>
+            <ul class="auth-benefits">
+                <li><span class="check">✓</span><span>跨站單一登入，密碼只記一次</span></li>
+                <li><span class="check">✓</span><span>歷次測驗結果安全保存，可隨時回顧</span></li>
+                <li><span class="check">✓</span><span>解鎖 Phase C/D/E/F 進階模組</span></li>
+            </ul>
+            <button id="login-btn" class="btn-primary" hidden onclick="startLogin()">
+                使用 Chiyigo.com 帳號登入
+            </button>
+            <div id="auth-spinner" class="auth-spinner-wrap">
+                <div class="spinner"></div>
             </div>
+            <p id="auth-status" class="auth-status">初始化中...</p>
         </div>
-        <p style="color:#64748b; font-size: 0.8rem; margin-top: 20px;">V1 Clinical Geometry Model</p>
+        <p class="auth-footnote">V1 Clinical Geometry Model · 認證委託 chiyigo.com</p>
     </div>
     <script src="auth.js?v=2"></script>
 

@@ -45,14 +45,14 @@ function setStatus(msg, isError) {
   const el = document.getElementById('auth-status')
   if (!el) return
   el.textContent = msg
-  el.style.color = isError ? '#ef4444' : '#94a3b8'
+  el.classList.toggle('is-error', !!isError)
 }
 
 function showLoginBtn() {
   const btn     = document.getElementById('login-btn')
   const spinner = document.getElementById('auth-spinner')
-  if (btn) btn.style.display = 'block'
-  if (spinner) spinner.style.display = 'none'
+  if (btn) btn.hidden = false
+  if (spinner) spinner.hidden = true
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
