@@ -30,18 +30,12 @@ async function proceedToResultAPI() {
 
     try {
         const token = sessionStorage.getItem('chiyigo_access_token');
-        
+
         let guestId = localStorage.getItem('mbti_guest_id');
         if (!guestId) {
             guestId = "guest_" + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('mbti_guest_id', guestId);
         }
-
-        const headers = {
-            "Content-Type": "application/json"
-        };
-
-        if (token) headers["Authorization"] = `Bearer ${token}`;
 
         const apiUrl = `/api/v1/assess/version-${currentVersion.toLowerCase()}`;
 
@@ -52,16 +46,20 @@ async function proceedToResultAPI() {
 
         const timeSpentMs = Date.now() - quizStartTime;
 
-        const response = await fetch(apiUrl, {
+        // 登入用戶走 chiyigoFetch（自動 Bearer + 401 refresh）；訪客走純 fetch（不帶 token）
+        const init = {
             method: "POST",
-            headers: headers,
-            body: JSON.stringify({ 
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
                 version: currentVersion,
-                rawScores: orderedScores, 
-                timeSpentMs: timeSpentMs, 
-                guestId: guestId 
+                rawScores: orderedScores,
+                timeSpentMs: timeSpentMs,
+                guestId: guestId
             })
-        });
+        };
+        const response = token
+            ? await chiyigoFetch(apiUrl, init)
+            : await fetch(apiUrl, init);
 
         if (!response.ok) throw new Error("HTTP Status: " + response.status);
 
