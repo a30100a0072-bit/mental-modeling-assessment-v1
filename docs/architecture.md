@@ -133,24 +133,23 @@ KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
 
 ### 待辦
 
-1. **Pages 部署管道未自動化**：master push 不會自動更新 production，目前需手動
-   `npx wrangler pages deploy public`。需到 Cloudflare Dashboard → Pages →
-   Settings → Builds & deployments 接 GitHub 自動部署。⚠️ 注意：production custom
-   domain 可能掛在不同 project alias 上，要確認對應的 project 名稱。
-2. ~~沒有真實的測試~~：已補 `test/index.spec.ts` smoke suite
+1. ~~沒有真實的測試~~：已補 `test/index.spec.ts` smoke suite
    （CORS preflight、404、`/auth/allowed-redirects`、CORS fallback）。
    `vitest.config.mts` 直接把 `configPath` 指向 `wrangler.toml` 即可，
    .jsonc shim 不需要。
-3. **`public/` 死檔掃描**：master 已刪但 production Pages 可能還掛著的舊檔
-   未做完整盤點。下次自動化部署接好後就會自然消失，不急。
-4. **端到端瀏覽器手測**（從上一輪留下）：訪客 A → 註冊 → dashboard 看到那筆，
+2. **`public/` 死檔掃描**：master 已刪但 production Pages 可能還掛著的舊檔
+   未做完整盤點。下次手動 deploy 時順手清。
+3. **端到端瀏覽器手測**（從上一輪留下）：訪客 A → 註冊 → dashboard 看到那筆，
    驗 `/user/claim-guest-results` merge 端到端正確。
-5. **行銷埋碼（GA4 / Meta Pixel）**：暫置中，待行銷需求明確再接。
+4. **行銷埋碼（GA4 / Meta Pixel）**：暫置中，待行銷需求明確再接。
+
+> 部署管道刻意保持手動 `npx wrangler pages deploy`（已設 `pages_build_output_dir`），
+> 不接 GitHub auto-deploy — 維持 production 上線時機由人掌控。
 
 ## 10. 部署
 
 ```bash
 npx wrangler deploy                                           # Worker
 npx wrangler d1 migrations apply mm_assessment_db --remote    # D1 migration
-npx wrangler pages deploy public                              # Pages（目前手動）
+npx wrangler pages deploy                                     # Pages（手動，刻意）
 ```

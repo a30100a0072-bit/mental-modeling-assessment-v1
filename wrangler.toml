@@ -2,6 +2,7 @@
 name = "mental-modeling-assessment-v1"
 main = "src/index.ts"
 compatibility_date = "2026-04-06"
+pages_build_output_dir = "public"
 
 # 【雲端警衛設定】攔截所有發向 mbti.chiyigo.com/api/ 的請求，轉交給這個 Worker 處理
 routes = [

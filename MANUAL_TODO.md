@@ -3,34 +3,11 @@
 只能由人在外部系統（Cloudflare Dashboard、瀏覽器、行銷工具）執行的事項。
 程式碼層面的待辦寫在 `docs/architecture.md` §9。
 
----
-
-## 1. 接 Cloudflare Pages 自動部署
-
-**現況**：`master` push 不會自動更新 production，需手動 `npx wrangler pages deploy public`。
-
-**步驟**：
-1. 登入 Cloudflare Dashboard → Workers & Pages → Pages
-2. 找到對應 production custom domain（`mbti.chiyigo.com`）所掛的 project
-   - ⚠️ 注意：production domain 可能掛在 alias project 上，與本地 deploy 的 project 名稱不一定相同。先在 Dashboard 確認 domain 對應的是哪個 project
-3. 進入該 project → Settings → Builds & deployments → Configure source
-4. Connect to Git → 選 GitHub → 授權 → 選本 repo
-5. 設定：
-   - Production branch: `master`
-   - Build command: 留空（純靜態，無 build step）
-   - Build output directory: `public`
-   - Root directory: 留空（repo 根目錄）
-6. Save → 之後 push 到 master 會自動觸發 production 部署
-
-**驗證**：
-- 推一個 trivial commit 到 master，看 Pages 是否自動 build
-- 部署成功後，Settings 看到「Production branch: master」與最新 commit hash
-
-**完成後**：架構文件 §9 #1 與 #3 可以一併刪掉（自動部署接好後，舊 `public/` 死檔會在下一次部署時自然消失）。
+> 部署刻意保持手動 `npx wrangler pages deploy`，不接 GitHub auto-deploy。
 
 ---
 
-## 2. 端到端瀏覽器手測
+## 1. 端到端瀏覽器手測
 
 驗 `/user/claim-guest-results` merge 端到端正確：
 
@@ -47,7 +24,7 @@
 
 ---
 
-## 3. 行銷埋碼決策（暫置中）
+## 2. 行銷埋碼決策（暫置中）
 
 需要先決定：
 - 用 GA4、Meta Pixel、還是兩者都要？
