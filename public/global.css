@@ -101,6 +101,117 @@ a:focus-visible,
     }
 }
 
+/* 列印樣式（結果頁與 dashboard 的 PDF / 紙本輸出） */
+@media print {
+    /* 整體底色翻成白色、文字深灰，省墨且更易讀 */
+    body, body.landing-body {
+        background: #ffffff !important;
+        color: #1f2937 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .container, .auth-container, main.theory-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 16px 18px !important;
+        background: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 隱藏所有導覽 / 互動 / 行銷區塊 */
+    .landing-header,
+    .quick-nav-bar,
+    .sidebar,
+    .overlay,
+    .hamburger,
+    .header-actions,
+    .app-switcher-trigger,
+    .app-switcher-panel,
+    .toast-stack,
+    .action-buttons,
+    .result-actions,
+    #restart-btn,
+    #dev-console,
+    .danger-zone,
+    #login-wall-modal,
+    #image-modal,
+    #loading-screen,
+    #loading-state,
+    .dashboard-skeleton,
+    .empty-state .empty-actions,
+    .temp-jumpbar { display: none !important; }
+
+    /* 標題與內文翻正 */
+    h1, h2, h3, h4, .main-title, .result-block-title { color: #111827 !important; }
+    p, li, td, th, .t-desc, .a-desc, .f-desc, .report-section p, .report-section h4 { color: #1f2937 !important; }
+    a { color: #1d4ed8 !important; text-decoration: underline; }
+
+    /* 結果頁 hero 拿掉發光動畫，但維持視覺層級 */
+    .result-hero {
+        background: #f3f4f6 !important;
+        border: 1px solid #d1d5db !important;
+        margin: 0 0 18px !important;
+        padding: 16px !important;
+    }
+    .result-hero::after { display: none !important; }
+    #mbti-type {
+        color: #0369a1 !important;
+        text-shadow: none !important;
+        animation: none !important;
+        font-size: 3.6rem !important;
+    }
+    .result-hero-label, #spectrum-subtitle { color: #4b5563 !important; }
+    .result-block-title {
+        border-left-color: #0369a1 !important;
+        color: #0369a1 !important;
+    }
+
+    /* 卡片 / 區塊改白底 + 細邊 */
+    .stat-card, .v-card, .type-card, .f-card, .a-card, .report-section,
+    .data-card, .stat-panel, .history-item, .auth-box {
+        background: #ffffff !important;
+        border: 1px solid #d1d5db !important;
+        box-shadow: none !important;
+        color: #1f2937 !important;
+    }
+    .stat-value, .history-type { color: #0369a1 !important; }
+    .stat-label, .history-date { color: #4b5563 !important; }
+
+    /* 表格邊框與底色 */
+    table { border: 1px solid #d1d5db !important; }
+    th { background: #f3f4f6 !important; color: #111827 !important; }
+    td { color: #0369a1 !important; border-top: 1px solid #d1d5db !important; }
+
+    /* 避免區塊在頁面間被截斷 */
+    .result-block, .report-section, .stat-card, .history-item,
+    .charts-flex-container, .chart-box, .timeline-track {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* 圖表縮放保持比例 */
+    .charts-flex-container { flex-direction: row !important; gap: 12px !important; }
+    .chart-box { max-width: 48% !important; }
+    .radar-container, .pie-container { height: 240px !important; }
+
+    /* timeline 與診斷顏色保留但減色彩飽和 */
+    .timeline-track { background: #f9fafb !important; border-color: #d1d5db !important; }
+    .diag-warning, .diag-danger, .diag-safe, .diag-grip {
+        background: #ffffff !important;
+        color: #1f2937 !important;
+    }
+
+    /* 連結 URL 印出來方便追蹤（結果頁分享連結） */
+    a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.7em;
+        color: #6b7280;
+    }
+    /* 但別印 in-page anchor */
+    a[href^="#"]::after, a[href^="javascript:"]::after { content: ""; }
+}
+
 /* Toast 通知系統 */
 .toast-stack {
     position: fixed;
