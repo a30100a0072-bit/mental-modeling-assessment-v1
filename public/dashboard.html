@@ -2,20 +2,41 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <!-- ── 跨站 SSO：接收來自 chiyigo.com 的 JWT。優先讀 fragment（不進 Referer/log），相容舊 query ── -->
+    <!-- ── 跨站 SSO：接收來自 chiyigo.com 的 JWT。優先讀 fragment（不進 Referer/log），相容舊 query
+         驗證：iss=https://chiyigo.com + aud=mbti（防 session fixation 釣魚）；簽章由 worker 那端驗
+         若已有 token 不覆蓋（同上理由） ── -->
     <script>
     (function () {
+      function decodePayload(jwt) {
+        try {
+          var b64 = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+          // pad to multiple of 4
+          while (b64.length % 4) b64 += '=';
+          return JSON.parse(decodeURIComponent(escape(atob(b64))));
+        } catch (_) { return null; }
+      }
+      function cleanUrl(qs) {
+        try { history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '')); } catch (_) {}
+      }
       try {
         var q = new URLSearchParams(location.search);
         var h = new URLSearchParams(location.hash.replace(/^#/, ''));
         var t = h.get('mbti_token') || q.get('mbti_token');
         if (!t) return;
+        q.delete('mbti_token'); q.delete('mbti_email');
+        var qs = q.toString();
+
+        // 已登入 → 不覆蓋（防釣魚切換成攻擊者帳號），但仍清掉 URL 上的 token
+        if (sessionStorage.getItem('chiyigo_access_token')) { cleanUrl(qs); return; }
+
+        // 驗 payload aud / iss（client-side check；簽章由 worker 那端驗）
+        var p = decodePayload(t);
+        if (!p || p.iss !== 'https://chiyigo.com' || p.aud !== 'mbti') { cleanUrl(qs); return; }
+
         var e = h.get('mbti_email') || q.get('mbti_email');
         sessionStorage.setItem('chiyigo_access_token', t);
         if (e) sessionStorage.setItem('chiyigo_email', e);
-        q.delete('mbti_token'); q.delete('mbti_email');
-        var qs = q.toString();
-        history.replaceState({}, '', location.pathname + (qs ? '?' + qs : ''));
+        cleanUrl(qs);
       } catch (_) {}
     })();
     </script>

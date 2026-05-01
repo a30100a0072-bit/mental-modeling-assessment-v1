@@ -1,8 +1,10 @@
 (function () {
+    // ⚠️ APPS 內容下方走 innerHTML 拼接（panel.innerHTML = ...）；目前是 hardcoded array 所以 XSS 安全。
+    //    **若未來改成從 API / 動態來源讀，必須改用 textContent / DOM API 否則會 XSS。**
     const APPS = [
         { id: 'chiyigo', name: 'Chiyigo',         desc: '主站 / 帳號中心', url: 'https://chiyigo.com',         icon: '🅒', host: 'chiyigo.com' },
         { id: 'mbti',    name: 'MBTI 靈魂測試',  desc: '人格類型分析',    url: 'https://mbti.chiyigo.com',    icon: '🧠', host: 'mbti.chiyigo.com' },
-        { id: 'talo',    name: '奧秘塔羅 Talo',  desc: '神秘學占卜',      url: 'https://talo-web.pages.dev',  icon: '🔮', host: 'talo-web.pages.dev' },
+        { id: 'talo',    name: '奧秘塔羅 Talo',  desc: '神秘學占卜',      url: 'https://talo.chiyigo.com',    icon: '🔮', host: 'talo.chiyigo.com' },
     ];
 
     function currentAppId() {
