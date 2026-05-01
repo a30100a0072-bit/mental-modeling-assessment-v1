@@ -95,6 +95,40 @@ td { color: var(--c-cyan); padding: 10px; border-top: 1px solid var(--bd-subtle)
 /* RWD 響應式 (手機版清單單排) */
 @media (max-width: 480px) { .match-list { grid-template-columns: 1fr; } }
 
+/* 行動版整體 polish */
+@media (max-width: 480px) {
+    /* 科普頁標題 */
+    .theory-container { padding: 0 14px; margin: 80px auto 30px; }
+    .theory-header h1 { font-size: 1.8rem; line-height: 1.3; }
+    .theory-header p { font-size: 0.95rem; }
+    .intro-box { padding: 18px; }
+
+    /* 結果頁 */
+    #mbti-type { font-size: 3.2rem; }
+    .action-buttons { flex-direction: column; gap: 10px; }
+    .action-buttons button { font-size: 0.9rem; }
+
+    /* 表格橫向捲動避免溢出 */
+    .score-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 480px; }
+    th { font-size: 0.7rem; padding: 8px 6px; }
+    td { font-size: 0.75rem; padding: 8px 6px; }
+
+    /* 儀表板 nav 縮排 */
+    .dashboard-nav { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links button { margin-left: 0; padding: 6px 12px; font-size: 0.8rem; }
+
+    /* 圖鑑 / 數據頁卡片內距 */
+    .stat-card { padding: 22px 18px; }
+    .temperament-section { padding: 22px 16px; }
+    .data-card { padding: 22px 18px; }
+
+    /* 報告區塊 */
+    .report-section { padding: 16px; }
+    .report-section h3 { font-size: 1rem; }
+}
+
 
 /* -----------------------------------------
    [模塊 2] 科普頁面共用基礎樣式
