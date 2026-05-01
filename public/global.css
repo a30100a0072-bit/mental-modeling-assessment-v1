@@ -6,28 +6,28 @@
     /* 背景層級 (由深到淺) */
     --bg-base: #0b1120;
     --bg-card-2: #0f172a;
-    --bg-elevated: var(--bg-elevated);
+    --bg-elevated: #111827;
     --bg-card: #162032;
 
     /* 邊框與分隔線 */
-    --bd-subtle: var(--bd-subtle);
-    --bd-default: var(--bd-default);
+    --bd-subtle: #1e293b;
+    --bd-default: #334155;
     --bd-strong: #475569;
 
     /* 文字層級 */
     --tx-faint: #64748b;
-    --tx-muted: var(--tx-muted);
-    --tx-default: var(--tx-default);
+    --tx-muted: #94a3b8;
+    --tx-default: #cbd5e1;
     --tx-bright: #e0f2fe;
     --tx-heading: #f1f5f9;
     --tx-brightest: #f8fafc;
 
     /* 主品牌 (cyan) — A/SJ/儀表板 */
-    --c-cyan: var(--c-cyan);
-    --c-cyan-deep: var(--c-cyan-deep);
+    --c-cyan: #38bdf8;
+    --c-cyan-deep: #0284c7;
     --c-cyan-soft: #7dd3fc;
     --c-cyan-pale: #bae6fd;
-    --c-blue: var(--c-blue);
+    --c-blue: #2563eb;
 
     /* 模組強調色 */
     --c-yellow: #fde047;        /* D / SP */
@@ -39,7 +39,7 @@
     --c-green-soft: #6ee7b7;
 
     /* 警示 / 危險 */
-    --c-red: var(--c-red);
+    --c-red: #ef4444;
     --c-red-soft: #fca5a5;
     --c-red-pale: #fecaca;
     --c-rose: #fb7185;
