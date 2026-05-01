@@ -137,15 +137,17 @@ KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
    驗 `/user/claim-guest-results` merge 端到端正確。
 2. **行銷埋碼（GA4 / Meta Pixel）**：暫置中，待行銷需求明確再接。
 
-> 部署管道刻意保持手動 `npx wrangler pages deploy public`，不接 GitHub auto-deploy
-> — 維持 production 上線時機由人掌控。`wrangler.toml` 是 Worker 設定檔
-> （含 `main`、`routes`、`migrations`），不能加 `pages_build_output_dir`，
-> 所以 Pages deploy 必須帶 `public` 參數。
+> 部署管道刻意保持手動 `npx wrangler pages deploy public --branch=main`，不接 GitHub
+> auto-deploy — 維持 production 上線時機由人掌控。`wrangler.toml` 是 Worker 設定檔
+> （含 `main`、`routes`、`migrations`），不能加 `pages_build_output_dir`，所以 Pages
+> deploy 必須帶 `public` 參數；又因為 Cloudflare Pages 的 production branch 是 `main`
+> 但 repo 用 `master`，沒帶 `--branch=main` 會進預覽不會上 `mbti.chiyigo.com`。
 
 ## 10. 部署
 
 ```bash
 npx wrangler deploy                                           # Worker
 npx wrangler d1 migrations apply mm_assessment_db --remote    # D1 migration
-npx wrangler pages deploy public                              # Pages（手動，刻意）
+npx wrangler pages deploy public --branch=main                # Pages production
+npx wrangler pages deploy public                              # Pages preview（master 預設）
 ```
