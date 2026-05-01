@@ -8,7 +8,7 @@
 #watermark { position: absolute; top: 10px; right: 15px; font-size: 0.65rem; color: rgba(255,255,255,0.15); text-transform: uppercase; letter-spacing: 1px; z-index: 10; font-weight: bold; }
 
 .progress-container { width: 100%; background: var(--bd-subtle); height: 6px; border-radius: 3px; margin-bottom: 5px; overflow: hidden; }
-#progress-fill { height: 100%; background: linear-gradient(90deg, var(--c-cyan-deep), var(--c-cyan)); width: 20%; transition: width 0.5s ease; }
+#progress-fill { height: 100%; background: linear-gradient(90deg, var(--c-cyan-deep), var(--c-cyan)); width: 20%; transition: width var(--t-slow) cubic-bezier(0.22, 1, 0.36, 1); box-shadow: 0 0 8px rgba(56, 189, 248, 0.4); }
 #progress-text { text-align: right; font-size: 0.75rem; color: var(--tx-faint); margin-bottom: 20px; }
 
 .phase-indicator { color: var(--c-cyan); font-weight: 800; border-left: 4px solid var(--c-cyan); padding-left: 10px; margin-bottom: 5px; font-size: 1.1rem; text-transform: uppercase; }
@@ -17,16 +17,17 @@
 .options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
 
 /* --- 基礎選項按鈕 --- */
-label { cursor: pointer; padding: 15px; border: 1px solid var(--bd-subtle); border-radius: 10px; background: var(--bg-card); font-size: 0.95rem; display: block; transition: 0.2s; }
-label:hover { border-color: var(--c-cyan); background: var(--bd-subtle); color: var(--tx-brightest); }
+label { cursor: pointer; padding: 15px; border: 1px solid var(--bd-subtle); border-radius: 10px; background: var(--bg-card); font-size: 0.95rem; display: block; transition: border-color var(--t-fast) ease, background var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) ease, box-shadow var(--t-fast) ease; }
+label:hover { border-color: var(--c-cyan); background: var(--bd-subtle); color: var(--tx-brightest); transform: translateY(-1px); }
+label:active { transform: translateY(0); }
 input[type="radio"] { margin-right: 10px; accent-color: var(--c-cyan); transform: scale(1.1); }
 
 /* --- [新增] 選項選取後的視覺強化 (支援 Likert 1-5, SJT, A/B卷) --- */
 label:has(input[type="radio"]:checked) {
     border-color: var(--c-cyan);
-    background: rgba(56, 189, 248, 0.05);
+    background: rgba(56, 189, 248, 0.08);
     color: var(--c-cyan);
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
+    box-shadow: 0 0 0 1px var(--c-cyan), 0 0 20px rgba(56, 189, 248, 0.2);
 }
 
 /* --- [新增] 排序題 (Ranking) 專屬動態樣式 --- */

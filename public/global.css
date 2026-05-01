@@ -43,6 +43,39 @@
     --c-red-soft: #fca5a5;
     --c-red-pale: #fecaca;
     --c-rose: #fb7185;
+
+    /* 字體層級（modular scale 1.125） */
+    --fs-xs: 0.75rem;       /* 12px - 浮水印、tag */
+    --fs-sm: 0.85rem;       /* 14px - 次要文字、提示 */
+    --fs-base: 1rem;        /* 16px - 內文 */
+    --fs-md: 1.1rem;        /* 18px - 強調內文、小標 */
+    --fs-lg: 1.25rem;       /* 20px - h3 */
+    --fs-xl: 1.5rem;        /* 24px - h2 */
+    --fs-2xl: 2rem;         /* 32px - 區塊標題 */
+    --fs-3xl: 2.5rem;       /* 40px - 頁面主標 */
+    --fs-hero: 3.5rem;      /* 56px - 首頁 hero */
+
+    /* 過場時間（統一動畫節奏） */
+    --t-fast: 0.15s;
+    --t-base: 0.25s;
+    --t-slow: 0.4s;
+}
+
+/* 基礎標題層級（未被 component 覆寫時使用） */
+h1, h2, h3, h4 { color: var(--tx-heading); line-height: 1.3; }
+h1 { font-size: var(--fs-3xl); }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+h4 { font-size: var(--fs-md); }
+
+/* Phase 切換淡入 */
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+#quiz-container,
+#result-area:not(.hidden) {
+    animation: fade-in-up var(--t-slow) ease-out;
 }
 
 body { background-color: var(--bg-base); color: var(--tx-default); font-family: -apple-system, sans-serif; padding: 15px; margin: 0; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
