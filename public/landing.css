@@ -45,6 +45,34 @@
 .badge { position: absolute; top: 10px; right: -25px; background: var(--c-red); color: white; font-size: 0.7rem; font-weight: bold; padding: 5px 30px; transform: rotate(45deg); }
 .v-card.active .badge { background: var(--c-green); }
 
+/* Quick Nav Bar (各頁共用的橫向模組捷徑) */
+.quick-nav-bar {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom: 1px solid var(--bd-subtle);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+.qnav-pad { flex-shrink: 0; min-width: 15px; }
+.qnav-item {
+    color: var(--tx-muted);
+    font-size: 0.85rem;
+    font-weight: bold;
+    border: 1px solid var(--tx-muted);
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.qnav-item--new {
+    color: var(--c-yellow);
+    border-color: var(--c-yellow);
+}
+
 /* [手機版修復] 手機導覽列高度較窄，所以微調 body 推擠距離 */
 @media (max-width: 480px) {
     .landing-body { padding-top: 70px; }
