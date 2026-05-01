@@ -57,25 +57,35 @@
         return fetch(url, Object.assign({}, init, { headers: retryHeaders }));
     }
 
-    // best-effort 撤 IAM session + 清本地 + reload。
-    // chiyigo logout 用 cookie 模式（credentials:'include'）撤 refresh；失敗也不擋本地清除。
-    async function chiyigoLogout(redirectUrl) {
-        try {
-            await fetch(CHIYIGO_LOGOUT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: '{}',
-            });
-        } catch (e) { /* IAM 端撤銷失敗就只清本地，最多 token TTL 內仍可用 */ }
+    // OIDC RP-Initiated Logout：跳 chiyigo end_session_endpoint
+    // chiyigo 會撤所有 refresh + 嵌 iframe 同步登出 chiyigo / talo（front-channel logout）
+    // 本端 storage 立刻清，使用者體感「即時登出」；end_session 跑完再 redirect 回來
+    // redirectUrl 參數保留向後相容但忽略 — post_logout_redirect_uri 必在 chiyigo 白名單，
+    // 統一回 mbti home（'/' = 'https://mbti.chiyigo.com/'）。
+    function chiyigoLogout(_redirectUrl) {
+        var idHint = sessionStorage.getItem(ID_TOKEN_KEY);
         sessionStorage.removeItem(TOKEN_KEY);
         sessionStorage.removeItem(ID_TOKEN_KEY);
         sessionStorage.removeItem('chiyigo_email');
         localStorage.removeItem('mbti_v1_final');
         localStorage.removeItem('mbti_guest_id');
-        if (redirectUrl) window.location.href = redirectUrl;
-        else window.location.reload();
+        var url = 'https://chiyigo.com/api/auth/oauth/end-session?post_logout_redirect_uri=' +
+                  encodeURIComponent('https://mbti.chiyigo.com/');
+        if (idHint) url += '&id_token_hint=' + encodeURIComponent(idHint);
+        window.location.href = url;
     }
+
+    // OIDC Front-Channel Logout 訊號：其他子站登出 → 同源主頁分頁立刻清 access_token + reload UI
+    window.addEventListener('storage', function (e) {
+        if (e.key !== 'oidc_logout_at') return;
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(ID_TOKEN_KEY);
+        sessionStorage.removeItem('chiyigo_email');
+        // 已在 dashboard / 私密頁 → 跳 index 避免 stale UI
+        if (location.pathname !== '/' && location.pathname !== '/index.html') {
+            location.href = '/index.html';
+        }
+    });
 
     // 啟動時 silent login：若無 access_token，嘗試靠 chiyigo cookie 換一個。
     // cookie 跨子網域共享後，使用者只要在 chiyigo.com 登入過，這裡就會自動補 token。
