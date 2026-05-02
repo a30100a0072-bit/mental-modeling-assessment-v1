@@ -20,14 +20,18 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     
     <title>MBTI 認知幾何與高壓解析 V1 版</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://chiyigo.com">
+
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="toast.js?v=1" defer></script>
 </head>
 <body class="landing-body">
@@ -78,34 +82,34 @@
 
     <div class="container" id="capture-area">
         
-        <div id="dev-console" style="display: none; background: #1a1500; border: 2px dashed #fbbf24; padding: 15px; margin-bottom: 25px; border-radius: 8px;">
-            <h3 style="color: #fbbf24; margin-top: 0; font-size: 1.1rem; display: flex; justify-content: space-between;">
+        <div id="dev-console" class="dev-console hidden" hidden>
+            <h3 class="dev-console-title">
                 <span>🔧 開發者上帝模式 (God Mode)</span>
-                <span style="font-size: 0.8rem; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px;">Testing Only</span>
+                <span class="dev-console-tag">Testing Only</span>
             </h3>
-            <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 15px;">一鍵注入邊緣測試數據，強制跳過所有題目並直接呼叫 Cloudflare V1 大腦 API。</p>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="injectGodMode('INTJ')" style="background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">極端 INTJ 測試</button>
-                <button onclick="injectGodMode('ESFP')" style="background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">極端 ESFP 測試</button>
-                <button onclick="injectGodMode('ZERO')" style="background: #334155; color: #ef4444; border: 1px solid #ef4444; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">全零異常測試 (Zero)</button>
-                <button onclick="injectGodMode('RANDOM')" style="background: #38bdf8; color: #0f172a; border: 1px solid #0284c7; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">🎲 隨機亂數盲測</button>
+            <p class="dev-console-desc">一鍵注入邊緣測試數據，強制跳過所有題目並直接呼叫 Cloudflare V1 大腦 API。</p>
+            <div class="dev-console-row">
+                <button class="dev-btn" type="button" onclick="injectGodMode('INTJ')">極端 INTJ 測試</button>
+                <button class="dev-btn" type="button" onclick="injectGodMode('ESFP')">極端 ESFP 測試</button>
+                <button class="dev-btn dev-btn--danger" type="button" onclick="injectGodMode('ZERO')">全零異常測試 (Zero)</button>
+                <button class="dev-btn dev-btn--accent" type="button" onclick="injectGodMode('RANDOM')">🎲 隨機亂數盲測</button>
             </div>
         </div>
 
         <h1 class="main-title">MBTI 認知光譜與決策解析</h1>
         <div id="watermark" class="hidden">v1 Clinical Geometry Model | Validated Assessment</div>
 
-        <div id="login-wall-modal" class="modal hidden" style="z-index: 9999; background: rgba(15,23,42,0.95);">
-            <div class="modal-content" style="text-align: center; max-width: 400px; padding: 40px 20px;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🔒</div>
-                <h2 style="color: #38bdf8; margin-bottom: 15px;">權限鎖定</h2>
-                <p style="color: #cbd5e1; margin-bottom: 25px; line-height: 1.6;">
+        <div id="login-wall-modal" class="modal modal--wall hidden" role="dialog" aria-labelledby="wall-title" aria-modal="true">
+            <div class="modal-content modal-content--wall">
+                <div class="wall-icon" aria-hidden="true">🔒</div>
+                <h2 id="wall-title" class="wall-title">權限鎖定</h2>
+                <p class="wall-text">
                     覺醒願景 (Phase C)、日常行為 (Phase D)、決策情境 (Phase E)、認知偏好 (Phase F) 屬於深度解析模組，需建立神經連結檔案後方可解鎖。基礎模組 Phase A 與高壓防禦 Phase B 訪客即可作答。
                 </p>
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <button class="btn-primary" onclick="window.location.href='login.html'">前往註冊 / 登入</button>
-                    <button class="btn-outline" onclick="window.location.href='assessment.html?v=A&new=1'">先測量基礎版 (Phase A)</button>
-                    <button class="btn-outline" onclick="window.location.href='assessment.html?v=B&new=1'">先測量高壓防禦 (Phase B)</button>
+                <div class="wall-actions">
+                    <button class="btn-primary" type="button" onclick="window.location.href='login.html'">前往註冊 / 登入</button>
+                    <button class="btn-outline" type="button" onclick="window.location.href='assessment.html?v=A&new=1'">先測量基礎版 (Phase A)</button>
+                    <button class="btn-outline" type="button" onclick="window.location.href='assessment.html?v=B&new=1'">先測量高壓防禦 (Phase B)</button>
                 </div>
             </div>
         </div>

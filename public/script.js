@@ -82,7 +82,7 @@ function initApp() {
 
     if (urlParams.get('dev') === 'god') {
         const devConsole = document.getElementById('dev-console');
-        if (devConsole) devConsole.style.display = 'block';
+        if (devConsole) { devConsole.classList.remove('hidden'); devConsole.removeAttribute('hidden'); }
     }
 
     if (urlParams.get('new') === '1') {
@@ -228,11 +228,12 @@ function renderPhaseDEF(p) {
             const qK = `q_1_likert_${i}`; const s = appState.answers[qK];
             let optionsHtml = '';
             for(let v=1; v<=5; v++){
-                optionsHtml += `<label style="flex:1; text-align:center; padding:12px 0; margin:0; border: 1px solid #1e293b; border-radius:8px; cursor:pointer;">
-                    <input type="radio" name="${qK}" value="${v}" ${s==String(v)?'checked':''} style="margin:0 0 5px 0;"> <br><span style="font-size:1.1rem; font-weight:bold;">${v}</span>
+                optionsHtml += `<label class="likert-opt">
+                    <input type="radio" name="${qK}" value="${v}" ${s==String(v)?'checked':''}>
+                    <span class="likert-num">${v}</span>
                 </label>`;
             }
-            return `<div class="question"><p><strong>${i+1}. ${item.q}</strong></p><div class="options" style="flex-direction:row; justify-content:space-between; gap:8px;">${optionsHtml}</div></div>`;
+            return `<div class="question"><p><strong>${i+1}. ${item.q}</strong></p><div class="options likert-row">${optionsHtml}</div></div>`;
         }).join('');
         
         btn.innerText = "進入下一步 (1/3)";
@@ -300,18 +301,17 @@ function renderPhaseDEF(p) {
                 window.rankingStates[qK] = window.rankingStates[qK] || [];
                 
                 let itemsHtml = item.items.map((opt, optIdx) => {
-                    let rankStr = ''; let activeStyle = '';
                     let rankIdx = window.rankingStates[qK].indexOf(optIdx);
-                    if(rankIdx > -1) {
-                        rankStr = `<span style="background:#38bdf8; color:#0f172a; padding:2px 8px; border-radius:4px; font-weight:bold; margin-right:8px;">[ ${rankIdx+1} ]</span>`;
-                        activeStyle = 'border-color:#38bdf8; background:#1e293b;';
-                    }
-                    return `<div class="ranking-item" onclick="handleRankingClick('${qK}', ${optIdx}, ${item.items.length})" style="padding:15px; border:1px solid #1e293b; border-radius:10px; background:#162032; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; transition:0.2s; ${activeStyle}">
-                        ${rankStr} <span style="line-height:1.4;">${opt.text}</span>
+                    const isActive = rankIdx > -1;
+                    const rankStr = isActive ? `<span class="rank-badge">[ ${rankIdx+1} ]</span>` : '';
+                    const cls = `ranking-item${isActive ? ' is-ranked' : ''}`;
+                    const dataRanked = isActive ? ' data-ranked="1"' : '';
+                    return `<div class="${cls}"${dataRanked} onclick="handleRankingClick('${qK}', ${optIdx}, ${item.items.length})">
+                        ${rankStr}<span class="rank-text">${opt.text}</span>
                     </div>`;
                 }).join('');
-                
-                return `<div class="question" id="container_${qK}"><div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;"><strong>${i+1}. ${item.q}</strong> <button class="btn-outline" style="width:auto; padding:5px 10px; font-size:0.8rem; flex-shrink:0;" onclick="resetRanking('${qK}')">🔄 重設</button></div><div class="options" id="opts_${qK}">${itemsHtml}</div></div>`;
+
+                return `<div class="question" id="container_${qK}"><div class="rank-q-head"><strong>${i+1}. ${item.q}</strong> <button class="btn-outline rank-reset-btn" type="button" onclick="resetRanking('${qK}')">🔄 重設</button></div><div class="options" id="opts_${qK}">${itemsHtml}</div></div>`;
             }).join('');
             
             btn.innerText = "提交並計算最終拓撲 (3/3)";
@@ -359,14 +359,13 @@ window.handleRankingClick = function(qK, optIdx, maxLen) {
     if(!container) return;
     
     container.innerHTML = itemData.items.map((opt, i) => {
-        let rankStr = ''; let activeStyle = '';
         let rankIdx = window.rankingStates[qK].indexOf(i);
-        if(rankIdx > -1) {
-            rankStr = `<span style="background:#38bdf8; color:#0f172a; padding:2px 8px; border-radius:4px; font-weight:bold; margin-right:8px;">[ ${rankIdx+1} ]</span>`;
-            activeStyle = 'border-color:#38bdf8; background:#1e293b;';
-        }
-        return `<div class="ranking-item" onclick="handleRankingClick('${qK}', ${i}, ${itemData.items.length})" style="padding:15px; border:1px solid #1e293b; border-radius:10px; background:#162032; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; transition:0.2s; ${activeStyle}">
-            ${rankStr} <span style="line-height:1.4;">${opt.text}</span>
+        const isActive = rankIdx > -1;
+        const rankStr = isActive ? `<span class="rank-badge">[ ${rankIdx+1} ]</span>` : '';
+        const cls = `ranking-item${isActive ? ' is-ranked' : ''}`;
+        const dataRanked = isActive ? ' data-ranked="1"' : '';
+        return `<div class="${cls}"${dataRanked} onclick="handleRankingClick('${qK}', ${i}, ${itemData.items.length})">
+            ${rankStr}<span class="rank-text">${opt.text}</span>
         </div>`;
     }).join('');
 };
@@ -377,8 +376,8 @@ window.resetRanking = function(qK) {
     const container = document.getElementById(`opts_${qK}`);
     if (!container) return;
     container.innerHTML = itemData.items.map((opt, i) => {
-        return `<div class="ranking-item" onclick="handleRankingClick('${qK}', ${i}, ${itemData.items.length})" style="padding:15px; border:1px solid #1e293b; border-radius:10px; background:#162032; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; transition:0.2s;">
-            <span style="line-height:1.4;">${opt.text}</span>
+        return `<div class="ranking-item" onclick="handleRankingClick('${qK}', ${i}, ${itemData.items.length})">
+            <span class="rank-text">${opt.text}</span>
         </div>`;
     }).join('');
 };

@@ -209,6 +209,31 @@
         }, 50);
     }
 
+    // -------- 離開警告：已答題但還沒看到結果頁時，重整 / 關分頁前確認 --------
+    function hasUnsubmittedAnswers() {
+        try {
+            const raw = localStorage.getItem(STATE_KEY);
+            if (!raw) return false;
+            const obj = JSON.parse(raw);
+            const cnt = obj && obj.answers ? Object.keys(obj.answers).length : 0;
+            if (cnt === 0) return false;
+            const resultArea = document.getElementById('result-area');
+            // 結果頁顯示中（已提交完成）就不再警告
+            if (resultArea && !resultArea.classList.contains('hidden')) return false;
+            const flow = document.getElementById(QUIZ_FLOW);
+            if (!flow || flow.classList.contains('hidden')) return false;
+            return true;
+        } catch (_) { return false; }
+    }
+    function onBeforeUnload(e) {
+        if (!hasUnsubmittedAnswers()) return;
+        // 現代瀏覽器忽略自訂訊息，但 returnValue 設值才會觸發確認對話框
+        e.preventDefault();
+        e.returnValue = '測驗尚未提交，離開將會中斷進度，確定要離開嗎？';
+        return e.returnValue;
+    }
+    window.addEventListener('beforeunload', onBeforeUnload);
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
