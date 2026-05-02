@@ -11,7 +11,7 @@ routes = [
 [vars]
 ENGINE_VERSION = "V1"
 # SSO 跨站跳轉白名單（逗號分隔），新增網站只需修改此行並重新 deploy
-SSO_ALLOWED_ORIGINS = "https://talo-web.pages.dev"
+SSO_ALLOWED_ORIGINS = "https://talo.chiyigo.com"
 # 【演算法參數】
 SOFTMAX_TAU = "0.3"
 

@@ -24,7 +24,7 @@ describe("worker smoke", () => {
 		expect(res.status).toBe(200);
 		const body = await res.json() as { origins: string[] };
 		expect(Array.isArray(body.origins)).toBe(true);
-		expect(body.origins).toContain("https://talo-web.pages.dev");
+		expect(body.origins).toContain("https://talo.chiyigo.com");
 	});
 
 	it("CORS rejects unknown origin by falling back to canonical", async () => {

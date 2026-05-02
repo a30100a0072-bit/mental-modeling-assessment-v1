@@ -22,14 +22,30 @@
 4. `access_token` 存 `sessionStorage.chiyigo_access_token`，`refresh_token` 存 `localStorage`。
 5. 換到 token 後立刻呼叫 `/api/v1/user/claim-guest-results` 把訪客留下的紀錄綁回 SSO sub（best-effort）。
 
-### 2.2 Worker 端 token 驗證（`src/index.ts` 中的 `verifyChiyigoJWT`）
-- 命名是 JWT 但實際是 **token introspection**：對 `https://chiyigo.com/api/auth/me` 帶 Bearer token 反查身分。
+### 2.2 Worker 端 token 驗證（`src/index.ts` 中的 `verifyChiyigoToken`）
+- 不解 JWT、不驗簽，做的是 **token introspection**：對 `https://chiyigo.com/api/auth/me` 帶 Bearer token 反查身分。
 - 結果以 SHA-256(token) 為 key 快取在 KV，TTL 60 秒。**注意：token 在 chiyigo 端被撤銷後最多 60 秒才會被本 Worker 拒絕**。
 - 回傳 `{ sub, email, role }`，下游所有路由用 `sub` 當 user_id。
 
-### 2.3 跨站 SSO snippet
-- chiyigo.com 首頁可透過 URL fragment / query 帶 `mbti_token` 進來，在 mbti.chiyigo.com 自動寫入 sessionStorage（commits `0f991d2`、`69c51d1`）。
-- CORS 白名單：`STATIC_ALLOWED_ORIGINS` + `env.SSO_ALLOWED_ORIGINS`（後者逗號分隔，免改程式即可加合作站）。
+### 2.3 跨站 SSO token 傳遞
+sessionStorage 是 per-origin 隔離的，MBTI 與 Talo 無法共用。各站透過 URL fragment 傳 token：
+
+**MBTI 與 Talo 是 chiyigo IAM 底下平行子應用，沒有從屬關係**，token param 統一命名 `chiyigo_token`。
+全部走 fragment（`#`）— 不會進 server log、Referer、browser history search。
+
+| 來源 → 目的 | 機制 |
+|---|---|
+| chiyigo.com → MBTI/Talo | `#chiyigo_token=<JWT>`（chiyigo IAM 簽發的 token） |
+| MBTI ↔ Talo（app-switcher） | `#chiyigo_token=<JWT>`（chiyigo-app-switcher.js）|
+| chiyigo.com → Talo（直連）| 無 token；Talo 載入時 `refreshAccessToken()` 用 HttpOnly cookie 換 |
+
+MBTI 三個入口頁（`index.html`、`dashboard.html`、`login.html`）都有 fragment/query receiver，
+讀到 `chiyigo_token` 後寫入 `sessionStorage.chiyigo_access_token`。
+舊名 `mbti_token` 暫保留兼容（過渡期過後可刪），確保使用者舊書籤/外連仍可正常登入。
+
+Talo 的 `setAccessToken()` 同步寫入 `sessionStorage.chiyigo_access_token`，供 MBTI app-switcher 讀取。
+
+- CORS 白名單：`STATIC_ALLOWED_ORIGINS` + `env.SSO_ALLOWED_ORIGINS`（wrangler.toml，逗號分隔，免改程式即可加合作站，目前為 `https://talo.chiyigo.com`）。
 
 ## 3. API 路由總覽（Worker `src/index.ts`）
 
@@ -133,8 +149,8 @@ KV 異常時 fail-open（避免外部依賴抖動把登入流程擋掉）。
 
 ### 待辦
 
-1. **端到端瀏覽器手測**：訪客 A → 註冊 → dashboard 看到那筆，
-   驗 `/user/claim-guest-results` merge 端到端正確。
+1. **訪客結果 merge 端到端手測**：訪客 A → 註冊 → dashboard 看到那筆，
+   驗 `/user/claim-guest-results` merge 端到端正確（詳細步驟見 `MANUAL_TODO.md §1`）。
 2. **行銷埋碼（GA4 / Meta Pixel）**：暫置中，待行銷需求明確再接。
 
 > 部署管道刻意保持手動 `npx wrangler pages deploy public --branch=main`，不接 GitHub

@@ -1,6 +1,9 @@
 // 定義 16 型人格的基準理想向量 (順序嚴格對應: Ni, Ne, Si, Se, Ti, Te, Fi, Fe)
 // 根據 Beebe 畢比模型 8 維位置推導：Dom(1.0), Aux(0.8), Tert(0.4), Inf(-0.6), Opp(0.4), Crit(0.2), Trick(-0.4), Demon(-0.8)
-const IDEAL_PROFILES: Record<string, number[]> = {
+//
+// ⚠️ 此常數同時存在於 public/engine.js calculateLocalProbabilities 內，兩端必須 1:1 同步
+// （前端動態算分使用），有 algorithm-parity test 防漂移。改了一邊就要同步另一邊。
+export const IDEAL_PROFILES: Record<string, number[]> = {
     "INTJ": [1.0, 0.4, -0.8, -0.6, 0.2, 0.8, 0.4, -0.4],
     "ENTJ": [0.8, 0.2, -0.4, 0.4, 0.4, 1.0, -0.6, -0.8],
     "INTP": [0.2, 0.8, 0.4, -0.4, 1.0, 0.4, -0.8, -0.6],
@@ -20,7 +23,7 @@ const IDEAL_PROFILES: Record<string, number[]> = {
 };
 
 // 熱力學平滑參數 (控制機率分佈的銳利度，越低越極端)
-const SOFTMAX_TAU = 0.3;
+export const SOFTMAX_TAU = 0.3;
 
 /**
  * 1. Z-Score 標準化
