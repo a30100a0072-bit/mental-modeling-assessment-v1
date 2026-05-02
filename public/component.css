@@ -70,6 +70,23 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* 長量表休息提示（每 10 題） */
+.rest-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    margin: var(--sp-4) 0;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.08), rgba(168, 85, 247, 0.05));
+    border-left: 3px solid var(--c-cyan);
+    border-radius: var(--r-md);
+    color: var(--tx-default);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-base);
+}
+.rest-hint-icon { font-size: 1.3rem; flex-shrink: 0; }
+.rest-hint-text { color: var(--tx-bright); }
+
 /* 鍵盤焦點題目：左側細光帶提示「目前 1-9 鍵會作用在這」 */
 .question.is-kbd-focus {
     position: relative;

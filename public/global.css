@@ -184,7 +184,11 @@ a:focus-visible,
     #loading-state,
     .dashboard-skeleton,
     .empty-state .empty-actions,
-    .temp-jumpbar { display: none !important; }
+    .temp-jumpbar,
+    .onb-panel,
+    .autosave-indicator,
+    .progress-sub,
+    .rest-hint { display: none !important; }
 
     /* 標題與內文翻正 */
     h1, h2, h3, h4, .main-title, .result-block-title { color: #111827 !important; }
@@ -229,10 +233,40 @@ a:focus-visible,
 
     /* 避免區塊在頁面間被截斷 */
     .result-block, .report-section, .stat-card, .history-item,
-    .charts-flex-container, .chart-box, .timeline-track {
+    .charts-flex-container, .chart-box, .timeline-track,
+    .beebe-stack-container, .beebe-stack-svg,
+    .compare-radar-wrap, .score-table-wrapper, .match-list, .match-item {
         page-break-inside: avoid;
         break-inside: avoid;
     }
+
+    /* 結果頁 result-block 之間給一個彈性切點 */
+    .result-block { page-break-after: auto; break-after: auto; }
+    .result-block-title { page-break-after: avoid; break-after: avoid; }
+
+    /* Beebe SVG 確保跟標題一起印出，不要孤行 */
+    .beebe-stack-container { margin-top: 8px !important; }
+    .beebe-bar-conscious, .beebe-bar-shadow {
+        opacity: 0.85 !important;
+        /* 印表機色彩準確（避免瀏覽器省墨剝色） */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .beebe-track { fill: #e5e7eb !important; }
+    .beebe-bar-conscious { fill: #0369a1 !important; }
+    .beebe-bar-shadow    { fill: #b91c1c !important; }
+    .beebe-pos-label { fill: #1f2937 !important; }
+    .beebe-fn-conscious { fill: #ffffff !important; }
+    .beebe-fn-shadow    { fill: #ffffff !important; }
+    .beebe-val { fill: #4b5563 !important; }
+    .beebe-legend { color: #4b5563 !important; }
+    .beebe-legend .lg-conscious { background: #0369a1 !important; box-shadow: none !important; }
+    .beebe-legend .lg-shadow    { background: #b91c1c !important; box-shadow: none !important; }
+
+    /* dashboard 模組差異雷達：印出時轉純文字，避免 canvas 留白 */
+    .compare-radar-wrap { display: none !important; }
+    .compare-legend { color: #1f2937 !important; }
+    .cmp-dot { box-shadow: none !important; }
 
     /* 圖表縮放保持比例 */
     .charts-flex-container { flex-direction: row !important; gap: 12px !important; }

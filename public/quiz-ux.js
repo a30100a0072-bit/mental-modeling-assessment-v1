@@ -154,6 +154,29 @@
         if (/^[1-9]$/.test(e.key)) { e.preventDefault(); pickOption(parseInt(e.key, 10)); }
     }
 
+    // -------- 長量表休息點：每 10 題插入軟提示，幫使用者眼睛喘氣 --------
+    const REST_TIPS = [
+        '☕ 已完成 10 題，深呼吸 3 秒再繼續。憑直覺答最準。',
+        '🧘 已完成 20 題，提醒自己：沒有對錯，只有最像你的選項。',
+        '🌿 已完成 30 題，剩下不多了，繼續保持節奏。',
+        '🎯 已完成 40 題，一鼓作氣到底。'
+    ];
+    function injectRestHints() {
+        const qs = getQuestions();
+        if (qs.length < 11) return; // 少於 11 題就不需要
+        // 先清掉舊的 hint（換 phase 時會重渲染）
+        document.querySelectorAll('.rest-hint').forEach(n => n.remove());
+        for (let i = 10; i < qs.length; i += 10) {
+            const tipIdx = (i / 10) - 1;
+            const msg = REST_TIPS[tipIdx] || `已完成 ${i} 題，繼續加油 ✨`;
+            const hint = document.createElement('div');
+            hint.className = 'rest-hint';
+            hint.setAttribute('aria-hidden', 'true');
+            hint.innerHTML = `<span class="rest-hint-icon">${msg.slice(0, 2)}</span><span class="rest-hint-text">${msg.slice(2).trim()}</span>`;
+            qs[i].parentNode.insertBefore(hint, qs[i]);
+        }
+    }
+
     // -------- 過場淡入：phase 切換時短暫 fade --------
     function watchPhaseTransition() {
         const c = document.getElementById(QUIZ_CONTAINER);
@@ -165,9 +188,10 @@
                     // eslint-disable-next-line no-unused-expressions
                     c.offsetWidth;
                     c.classList.add('phase-fade-in');
-                    // 重置鍵盤焦點與題級進度
+                    // 重置鍵盤焦點與題級進度，並插入休息提示
                     focusedQuestion = null;
                     setTimeout(() => {
+                        injectRestHints();
                         const fu = firstUnanswered();
                         if (fu) setFocusedQuestion(fu);
                         refreshSubProgress();
@@ -199,10 +223,11 @@
         document.addEventListener('keydown', onKeyDown);
         watchPhaseTransition();
 
-        // 首次進場：建子進度條 + 找第一題未答
+        // 首次進場：建子進度條 + 找第一題未答 + 插入休息提示
         ensureSubProgress();
         ensureSaveIndicator();
         setTimeout(() => {
+            injectRestHints();
             refreshSubProgress();
             const fu = firstUnanswered();
             if (fu) setFocusedQuestion(fu);
