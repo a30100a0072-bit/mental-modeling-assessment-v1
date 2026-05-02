@@ -207,6 +207,71 @@
 .app-card.current .app-name { color: var(--c-yellow); }
 .app-desc { font-size: 0.76rem; color: var(--tx-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* Onboarding 首次到訪 */
+.onb-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 2500;
+    background: rgba(11, 17, 32, 0.78);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.onb-panel.is-in { opacity: 1; }
+.onb-panel.is-out { opacity: 0; }
+.onb-card {
+    position: relative;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bd-default);
+    border-radius: var(--r-3xl);
+    padding: var(--sp-10) var(--sp-7) var(--sp-6);
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+    box-shadow: var(--sh-xl), 0 0 80px rgba(56, 189, 248, 0.08);
+    transform: translateY(8px) scale(0.98);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.onb-panel.is-in .onb-card { transform: translateY(0) scale(1); }
+.onb-skip {
+    position: absolute;
+    top: 12px; right: 14px;
+    width: auto;
+    background: transparent;
+    border: none;
+    color: var(--tx-faint);
+    font-size: var(--fs-xs);
+    cursor: pointer;
+    padding: 4px 8px;
+}
+.onb-skip:hover { color: var(--tx-bright); }
+.onb-icon { font-size: 3rem; line-height: 1; margin-bottom: var(--sp-3); filter: drop-shadow(0 0 24px rgba(56, 189, 248, 0.35)); }
+.onb-title { color: var(--c-cyan); margin: 0 0 var(--sp-3); font-size: 1.4rem; }
+.onb-body { color: var(--tx-default); line-height: var(--lh-relaxed); font-size: var(--fs-base); margin: 0 0 var(--sp-6); }
+.onb-body b { color: var(--tx-bright); }
+.onb-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: var(--sp-5); }
+.onb-dot {
+    width: 8px; height: 8px;
+    border-radius: var(--r-circle);
+    background: var(--bd-default);
+    cursor: pointer;
+    transition: background var(--t-fast) ease, transform var(--t-fast) ease;
+}
+.onb-dot.is-active { background: var(--c-cyan); transform: scale(1.4); }
+.onb-actions { display: flex; gap: var(--sp-3); justify-content: space-between; align-items: center; }
+.onb-actions .btn-outline { width: auto; padding: 10px var(--sp-5); }
+.onb-actions .btn-primary { width: auto; flex: 1; }
+
+@media (max-width: 480px) {
+    .onb-card { padding: var(--sp-7) var(--sp-5) var(--sp-5); }
+    .onb-icon { font-size: 2.4rem; }
+    .onb-title { font-size: 1.2rem; }
+}
+
 /* [手機版修復] 手機導覽列高度較窄，所以微調 body 推擠距離 */
 @media (max-width: 480px) {
     .landing-body { padding-top: 70px; }

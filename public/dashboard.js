@@ -86,6 +86,7 @@ function renderDashboard(records) {
     document.getElementById('stat-stability').style.color = stability < 50 ? '#fca5a5' : '#6ee7b7';
 
     renderAggregatedCharts(records, total);
+    renderVersionCompare(records);
     renderTimeline(records);
 
     const versionMap = {
@@ -186,6 +187,74 @@ function renderAggregatedCharts(records, total) {
             datasets: [{ data: [...top5.map(k => avgProbs[k]), otherP], backgroundColor: ['#38bdf8', '#0284c7', '#2563eb', '#1e40af', '#1e3a8a', '#162032'], borderColor: '#111827', borderWidth: 2 }]
         },
         options: { maintainAspectRatio: false, layout: { padding: { top: 20, bottom: 20, left: 20, right: 20 } }, plugins: { legend: { display: false }, datalabels: { display: true, color: '#fff', font: { weight: 'bold', size: 11 }, align: 'end', anchor: 'end', formatter: (v, ctx) => Math.round(v) > 2 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${Math.round(v)}%` : null, textAlign: 'center' } } }
+    });
+}
+
+function renderVersionCompare(records) {
+    const section = document.getElementById('version-compare-section');
+    if (!section || !records || records.length === 0) return;
+
+    const VERSION_META = {
+        A: { name: '日常 (A)',  color: '#38bdf8', soft: 'rgba(56, 189, 248, 0.18)' },
+        B: { name: '高壓 (B)',  color: '#ef4444', soft: 'rgba(239, 68, 68, 0.16)' },
+        C: { name: '願景 (C)',  color: '#a855f7', soft: 'rgba(168, 85, 247, 0.16)' },
+        D: { name: '行為 (D)',  color: '#fde047', soft: 'rgba(253, 224, 71, 0.16)' },
+        E: { name: '決策 (E)',  color: '#10b981', soft: 'rgba(16, 185, 129, 0.16)' },
+        F: { name: '偏好 (F)',  color: '#f472b6', soft: 'rgba(244, 114, 182, 0.16)' }
+    };
+
+    // 取每個 version 最新一筆
+    const latest = {};
+    records.forEach(r => {
+        const v = (r.assessment_version || r.version || 'B').toUpperCase();
+        if (!VERSION_META[v]) return;
+        if (!latest[v] || new Date(r.timestamp) > new Date(latest[v].timestamp)) latest[v] = r;
+    });
+    const versions = Object.keys(latest);
+    if (versions.length < 2) return; // 少於 2 個模組沒得比
+
+    section.classList.remove('hidden');
+
+    const dimKeys = ['Ti', 'Te', 'Fi', 'Fe', 'Ni', 'Ne', 'Si', 'Se'];
+
+    function recToNorm(r) {
+        try {
+            const dbArr = JSON.parse(r.raw_scores); // [Ni, Ne, Si, Se, Ti, Te, Fi, Fe]
+            const obj = { Ni: dbArr[0], Ne: dbArr[1], Si: dbArr[2], Se: dbArr[3], Ti: dbArr[4], Te: dbArr[5], Fi: dbArr[6], Fe: dbArr[7] };
+            return dimKeys.map(k => Math.max(0, Math.min(100, Math.round(((obj[k] + 15) / 45) * 100))));
+        } catch (e) { return dimKeys.map(() => 0); }
+    }
+
+    const datasets = versions.map(v => {
+        const meta = VERSION_META[v];
+        return {
+            label: `${meta.name} · ${latest[v].primary_type || '?'}`,
+            data: recToNorm(latest[v]),
+            backgroundColor: meta.soft,
+            borderColor: meta.color,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointBackgroundColor: meta.color
+        };
+    });
+
+    document.getElementById('compare-legend').innerHTML = versions.map(v => {
+        const meta = VERSION_META[v];
+        const t = latest[v].primary_type || '?';
+        return `<span class="cmp-item"><i class="cmp-dot" style="background:${meta.color};box-shadow:0 0 8px ${meta.color}"></i>${meta.name} · <b>${t}</b></span>`;
+    }).join('');
+
+    const ctx = document.getElementById('compareRadarChart').getContext('2d');
+    if (window._compareChartObj) window._compareChartObj.destroy();
+    window._compareChartObj = new Chart(ctx, {
+        type: 'radar',
+        data: { labels: dimKeys, datasets },
+        options: {
+            scales: { r: { suggestedMin: 0, suggestedMax: 100, grid: { color: '#1e293b' }, angleLines: { color: '#1e293b' }, ticks: { display: false }, pointLabels: { color: '#cbd5e1', font: { weight: 'bold', size: 12 } } } },
+            plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.raw}%` } } },
+            maintainAspectRatio: false,
+            animation: { duration: 1200, easing: 'easeOutQuart' }
+        }
     });
 }
 

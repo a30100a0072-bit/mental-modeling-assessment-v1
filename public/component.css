@@ -541,6 +541,26 @@ td { color: var(--c-cyan); padding: 10px; border-top: 1px solid var(--bd-subtle)
 .empty-state .empty-actions { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto; }
 .empty-state .empty-actions .btn-primary { padding: 12px 18px; text-decoration: none; text-align: center; display: inline-block; font-size: 0.95rem; }
 
+/* Dashboard 模組差異對比 */
+.dash-h2 { color: var(--tx-bright); font-size: 1.1rem; margin-top: var(--sp-6); margin-bottom: var(--sp-3); }
+.compare-section { margin-top: var(--sp-6); }
+.compare-hint { color: var(--tx-muted); font-size: var(--fs-sm); line-height: var(--lh-base); margin-bottom: var(--sp-4); }
+.compare-legend { display: flex; flex-wrap: wrap; gap: var(--sp-4); margin-bottom: var(--sp-4); font-size: var(--fs-sm); color: var(--tx-default); }
+.cmp-item { display: inline-flex; align-items: center; gap: 6px; }
+.cmp-item b { color: var(--tx-bright); margin-left: 4px; letter-spacing: 1px; }
+.cmp-dot { display: inline-block; width: 12px; height: 12px; border-radius: var(--r-circle); }
+.compare-radar-wrap {
+    height: 380px;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--bd-subtle);
+    border-radius: var(--r-2xl);
+    padding: var(--sp-4);
+}
+@media (max-width: 480px) {
+    .compare-radar-wrap { height: 300px; padding: var(--sp-2); }
+    .compare-legend { gap: var(--sp-3); font-size: var(--fs-xs); }
+}
+
 /* 心智演化軌跡 timeline */
 .timeline-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.78rem; color: var(--tx-muted); margin-bottom: 16px; }
 .timeline-legend > span { display: inline-flex; align-items: center; gap: 6px; }
