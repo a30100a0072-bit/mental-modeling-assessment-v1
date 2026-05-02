@@ -8,23 +8,24 @@
 - **前端**：Cloudflare Pages，`public/` 目錄下原生 HTML/CSS/JS（無建置步驟）。
 - **後端**：Cloudflare Worker (`src/index.ts`)，路由 `mbti.chiyigo.com/api/*` 由 Worker 接管。
 - **資料庫**：D1 (`mm_assessment_db`)，binding `MM_DB_D1`。
-- **快取**：KV (`MM_CACHE_KV`)，主要快取 SSO token introspection 結果（TTL 60s）。
+- **快取**：KV (`MM_CACHE_KV`)，用於 `/user/claim-guest-results` rate limit 計數（TTL 60s）與單筆 report 結果暫存（`report:<uuid>`，TTL 24h）。
 - **訊息佇列**：Queue (`MM_EVENT_QUEUE`)，目前只有空骨架。
 
-## 2. 認證模型 — chiyigo.com SSO（OAuth 2.0 PKCE）
+## 2. 認證模型 — chiyigo.com OIDC（PKCE + ES256 + JWKS）
 
-**Worker 不簽 JWT、不存密碼、不寄信。** 所有身分判定全部委託給 `chiyigo.com` IAM。
+**Worker 不簽 JWT、不存密碼、不寄信、不持有 refresh token。** 所有身分判定全部委託給 `chiyigo.com` IAM。
 
 ### 2.1 登入流程（`public/auth.js`）
-1. `login.html` → `startLogin()` 產 PKCE verifier/challenge/state，導向 `https://chiyigo.com/api/auth/oauth/authorize`。
-2. chiyigo.com 完成登入後 redirect 回 `https://mbti.chiyigo.com/login.html?code=...&state=...`。
-3. 前端用 verifier + code 換 token (`POST https://chiyigo.com/api/auth/oauth/token`)。
-4. `access_token` 存 `sessionStorage.chiyigo_access_token`，`refresh_token` 存 `localStorage`。
-5. 換到 token 後立刻呼叫 `/api/v1/user/claim-guest-results` 把訪客留下的紀錄綁回 SSO sub（best-effort）。
+1. `login.html` → `startLogin()` 產 PKCE verifier/challenge/state/nonce，從 chiyigo `/.well-known/openid-configuration` Discovery 取 endpoint，導向 `authorization_endpoint`，scope=`openid email`。
+2. chiyigo.com 完成登入後 redirect 回 `https://mbti.chiyigo.com/login.html?code=...&state=...`，並種 `Domain=.chiyigo.com` 的 HttpOnly refresh cookie（mbti 子網域共享）。
+3. 前端用 verifier + code 換 `access_token` + `id_token` (`POST` `token_endpoint`)。
+4. `access_token` / `id_token` 存 `sessionStorage`；**refresh_token 不落地 mbti 端**，由 chiyigo cookie 跨子網域承載。
+5. 換到 token 後驗 `id_token`（ES256 簽章 + iss + aud + exp + nonce 5 件套），再呼叫 `/api/v1/user/claim-guest-results` 把訪客紀錄綁回 SSO sub（best-effort）。
 
 ### 2.2 Worker 端 token 驗證（`src/index.ts` 中的 `verifyChiyigoToken`）
-- 不解 JWT、不驗簽，做的是 **token introspection**：對 `https://chiyigo.com/api/auth/me` 帶 Bearer token 反查身分。
-- 結果以 SHA-256(token) 為 key 快取在 KV，TTL 60 秒。**注意：token 在 chiyigo 端被撤銷後最多 60 秒才會被本 Worker 拒絕**。
+- ES256 + JWKS **本地驗**：從 `https://chiyigo.com/.well-known/jwks.json` 抓公鑰（module-level 1 小時快取），用 `crypto.subtle.verify(ECDSA SHA-256)` 驗簽。
+- 驗 `iss=https://chiyigo.com` + `aud=mbti` + `exp` 未過期。
+- 不再 server-to-server 呼叫 introspection。代價：token 在 chiyigo 端被撤銷後 access_token TTL（15min）視窗內舊 token 仍可用，這是 OIDC 標準權衡。
 - 回傳 `{ sub, email, role }`，下游所有路由用 `sub` 當 user_id。
 
 ### 2.3 跨站 SSO token 傳遞

@@ -12,7 +12,7 @@
 //
 // 使用：在 HTML 用 <script src="chiyigo-auth.js"></script> 比業務 JS 早載入。
 // 設計約定：refresh_token 走 chiyigo Domain=.chiyigo.com HttpOnly cookie，跨子網域共享；
-// 本檔不再讀寫 localStorage 中的 refresh_token，所有 chiyigo fetch 都帶 credentials:'include'。
+// 所有 chiyigo fetch 都帶 credentials:'include' 才能讓瀏覽器自動帶上 cookie。
 ;(function () {
     'use strict';
 

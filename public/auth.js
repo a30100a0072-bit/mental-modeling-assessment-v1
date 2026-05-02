@@ -1,6 +1,5 @@
 // OIDC PKCE client — chiyigo.com IAM
 // 全合規：Discovery + PKCE + state + nonce + id_token 完整驗證（簽章/iss/aud/exp/nonce）
-// refresh_token 不再存 localStorage — chiyigo 用 Domain=.chiyigo.com cookie 跨子網域共享
 const ISSUER       = 'https://chiyigo.com'
 const DISCOVERY    = `${ISSUER}/.well-known/openid-configuration`
 const REDIRECT_URI = 'https://mbti.chiyigo.com/login.html'

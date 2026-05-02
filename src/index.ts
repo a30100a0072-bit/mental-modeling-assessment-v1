@@ -1,7 +1,7 @@
 import { processAssessmentResult } from "./modules/assessment";
 import { logError } from "./modules/log";
 
-// 認證走 chiyigo.com SSO（OAuth 2.0 PKCE + token introspection）
+// 認證走 chiyigo.com OIDC（PKCE + ES256 access_token + JWKS 本地驗）
 // 本 Worker 只負責：測驗提交、歷史查詢、帳號刪除（皆透過 chiyigo token 驗身分）
 export interface Env {
   ENGINE_VERSION: string;
