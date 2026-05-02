@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/global.css">
     <link rel="stylesheet" href="/component.css">
     <link rel="stylesheet" href="/landing.css">
+    <script src="/i18n.js?v=1" defer></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
@@ -35,19 +36,19 @@
             <text x="100" y="86" text-anchor="middle" font-size="34" font-weight="900" fill="#fca5a5" font-family="monospace" letter-spacing="2">404</text>
         </svg>
 
-        <h1 class="nf-title">神經連結中斷</h1>
-        <p class="nf-text">
+        <h1 class="nf-title" data-i18n="error.notFound">神經連結中斷</h1>
+        <p class="nf-text" data-i18n="ui.tagline404">
             這條認知通路不在我們的拓撲圖上。<br>
             可能是連結已過期、頁面已遷移，或拼錯網址。
         </p>
 
         <div class="nf-actions">
-            <a class="btn-primary" href="/">回到首頁</a>
-            <a class="btn-outline" href="/assessment.html?v=B&new=1">直接開測 (Phase B)</a>
-            <a class="btn-outline" href="/dashboard.html">會員儀表板</a>
+            <a class="btn-primary" href="/" data-i18n="ui.btnBackHome">回到首頁</a>
+            <a class="btn-outline" href="/assessment.html?v=B&new=1" data-i18n="action.startQuiz">直接開測 (Phase B)</a>
+            <a class="btn-outline" href="/dashboard.html" data-i18n="ui.btnDashboard">會員儀表板</a>
         </div>
 
-        <p class="nf-foot">如果你是從外部連結點過來且確定路徑正確，請寄信至 <a href="mailto:contact@chiyigo.com">contact@chiyigo.com</a> 回報。</p>
+        <p class="nf-foot" data-i18n="ui.contactReport">如果你是從外部連結點過來且確定路徑正確，請寄信至 <a href="mailto:contact@chiyigo.com">contact@chiyigo.com</a> 回報。</p>
     </main>
 </body>
 </html>

@@ -14,7 +14,10 @@
 
     let focusedQuestion = null;
     let lastAnsweredAt = 0;
-    const uxStartTime = Date.now();
+    const uxStartTimeFallback = Date.now();
+    function startTime() {
+        return (typeof window.quizStartTime === 'number') ? window.quizStartTime : uxStartTimeFallback;
+    }
 
     // -------- 題級進度條（掛在 progress-text 後面） --------
     function ensureSubProgress() {
@@ -48,7 +51,7 @@
         // ETA: 用已花時間外推（每題 ~ elapsed/answered 秒）
         const eta = sub.querySelector('.progress-sub-eta');
         if (answered >= 2 && answered < total) {
-            const elapsed = (Date.now() - uxStartTime) / 1000;
+            const elapsed = (Date.now() - startTime()) / 1000;
             const perQ = elapsed / answered;
             const remain = Math.round(perQ * (total - answered));
             eta.textContent = remain > 60
@@ -80,17 +83,25 @@
         el.classList.add('is-show');
     }
 
-    // -------- 旁路存檔：每答一題直接 patch localStorage（appState 是 let，無法從 window 抓）--------
+    // -------- 旁路存檔：寫 window.appState（script.js 改 var 後可見）+ localStorage 雙保險 --------
     const STATE_KEY = 'mbti_v1_final';
     function persistAnswerFromInput(input) {
         if (!input || !input.name) return;
-        try {
-            const raw = localStorage.getItem(STATE_KEY);
-            const obj = raw ? JSON.parse(raw) : { phase: 1, answers: {}, dynamicRoute: null };
-            if (!obj.answers) obj.answers = {};
-            obj.answers[input.name] = input.value;
-            localStorage.setItem(STATE_KEY, JSON.stringify(obj));
-        } catch (_) { /* quota / parse 失敗就跳過，下一輪 next-btn 仍會存 */ }
+        // 優先寫 window.appState，這樣 next-btn 提交時不會被 DOM 同步覆蓋
+        if (typeof window.appState === 'object' && window.appState) {
+            if (!window.appState.answers) window.appState.answers = {};
+            window.appState.answers[input.name] = input.value;
+            if (typeof window.saveState === 'function') window.saveState();
+        } else {
+            // fallback：直接 patch localStorage（script.js 還沒載入完成的邊界）
+            try {
+                const raw = localStorage.getItem(STATE_KEY);
+                const obj = raw ? JSON.parse(raw) : { phase: 1, answers: {}, dynamicRoute: null };
+                if (!obj.answers) obj.answers = {};
+                obj.answers[input.name] = input.value;
+                localStorage.setItem(STATE_KEY, JSON.stringify(obj));
+            } catch (_) {}
+        }
         lastAnsweredAt = Date.now();
         flashSaveIndicator();
         refreshSubProgress();

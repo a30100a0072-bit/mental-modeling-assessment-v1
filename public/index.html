@@ -53,8 +53,8 @@
     <header class="landing-header">
         <div class="logo">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'">進入儀表板</button>
-            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'">登入 / 註冊</button>
+            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
             <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
         </div>
     </header>
@@ -100,11 +100,11 @@
     <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
 
     <main class="hero-section">
-        <h1>發現你的<span class="highlight">深層心智</span>模型</h1>
+        <h1 data-i18n="hero.title">發現你的<span class="highlight">深層心智</span>模型</h1>
         <p>基於榮格八維與畢比模型 (John Beebe) 構建的專業測評工具。<br>不只測量你的表層人格，更深究你在高壓、崩潰與成長時的動態轉換軌跡，為您提供專屬的心智拓撲圖。</p>
         
         <div class="hero-buttons">
-            <button class="btn-primary large" onclick="window.location.href='assessment.html?v=B&new=1'">開始測驗 (高壓解析模組)</button>
+            <button class="btn-primary large" onclick="window.location.href='assessment.html?v=B&new=1'" data-i18n="hero.ctaPrimary">開始測驗 (高壓解析模組)</button>
         </div>
 
         <div class="version-cards">

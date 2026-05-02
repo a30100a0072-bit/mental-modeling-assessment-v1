@@ -42,14 +42,17 @@ if (currentVersion === 'D') {
     activeRanking = typeof mData_Ranking_F !== 'undefined' ? mData_Ranking_F : [];
 }
 
-let appScores = { Ti:0, Te:0, Fi:0, Fe:0, Ni:0, Ne:0, Si:0, Se:0 };
-let appState = { phase: 1, answers: {}, dynamicRoute: null };
-let isSharedView = false;
-let quizStartTime = Date.now(); 
+// 改 var 讓 window.appScores / window.appState / window.quizStartTime 可被 IIFE 模組
+// （quiz-ux.js / share-card.js / landing-progress.js）直接讀，不必繞道 localStorage / DOM。
+// api.js 仍直接賦值（共享 global scope），不需修改。
+var appScores = { Ti:0, Te:0, Fi:0, Fe:0, Ni:0, Ne:0, Si:0, Se:0 };
+var appState = { phase: 1, answers: {}, dynamicRoute: null };
+var isSharedView = false;
+var quizStartTime = Date.now();
 window.radarChartObj = null;
 window.pieChartObj = null;
-let backendProbs = {};
-let backendSorted = [];
+var backendProbs = {};
+var backendSorted = [];
 
 window.isGodMode = false;
 window.backendPrimaryType = null; 

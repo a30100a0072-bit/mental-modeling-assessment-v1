@@ -7,7 +7,7 @@
 .header-actions { display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; }
 .header-actions button { width: auto; white-space: nowrap; }
 .btn-outline { background: transparent; border: 1px solid var(--c-cyan); color: var(--c-cyan); padding: var(--sp-2) var(--sp-5); border-radius: var(--r-md); cursor: pointer; font-weight: bold; transition: 0.3s; }
-.theme-toggle {
+.theme-toggle, .lang-toggle {
     width: auto;
     background: transparent;
     border: 1px solid var(--bd-default);
@@ -19,9 +19,10 @@
     line-height: 1;
     transition: border-color var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) ease;
 }
-.theme-toggle:hover { color: var(--c-cyan); border-color: var(--c-cyan); transform: scale(1.05); }
+.theme-toggle:hover, .lang-toggle:hover { color: var(--c-cyan); border-color: var(--c-cyan); transform: scale(1.05); }
+.lang-toggle { font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; }
 @media (max-width: 480px) {
-    .theme-toggle { padding: 5px 8px !important; font-size: 0.9rem !important; }
+    .theme-toggle, .lang-toggle { padding: 5px 8px !important; font-size: 0.85rem !important; }
 }
 .btn-outline:hover { background: var(--c-cyan); color: var(--bg-card-2); }
 .btn-outline.is-cta { background: var(--c-cyan); color: var(--bg-card-2); border-color: var(--c-cyan); }

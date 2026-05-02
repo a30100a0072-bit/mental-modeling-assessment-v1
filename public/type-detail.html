@@ -25,63 +25,6 @@
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=1" defer></script>
-    <style>
-        .detail-hero { background: linear-gradient(135deg, #0f172a, #162032); border-radius: 20px; padding: 40px; margin-top: 20px; border: 1px solid #1e293b; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .type-badge { display: inline-block; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 2.5rem; font-weight: 900; padding: 10px 30px; border-radius: 12px; border: 1px solid #38bdf8; letter-spacing: 2px; margin-bottom: 15px; }
-        .type-name-hero { font-size: 1.8rem; color: #f8fafc; font-weight: bold; margin-bottom: 10px; }
-        .type-tagline { color: #94a3b8; font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px; line-height: 1.6; }
-        
-        .stack-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
-        .stack-box { background: #1e293b; border: 1px solid #334155; padding: 15px 20px; border-radius: 12px; text-align: center; min-width: 120px; }
-        .stack-role { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        
-        /* [新增] 認知功能懸浮註解 (Tooltip) 樣式 */
-        .stack-func { font-size: 1.2rem; color: #e0f2fe; font-weight: bold; position: relative; cursor: help; }
-        .stack-func:hover::after, .stack-func:active::after {
-            content: attr(data-tip);
-            position: absolute;
-            bottom: 140%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0b1120;
-            color: #e0f2fe;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            width: max-content;
-            max-width: 220px;
-            white-space: normal;
-            line-height: 1.5;
-            border: 1px solid #38bdf8;
-            z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-            pointer-events: none;
-            font-family: sans-serif;
-            font-weight: normal;
-            text-transform: none;
-        }
-
-        .traits-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 30px; }
-        .trait-tag { background: #0f172a; border: 1px solid #38bdf8; color: #bae6fd; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; }
-
-        .content-section { background: #162032; border-radius: 16px; padding: 30px; margin-top: 20px; border: 1px solid #1e293b; }
-        .content-section h3 { color: #38bdf8; font-size: 1.3rem; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
-        .content-section p { color: #cbd5e1; line-height: 1.8; font-size: 1.05rem; }
-        .content-section.danger { border-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
-        .content-section.danger h3 { color: #fca5a5; border-bottom-color: rgba(239, 68, 68, 0.2); }
-        .content-section.evolution { border-color: #10b981; background: rgba(16, 185, 129, 0.05); }
-        .content-section.evolution h3 { color: #6ee7b7; border-bottom-color: rgba(16, 185, 129, 0.2); }
-
-        .back-nav { margin-top: 20px; text-align: center; }
-        .back-nav button { width: auto; padding: 12px 30px; font-size: 1rem; }
-        
-        @media (max-width: 480px) {
-            .detail-hero { padding: 25px 15px; }
-            .type-badge { font-size: 2rem; padding: 10px 20px; }
-            .stack-container { gap: 10px; }
-            .stack-box { min-width: 45%; padding: 10px; }
-        }
-    </style>
 </head>
 <body class="landing-body">
     <header class="landing-header">
