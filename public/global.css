@@ -105,6 +105,54 @@
     --sh-cyan-base: 0 4px 15px rgba(2, 132, 199, 0.3);
 }
 
+/* Light mode 額外覆寫（針對沒有走 token 的硬編碼 rgba） */
+:root[data-theme="light"] .landing-header { background: rgba(255, 255, 255, 0.9); }
+:root[data-theme="light"] .quick-nav-bar { background: rgba(255, 255, 255, 0.9); }
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .v-card.is-completed { background: var(--bg-card-2) !important; }
+:root[data-theme="light"] .stat-card { background: linear-gradient(145deg, #ffffff, #f1f5f9) !important; }
+:root[data-theme="light"] .modal { background: rgba(15, 23, 42, 0.4); }
+:root[data-theme="light"] .onb-panel { background: rgba(15, 23, 42, 0.5); }
+:root[data-theme="light"] .timeline-track { background: linear-gradient(90deg, #f8fafc, #f1f5f9, #f8fafc); }
+:root[data-theme="light"] .blindspot-box { color: var(--c-red); background: rgba(239, 68, 68, 0.08); }
+:root[data-theme="light"] .archetype-section.ego-section { background: linear-gradient(145deg, #f8fafc, rgba(56, 189, 248, 0.05)); }
+:root[data-theme="light"] .archetype-section.shadow-section { background: linear-gradient(145deg, #f8fafc, rgba(239, 68, 68, 0.05)); }
+:root[data-theme="light"] .temperament-section { background: var(--bg-card-2); }
+:root[data-theme="light"] .ranking-item.is-ranked { background: rgba(2, 132, 199, 0.06); }
+:root[data-theme="light"] .auth-box { box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08), 0 0 60px rgba(56, 189, 248, 0.04); }
+:root[data-theme="light"] .dev-console { background: #fffbeb; }
+:root[data-theme="light"] .danger-zone { background: rgba(239, 68, 68, 0.06); }
+
+/* Light mode (使用者按 toggle 或系統 prefer light 時) */
+:root[data-theme="light"] {
+    --bg-base: #f1f5f9;
+    --bg-card-2: #ffffff;
+    --bg-elevated: #ffffff;
+    --bg-card: #f8fafc;
+    --bd-subtle: #e2e8f0;
+    --bd-default: #cbd5e1;
+    --bd-strong: #94a3b8;
+    --tx-faint: #94a3b8;
+    --tx-muted: #475569;
+    --tx-default: #1f2937;
+    --tx-bright: #0f172a;
+    --tx-heading: #0b1120;
+    --tx-brightest: #020617;
+    --c-cyan: #0284c7;
+    --c-cyan-deep: #075985;
+    --c-cyan-soft: #0369a1;
+    --c-cyan-pale: #0c4a6e;
+    --sh-sm: 0 2px 6px rgba(15, 23, 42, 0.06);
+    --sh-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+    --sh-lg: 0 10px 25px rgba(15, 23, 42, 0.1);
+    --sh-xl: 0 20px 50px rgba(15, 23, 42, 0.12);
+    --sh-inset: inset 0 2px 8px rgba(15, 23, 42, 0.04);
+    --sh-glow-cyan-sm: 0 0 6px rgba(2, 132, 199, 0.25);
+    --sh-glow-cyan: 0 0 16px rgba(2, 132, 199, 0.12);
+    --sh-glow-cyan-strong: 0 6px 18px rgba(2, 132, 199, 0.35);
+    --sh-cyan-base: 0 4px 12px rgba(2, 132, 199, 0.2);
+}
+
 /* 基礎標題層級（未被 component 覆寫時使用） */
 h1, h2, h3, h4 { color: var(--tx-heading); line-height: 1.3; }
 h1 { font-size: var(--fs-3xl); }

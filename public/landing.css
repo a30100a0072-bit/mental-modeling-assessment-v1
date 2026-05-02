@@ -7,6 +7,22 @@
 .header-actions { display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; }
 .header-actions button { width: auto; white-space: nowrap; }
 .btn-outline { background: transparent; border: 1px solid var(--c-cyan); color: var(--c-cyan); padding: var(--sp-2) var(--sp-5); border-radius: var(--r-md); cursor: pointer; font-weight: bold; transition: 0.3s; }
+.theme-toggle {
+    width: auto;
+    background: transparent;
+    border: 1px solid var(--bd-default);
+    color: var(--tx-default);
+    border-radius: var(--r-md);
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: border-color var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) ease;
+}
+.theme-toggle:hover { color: var(--c-cyan); border-color: var(--c-cyan); transform: scale(1.05); }
+@media (max-width: 480px) {
+    .theme-toggle { padding: 5px 8px !important; font-size: 0.9rem !important; }
+}
 .btn-outline:hover { background: var(--c-cyan); color: var(--bg-card-2); }
 .btn-outline.is-cta { background: var(--c-cyan); color: var(--bg-card-2); border-color: var(--c-cyan); }
 .hamburger { font-size: 1.8rem; color: var(--tx-default); cursor: pointer; transition: 0.3s; }

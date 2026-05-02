@@ -1,0 +1,34 @@
+{
+    "name": "認知幾何 MBTI V1",
+    "short_name": "認知幾何",
+    "description": "基於榮格八維與畢比模型的 MBTI 認知幾何測評工具。測量你在日常、高壓、覺醒三種狀態下的心智拓撲。",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#0b1120",
+    "theme_color": "#38bdf8",
+    "lang": "zh-Hant",
+    "dir": "ltr",
+    "categories": ["education", "lifestyle", "personalization"],
+    "icons": [
+        {
+            "src": "/og-image.jpg",
+            "sizes": "1200x630",
+            "type": "image/jpeg",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "開始測驗 (Phase B 高壓)",
+            "short_name": "Phase B",
+            "url": "/assessment.html?v=B&new=1"
+        },
+        {
+            "name": "進入儀表板",
+            "short_name": "儀表板",
+            "url": "/dashboard.html"
+        }
+    ]
+}
