@@ -81,9 +81,12 @@
         sessionStorage.removeItem(TOKEN_KEY);
         sessionStorage.removeItem(ID_TOKEN_KEY);
         sessionStorage.removeItem('chiyigo_email');
-        // 已在 dashboard / 私密頁 → 跳 index 避免 stale UI
+        // dashboard / 私密頁跳 index；home 也要 reload 才能讓登入按鈕從「進入儀表板/登出」
+        // 重新 render 成「登入/註冊」（chiyigoSetupAuthUI 只在 DOMContentLoaded 跑一次，不能反向 reset）
         if (location.pathname !== '/' && location.pathname !== '/index.html') {
             location.href = '/index.html';
+        } else {
+            location.reload();
         }
     });
 
