@@ -2,8 +2,9 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <!-- ── 跨站 SSO：接收來自 chiyigo.com 的 JWT。優先讀 fragment（不進 Referer/log），相容舊 query
+    <!-- ── 跨站 SSO：接收來自 chiyigo IAM 的 token。優先讀 fragment（不進 Referer/log）
          驗證：iss=https://chiyigo.com + aud=mbti（防 session fixation 釣魚）；簽章由 worker 那端驗
+         param 名統一 chiyigo_token，舊名 mbti_token 暫保留兼容（過渡期過後可刪）
          若已有 token 不覆蓋（同上理由） ── -->
     <script>
     (function () {
@@ -21,8 +22,9 @@
       try {
         var q = new URLSearchParams(location.search);
         var h = new URLSearchParams(location.hash.replace(/^#/, ''));
-        var t = h.get('mbti_token') || q.get('mbti_token');
+        var t = h.get('chiyigo_token') || q.get('chiyigo_token') || h.get('mbti_token') || q.get('mbti_token');
         if (!t) return;
+        q.delete('chiyigo_token'); q.delete('chiyigo_email');
         q.delete('mbti_token'); q.delete('mbti_email');
         var qs = q.toString();
 
@@ -33,7 +35,7 @@
         var p = decodePayload(t);
         if (!p || p.iss !== 'https://chiyigo.com' || p.aud !== 'mbti') { cleanUrl(qs); return; }
 
-        var e = h.get('mbti_email') || q.get('mbti_email');
+        var e = h.get('chiyigo_email') || q.get('chiyigo_email') || h.get('mbti_email') || q.get('mbti_email');
         sessionStorage.setItem('chiyigo_access_token', t);
         if (e) sessionStorage.setItem('chiyigo_email', e);
         cleanUrl(qs);
@@ -73,7 +75,7 @@
         <div class="header-actions">
             <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'">進入儀表板</button>
             <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'">登入 / 註冊</button>
-            <div class="hamburger" onclick="toggleSidebar()">☰</div>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
         </div>
     </header>
 
@@ -88,10 +90,10 @@
         <span class="qnav-pad"></span>
     </div>
 
-    <div id="sidebar" class="sidebar">
+    <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
             <span>導覽選單</span>
-            <button class="close-btn" onclick="toggleSidebar()">✕</button>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" onclick="toggleSidebar()">✕</button>
         </div>
         <div class="sidebar-content">
             <a href="index.html">首頁 (Home)</a>
@@ -211,22 +213,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', () => {
-            if (sessionStorage.getItem('chiyigo_access_token')) {
-                const authBtn = document.getElementById('auth-nav-btn');
-                if(authBtn) {
-                    authBtn.innerText = "登出系統";
-                    authBtn.style.color = "#ef4444";
-                    authBtn.style.borderColor = "#ef4444";
-                    authBtn.classList.add('logout-mode');
-                    authBtn.onclick = () => {
-                        sessionStorage.removeItem('chiyigo_access_token');
-                        localStorage.removeItem('chiyigo_refresh_token');
-                        localStorage.removeItem('mbti_v1_final');
-                        localStorage.removeItem('mbti_guest_id');
-                        window.location.href = 'index.html';
-                    };
-                }
-            }
+            chiyigoSetupAuthUI('auth-nav-btn', null);
         });
     </script>
     <script src="chiyigo-app-switcher.js?v=1"></script>

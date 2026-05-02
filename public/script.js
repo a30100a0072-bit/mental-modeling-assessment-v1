@@ -454,6 +454,7 @@ function renderResult(isShared) {
     const norm = {}; ENGINE.dimKeys.forEach(k => norm[k] = Math.max(0, Math.min(100, Math.round(((appScores[k]+15)/45)*100))));
     
     updateCharts(primary, norm, backendProbs, backendSorted);
+    if (typeof window.renderBeebeStack === 'function') window.renderBeebeStack(primary, norm);
     document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>`<th data-tip="${ENGINE.tips[k]}" title="${ENGINE.tips[k]}">${k}</th>`).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
     
     const sMap = ENGINE.sides[primary] || ENGINE.sides["ISFJ"];
@@ -544,10 +545,10 @@ function restartQuiz() {
 function copyShareLink() { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?s=${encodeScores(appScores)}`).then(()=>(window.toast || alert)("防篡改連結已複製", { type: 'success' })); }
 
 function goToTalo() {
-    const TALO_URL = 'https://talo-web.pages.dev';
+    const TALO_URL = 'https://talo.chiyigo.com';
     const token = sessionStorage.getItem('chiyigo_access_token');
     if (token) {
-        window.open(`${TALO_URL}?chiyigo_token=${encodeURIComponent(token)}`, '_blank');
+        window.open(`${TALO_URL}#chiyigo_token=${encodeURIComponent(token)}`, '_blank');
     } else {
         window.open(TALO_URL, '_blank');
     }

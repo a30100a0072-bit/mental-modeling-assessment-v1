@@ -33,8 +33,29 @@ function renderDashboard(records) {
 
     if (!records || records.length === 0) {
         document.getElementById('history-container').innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">🧬</div>
+            <div class="empty-state" role="status">
+                <svg class="empty-illust" viewBox="0 0 160 120" aria-hidden="true">
+                    <defs>
+                        <radialGradient id="esGrad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+                            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <ellipse cx="80" cy="100" rx="56" ry="6" fill="#0f172a"/>
+                    <circle cx="80" cy="60" r="44" fill="url(#esGrad)"/>
+                    <g stroke="#38bdf8" stroke-width="1.5" fill="none" opacity="0.7">
+                        <ellipse cx="80" cy="60" rx="40" ry="14"/>
+                        <ellipse cx="80" cy="60" rx="40" ry="14" transform="rotate(60 80 60)"/>
+                        <ellipse cx="80" cy="60" rx="40" ry="14" transform="rotate(-60 80 60)"/>
+                    </g>
+                    <circle cx="80" cy="60" r="5" fill="#38bdf8">
+                        <animate attributeName="r" values="4;6;4" dur="2.4s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="120" cy="60" r="2.5" fill="#7dd3fc"/>
+                    <circle cx="40"  cy="60" r="2.5" fill="#7dd3fc"/>
+                    <circle cx="80"  cy="22" r="2.5" fill="#7dd3fc"/>
+                    <circle cx="80"  cy="98" r="2.5" fill="#7dd3fc"/>
+                </svg>
                 <h3>尚未建立任何神經模型</h3>
                 <p>從下方任一模組開始你的第一次自我建模，結果會被記錄在這裡。</p>
                 <div class="empty-actions">
@@ -198,11 +219,7 @@ function renderTimeline(records) {
 }
 
 function handleLogout() {
-    sessionStorage.removeItem('chiyigo_access_token');
-    localStorage.removeItem('chiyigo_refresh_token');
-    localStorage.removeItem('mbti_v1_final');
-    localStorage.removeItem('mbti_guest_id');
-    window.location.href = 'index.html';
+    chiyigoLogout('index.html');
 }
 
 async function handleDeleteAccount() {

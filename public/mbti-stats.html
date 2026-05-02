@@ -67,7 +67,7 @@
         <div class="header-actions">
             <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'">進入儀表板</button>
             <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'">登入 / 註冊</button>
-            <div class="hamburger" onclick="toggleSidebar()">☰</div>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
         </div>
     </header>
 
@@ -82,10 +82,10 @@
         <span class="qnav-pad"></span>
     </div>
 
-    <div id="sidebar" class="sidebar">
+    <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
             <span>導覽選單</span>
-            <button class="close-btn" onclick="toggleSidebar()">✕</button>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" onclick="toggleSidebar()">✕</button>
         </div>
         <div class="sidebar-content">
             <a href="index.html">首頁 (Home)</a>
@@ -259,6 +259,7 @@
         </div>
     </main>
 
+    <script src="chiyigo-auth.js?v=2"></script>
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
@@ -266,20 +267,7 @@
         }
 
         window.onload = () => {
-            if (sessionStorage.getItem('chiyigo_access_token')) {
-                document.getElementById('dash-nav-btn').style.display = 'inline-block';
-                const authBtn = document.getElementById('auth-nav-btn');
-                authBtn.innerText = "登出系統";
-                authBtn.style.color = "#ef4444";
-                authBtn.style.borderColor = "#ef4444";
-                authBtn.classList.add('logout-mode');
-                authBtn.onclick = () => {
-                    sessionStorage.removeItem('chiyigo_access_token');
-                    localStorage.removeItem('chiyigo_refresh_token');
-                    localStorage.removeItem('mbti_v1_final');
-                    window.location.href = 'index.html';
-                };
-            }
+            chiyigoSetupAuthUI('auth-nav-btn', 'dash-nav-btn');
 
             setTimeout(() => {
                 document.querySelectorAll('.bar-fill').forEach(bar => {

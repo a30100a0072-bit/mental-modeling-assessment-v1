@@ -20,11 +20,15 @@
         const s = ensureStack();
         const el = document.createElement('div');
         el.className = `toast toast--${type}`;
+        el.setAttribute('role', type === 'error' || type === 'warn' ? 'alert' : 'status');
         const icon = { info: 'ℹ️', success: '✅', error: '⚠️', warn: '⚡' }[type] || 'ℹ️';
-        el.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-msg"></span>`;
+        el.innerHTML =
+            `<span class="toast-icon" aria-hidden="true">${icon}</span>` +
+            `<span class="toast-msg"></span>` +
+            `<button class="toast-close" type="button" aria-label="關閉通知">×</button>` +
+            (duration > 0 ? `<span class="toast-progress"><span class="toast-progress-fill" style="animation-duration:${duration}ms"></span></span>` : '');
         el.querySelector('.toast-msg').textContent = message;
         s.appendChild(el);
-        // trigger entry animation
         requestAnimationFrame(() => el.classList.add('toast-in'));
 
         function dismiss() {
@@ -32,7 +36,11 @@
             el.classList.add('toast-out');
             el.addEventListener('transitionend', () => el.remove(), { once: true });
         }
-        el.addEventListener('click', dismiss);
+        el.addEventListener('click', (e) => {
+            // 點 progress / close / 任意處皆可 dismiss
+            e.stopPropagation();
+            dismiss();
+        });
         if (duration > 0) setTimeout(dismiss, duration);
         return dismiss;
     };
