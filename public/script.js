@@ -202,17 +202,19 @@ function renderPhase(p) {
         const sortedF = [...ENGINE.dimKeys].sort((a,b) => appScores[b] - appScores[a]);
         window.TrifurcationWarning = (appScores[sortedF[0]] - appScores[sortedF[2]] < 5);
 
-        // Route B: 偵測 4 軸 (E/I, N/S, T/F, J/P) 中最模糊那軸
-        // 模糊 → 從決勝題庫抽 3 題；不模糊 → 維持原本的 1 題 cognitive function 探針
+        // 後端動態挑題：4 軸最模糊 → 抽 3 題決勝題；都篤定 → 1 題 fallback。
+        // 對使用者完全透明 — 不揭露「我們偵測到你 T/F 軸接近 50/50」這類分析資訊
+        // (feedback_assessment_integrity)，UI 統一顯示「最終校準」中性框架。
         let probe = null;
-        let axisMode = null; // 'EI' | 'NS' | 'TF' | 'JP' | null
+        let axisMode = null;
         try {
             const localProbs = calculateLocalProbabilities(appScores).probs;
             const axisProbs = window.calculateAxisProbabilities(localProbs);
-            const ambig = window.findMostAmbiguousAxis(axisProbs, 8); // 差距 <16% 算模糊
+            const ambig = window.findMostAmbiguousAxis(axisProbs, 8);
             if (ambig && typeof getAxisDeciders === 'function') {
                 probe = getAxisDeciders(ambig.axis, 3);
                 axisMode = ambig.axis;
+                // 後台 GA 仍紀錄（純 telemetry，使用者看不到）
                 if (window.track) {
                     window.track('axis_decider_offered', {
                         version: currentVersion,
@@ -228,13 +230,12 @@ function renderPhase(p) {
             axisMode = null;
         }
 
-        const axisLabelMap = { EI: '內外傾 (E/I)', NS: '直覺/感覺 (N/S)', TF: '思考/情感 (T/F)', JP: '判斷/感知 (J/P)' };
-        header.innerText = axisMode ? `PHASE 05: ${axisLabelMap[axisMode]} 軸線決勝` : "PHASE 05: 階層解耦探針 (高增益)";
-        if (axisMode) {
-            desc.innerText = `偵測到 ${axisLabelMap[axisMode]} 軸接近 50/50，啟動 ${probe.length} 題決勝校準。`;
-        } else {
-            desc.innerText = window.TrifurcationWarning ? "系統偵測到三向分岔糾纏現象，啟動邊界剝離。" : `偵測到核心向量 [${sortedF[0]}/${sortedF[1]}] 高度重合，啟動最終判定。`;
-        }
+        // 統一中性文案 — 不分軸線 / 不揭露分析；只告訴使用者「還剩 N 題、性質是校準」
+        header.innerText = "PHASE 05: 最終校準";
+        const restCount = probe.length;
+        desc.innerText = restCount > 1
+            ? `最後 ${restCount} 題，請憑直覺作答以完成測驗。`
+            : "最後 1 題，請憑直覺作答以完成測驗。";
         qArea.innerHTML = probe.map((it, i) => `<div class="question"><p><strong>${65 + i}. ${it.q}</strong></p><div class="options"><label><input type="radio" name="q5_${i}" value="a"> ${it.a}</label><label><input type="radio" name="q5_${i}" value="b"> ${it.b}</label></div></div>`).join('');
         window.mbtiActiveProbe = probe;
         btn.innerText = "提交並連接 Cloudflare V1 引擎";
