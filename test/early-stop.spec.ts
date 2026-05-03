@@ -10,6 +10,8 @@ import engineSrc from "../public/engine.js?raw";
 
 let evaluateConfidence: (probs: Record<string, number>) => any;
 let canStopEarly: (conf: any, phasesAnswered: number) => boolean;
+let calculateAxisProbabilities: (probs: Record<string, number>) => any;
+let findMostAmbiguousAxis: (axisProbs: any, threshold?: number) => any;
 
 beforeAll(() => {
   // engine.js 只用到 window.* 暴露 + typeof 守衛全域題庫；node 端沒這些都 OK
@@ -20,6 +22,8 @@ beforeAll(() => {
   fn(win);
   evaluateConfidence = win.evaluateConfidence;
   canStopEarly = win.canStopEarly;
+  calculateAxisProbabilities = win.calculateAxisProbabilities;
+  findMostAmbiguousAxis = win.findMostAmbiguousAxis;
 });
 
 describe("evaluateConfidence — top/second/lead 抽取", () => {
@@ -74,5 +78,59 @@ describe("canStopEarly — 提早結束的閾值守門", () => {
     expect(canStopEarly(null, 2)).toBe(false);
     expect(canStopEarly({} as any, 2)).toBe(false);
     expect(canStopEarly({ topProb: "70" } as any, 2)).toBe(false);
+  });
+});
+
+// ============================================================
+// Route B: calculateAxisProbabilities + findMostAmbiguousAxis
+// ============================================================
+describe("calculateAxisProbabilities — 16 型 collapse 成 4 軸", () => {
+  it("純 INTJ 100% → E=0, N=100, T=100, J=100", () => {
+    const ax = calculateAxisProbabilities({ INTJ: 100 });
+    expect(ax.E).toBe(0);
+    expect(ax.N).toBe(100);
+    expect(ax.T).toBe(100);
+    expect(ax.J).toBe(100);
+  });
+
+  it("INTJ/ENFP 50/50 → E=50, N=100, T=50, J=50", () => {
+    const ax = calculateAxisProbabilities({ INTJ: 50, ENFP: 50 });
+    expect(ax.E).toBe(50);
+    expect(ax.N).toBe(100);
+    expect(ax.T).toBe(50);
+    expect(ax.J).toBe(50);
+  });
+
+  it("空 / null → 回 null（不炸）", () => {
+    expect(calculateAxisProbabilities(null as any)).toBe(null);
+    expect(calculateAxisProbabilities({})).toBe(null);
+  });
+
+  it("非 4 字元 key 被忽略", () => {
+    const ax = calculateAxisProbabilities({ INTJ: 60, BAD: 999, "": 1 } as any);
+    expect(ax.N).toBe(100);
+    expect(ax.J).toBe(100);
+  });
+});
+
+describe("findMostAmbiguousAxis — 4 軸中找最接近 50/50 那條", () => {
+  it("EI=51, NS=80, TF=70, JP=90 → 最模糊是 EI", () => {
+    const r = findMostAmbiguousAxis({ E: 51, N: 80, T: 70, J: 90 });
+    expect(r.axis).toBe("EI");
+    expect(r.distance).toBeCloseTo(1, 5);
+    expect(r.value).toBe(51);
+  });
+
+  it("4 軸都很篤定 (>58) → 回 null（不需要決勝題）", () => {
+    expect(findMostAmbiguousAxis({ E: 80, N: 75, T: 90, J: 60 }, 8)).toBe(null);
+  });
+
+  it("threshold 自訂：threshold=2 時 51/49 算模糊但 53/47 不算", () => {
+    expect(findMostAmbiguousAxis({ E: 51, N: 80, T: 70, J: 90 }, 2)?.axis).toBe("EI");
+    expect(findMostAmbiguousAxis({ E: 53, N: 80, T: 70, J: 90 }, 2)).toBe(null);
+  });
+
+  it("null 輸入不炸", () => {
+    expect(findMostAmbiguousAxis(null)).toBe(null);
   });
 });

@@ -288,3 +288,52 @@ function canStopEarly(confidence, phasesAnswered) {
 // 暴露給 script.js（renderPhase 用）
 window.evaluateConfidence = evaluateConfidence;
 window.canStopEarly = canStopEarly;
+
+// ==========================================
+// [Route B] 4 軸機率與最模糊軸偵測
+// ==========================================
+// calculateAxisProbabilities(probs)：把 16 型 posterior collapse 成 4 軸機率
+//   probs = { INTJ: 30, INFJ: 25, ... } (0..100)
+//   回傳 { E, N, T, J } (0..100)，I/S/F/P 都用 100 - 對應值
+function calculateAxisProbabilities(probs) {
+    if (!probs || typeof probs !== 'object') return null;
+    let total = 0, E = 0, N = 0, T = 0, J = 0;
+    for (const k in probs) {
+        if (k.length !== 4) continue;
+        const v = probs[k] || 0;
+        total += v;
+        if (k[0] === 'E') E += v;
+        if (k[1] === 'N') N += v;
+        if (k[2] === 'T') T += v;
+        if (k[3] === 'J') J += v;
+    }
+    if (total <= 0) return null;
+    return {
+        E: (E / total) * 100,
+        N: (N / total) * 100,
+        T: (T / total) * 100,
+        J: (J / total) * 100
+    };
+}
+
+// findMostAmbiguousAxis(axisProbs, threshold)：4 軸中最接近 50/50 的那一軸
+//   axisProbs: { E, N, T, J } (calculateAxisProbabilities 產物)
+//   threshold: ambiguity 上限（|prob-50| < threshold 才視為模糊；預設 8 = 差距 <16%）
+//   回傳 { axis: 'EI'|'NS'|'TF'|'JP', distance: |prob-50|, value: 該軸 prob } 或 null
+function findMostAmbiguousAxis(axisProbs, threshold) {
+    if (!axisProbs) return null;
+    const t = (typeof threshold === 'number') ? threshold : 8;
+    const candidates = [
+        { axis: 'EI', value: axisProbs.E, distance: Math.abs(axisProbs.E - 50) },
+        { axis: 'NS', value: axisProbs.N, distance: Math.abs(axisProbs.N - 50) },
+        { axis: 'TF', value: axisProbs.T, distance: Math.abs(axisProbs.T - 50) },
+        { axis: 'JP', value: axisProbs.J, distance: Math.abs(axisProbs.J - 50) }
+    ];
+    candidates.sort((a, b) => a.distance - b.distance);
+    const top = candidates[0];
+    if (top.distance >= t) return null; // 沒有模糊軸 → 用單題探針即可
+    return top;
+}
+
+window.calculateAxisProbabilities = calculateAxisProbabilities;
+window.findMostAmbiguousAxis = findMostAmbiguousAxis;

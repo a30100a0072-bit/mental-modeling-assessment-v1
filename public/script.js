@@ -200,19 +200,54 @@ function renderPhase(p) {
         preCalculatePhase1To4();
         const sortedF = [...ENGINE.dimKeys].sort((a,b) => appScores[b] - appScores[a]);
         window.TrifurcationWarning = (appScores[sortedF[0]] - appScores[sortedF[2]] < 5);
-        
-        const probe = getDynamicProbe(sortedF[0], sortedF[1]); 
-        
-        header.innerText = "PHASE 05: 階層解耦探針 (高增益)";
-        desc.innerText = window.TrifurcationWarning ? "系統偵測到三向分岔糾纏現象，啟動邊界剝離。" : `偵測到核心向量 [${sortedF[0]}/${sortedF[1]}] 高度重合，啟動最終判定。`;
-        qArea.innerHTML = probe.map((it, i) => `<div class="question"><p><strong>${65 + i}. ${it.q}</strong></p><div class="options"><label><input type="radio" name="q5" value="a"> ${it.a}</label><label><input type="radio" name="q5" value="b"> ${it.b}</label></div></div>`).join('');
+
+        // Route B: 偵測 4 軸 (E/I, N/S, T/F, J/P) 中最模糊那軸
+        // 模糊 → 從決勝題庫抽 3 題；不模糊 → 維持原本的 1 題 cognitive function 探針
+        let probe = null;
+        let axisMode = null; // 'EI' | 'NS' | 'TF' | 'JP' | null
+        try {
+            const localProbs = calculateLocalProbabilities(appScores).probs;
+            const axisProbs = window.calculateAxisProbabilities(localProbs);
+            const ambig = window.findMostAmbiguousAxis(axisProbs, 8); // 差距 <16% 算模糊
+            if (ambig && typeof getAxisDeciders === 'function') {
+                probe = getAxisDeciders(ambig.axis, 3);
+                axisMode = ambig.axis;
+                if (window.track) {
+                    window.track('axis_decider_offered', {
+                        version: currentVersion,
+                        axis: ambig.axis,
+                        ambiguity_distance: Math.round(ambig.distance * 10) / 10,
+                        n_questions: probe ? probe.length : 0
+                    });
+                }
+            }
+        } catch (_) { /* fallback 走舊路徑 */ }
+        if (!probe || probe.length === 0) {
+            probe = getDynamicProbe(sortedF[0], sortedF[1]);
+            axisMode = null;
+        }
+
+        const axisLabelMap = { EI: '內外傾 (E/I)', NS: '直覺/感覺 (N/S)', TF: '思考/情感 (T/F)', JP: '判斷/感知 (J/P)' };
+        header.innerText = axisMode ? `PHASE 05: ${axisLabelMap[axisMode]} 軸線決勝` : "PHASE 05: 階層解耦探針 (高增益)";
+        if (axisMode) {
+            desc.innerText = `偵測到 ${axisLabelMap[axisMode]} 軸接近 50/50，啟動 ${probe.length} 題決勝校準。`;
+        } else {
+            desc.innerText = window.TrifurcationWarning ? "系統偵測到三向分岔糾纏現象，啟動邊界剝離。" : `偵測到核心向量 [${sortedF[0]}/${sortedF[1]}] 高度重合，啟動最終判定。`;
+        }
+        qArea.innerHTML = probe.map((it, i) => `<div class="question"><p><strong>${65 + i}. ${it.q}</strong></p><div class="options"><label><input type="radio" name="q5_${i}" value="a"> ${it.a}</label><label><input type="radio" name="q5_${i}" value="b"> ${it.b}</label></div></div>`).join('');
         window.mbtiActiveProbe = probe;
         btn.innerText = "提交並連接 Cloudflare V1 引擎";
         btn.onclick = () => {
-            const sel = document.querySelector('input[name="q5"]:checked');
-            if(!sel) return (window.toast || alert)("請完成最後的校準題目。", { type: 'warn' });
-            appState.answers.phase5 = { val: sel.value, dA: window.mbtiActiveProbe[0].dA, dB: window.mbtiActiveProbe[0].dB };
-            saveState(); proceedToResultAPI(); 
+            // 多題模式：每題都要選；單題模式：只 q5_0
+            const answers = [];
+            for (let i = 0; i < probe.length; i++) {
+                const sel = document.querySelector('input[name="q5_' + i + '"]:checked');
+                if (!sel) return (window.toast || alert)("請完成所有最後的校準題目。", { type: 'warn' });
+                answers.push({ val: sel.value, dA: probe[i].dA, dB: probe[i].dB, w: probe[i].w || 3 });
+            }
+            // 多題：array；單題：保留舊格式（向下相容）
+            appState.answers.phase5 = (probe.length > 1) ? answers : { val: answers[0].val, dA: answers[0].dA, dB: answers[0].dB };
+            saveState(); proceedToResultAPI();
         };
     }
 }
@@ -405,11 +440,21 @@ function calculateFinalRawScores() {
     }
     
     // 若為 A/B/C 卷，走舊版算分
-    preCalculatePhase1To4(); 
-    if (appState.answers.phase5) { 
-        const ans = appState.answers.phase5;
-        if(ans.val === 'a') ans.dA.forEach(d => { appScores[d]+=3; appScores[ENGINE.antagonist[d]]-=1.5; }); 
-        else ans.dB.forEach(d => { appScores[d]+=3; appScores[ENGINE.antagonist[d]]-=1.5; }); 
+    preCalculatePhase1To4();
+    if (appState.answers.phase5) {
+        const ph5 = appState.answers.phase5;
+        // Route B: phase5 變成 array (多題決勝)；舊單題格式 {val, dA, dB} 仍向下相容
+        if (Array.isArray(ph5)) {
+            ph5.forEach(item => {
+                if (!item || !item.val) return;
+                const w = (typeof item.w === 'number') ? item.w : 1.5;
+                if (item.val === 'a') item.dA.forEach(d => { appScores[d] += w; appScores[ENGINE.antagonist[d]] -= w * 0.5; });
+                else if (item.val === 'b') item.dB.forEach(d => { appScores[d] += w; appScores[ENGINE.antagonist[d]] -= w * 0.5; });
+            });
+        } else if (ph5.val) {
+            if (ph5.val === 'a') ph5.dA.forEach(d => { appScores[d] += 3; appScores[ENGINE.antagonist[d]] -= 1.5; });
+            else ph5.dB.forEach(d => { appScores[d] += 3; appScores[ENGINE.antagonist[d]] -= 1.5; });
+        }
     }
 }
 

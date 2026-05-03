@@ -22,6 +22,52 @@ function getDynamicProbe(f1, f2) {
 }
 
 // ==========================================
+// [Route B] 軸線決勝題庫 (Axis Deciders)
+// ==========================================
+// 當 phase 1-4 答完，4 軸 (E/I, S/N, T/F, J/P) 中有任一軸機率接近 50/50 時，
+// phase 5 從原來的「1 題 cognitive function 探針」擴成「N 題該軸決勝題」。
+//
+// 設計原則：
+//   - 題目用通俗語言（非 cognitive function 術語），對「該軸」鑑別力高
+//   - dA/dB 標 cognitive function 是因為下游 calculateFinalRawScores 直接累加
+//   - 每題 w: 1.5（比 phase 1-4 的 w:1 稍重，畢竟是決勝題）
+//
+// 軸對應的 cognitive functions:
+//   E: Te/Fe/Ne/Se     I: Ti/Fi/Ni/Si
+//   N: Ni/Ne           S: Si/Se
+//   T: Ti/Te           F: Fi/Fe
+//   J: 主導判斷功能 (Te/Fe/Ti/Fi 中的特定組合)，這裡用 Te+Si vs Ne+Se 近似
+const AXIS_PROBES = {
+    EI: [
+        { q: "派對結束後，你的能量狀態：", a: "興奮、想找下一攤、跟人聊到累", b: "累壞了，需要獨處充電",                         dA: ["Se","Fe"], dB: ["Si","Ni"], w: 1.5, axis: "EI" },
+        { q: "思考一個複雜問題時：",       a: "邊跟人講邊想，依靠口語整理思緒", b: "必須關起門獨處，腦中跑完才開口",             dA: ["Ne","Te"], dB: ["Ni","Ti"], w: 1.5, axis: "EI" },
+        { q: "會議中提出新想法：",         a: "邊想邊講，講著講著想法才成形",   b: "想清楚論述、預演完後才發言",                 dA: ["Ne","Fe"], dB: ["Ti","Ni"], w: 1.5, axis: "EI" }
+    ],
+    NS: [
+        { q: "閱讀一本書，你最在意：",     a: "它揭示的隱藏意義與抽象啟發",     b: "它提供的具體事例與實用資訊",                 dA: ["Ne","Ni"], dB: ["Si","Se"], w: 1.5, axis: "NS" },
+        { q: "描述一個地方時你會說：",     a: "「那裡有種 XX 的氛圍」",          b: "「牆是綠色的、桌椅是木製的、價位 X 元」",     dA: ["Ne","Ni"], dB: ["Se","Si"], w: 1.5, axis: "NS" },
+        { q: "規畫旅行：",                 a: "大方向定好就上路，沿途隨緣",     b: "行程、餐廳、預算逐項列清楚才安心",           dA: ["Ne","Ni"], dB: ["Si","Te"], w: 1.5, axis: "NS" }
+    ],
+    TF: [
+        { q: "朋友訴說煩惱，你的本能反應：", a: "分析問題並給出可執行解方",       b: "先共情、傾聽，安撫情緒再說",                 dA: ["Te","Ti"], dB: ["Fe","Fi"], w: 1.5, axis: "TF" },
+        { q: "一場辯論你最在意：",           a: "誰的論點邏輯更嚴密、證據更紮實", b: "誰的態度更有溫度、立場更尊重人",             dA: ["Ti","Te"], dB: ["Fe","Fi"], w: 1.5, axis: "TF" },
+        { q: "做出重大決策的依據：",         a: "客觀數據、成本效益、最佳化模型", b: "對相關人的長遠影響、是否違背良心",           dA: ["Te"],       dB: ["Fi","Fe"], w: 1.5, axis: "TF" }
+    ],
+    JP: [
+        { q: "答應朋友的計畫：",             a: "一旦敲定就極不喜歡更改",         b: "保持彈性、最後一刻決定也 OK",                 dA: ["Te","Si"], dB: ["Ne","Se"], w: 1.5, axis: "JP" },
+        { q: "面對 deadline：",              a: "提早完成，最後一週是 buffer",    b: "deadline 才是真正的開機鈕",                   dA: ["Te","Si"], dB: ["Ne","Se"], w: 1.5, axis: "JP" },
+        { q: "整理工作的方式：",             a: "一次完成一件事，再進下一件",     b: "多項任務同時開進度，靈感來哪做哪",           dA: ["Te"],       dB: ["Ne"],       w: 1.5, axis: "JP" }
+    ]
+};
+
+// getAxisDeciders(axis, n)：拿該軸前 n 題決勝題
+function getAxisDeciders(axis, n) {
+    const bank = AXIS_PROBES[axis];
+    if (!bank) return null;
+    return bank.slice(0, Math.max(1, Math.min(n || 3, bank.length)));
+}
+
+// ==========================================
 // [模組 D] 日常行為量表 (Daily Behavior)
 // 專注測量：習慣、物理空間互動、日常社交、無意識動作
 // ==========================================
