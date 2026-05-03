@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
+    <link rel="stylesheet" href="feature-enhancements.css?v=1">
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=1" defer></script>
@@ -78,6 +79,7 @@
 
     <script src="personality-data.js"></script>
     <script src="chiyigo-auth.js?v=2"></script>
+    <script src="analytics.js?v=1"></script>
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
@@ -170,6 +172,7 @@
                         p.classList.toggle('is-active', on);
                         p.hidden = !on;
                     });
+                    if (window.track) window.track('type_detail_tab_switch', { type: targetType, tab: target.replace('td-pane-', '') });
                     // 切 tab 時，scroll 到 tabbar 上方一點點，避免內容被 sticky bar 遮住
                     document.getElementById('td-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });

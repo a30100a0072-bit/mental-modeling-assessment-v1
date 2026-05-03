@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
+    <link rel="stylesheet" href="feature-enhancements.css?v=1">
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=1" defer></script>
@@ -256,13 +257,17 @@
         document.addEventListener("DOMContentLoaded", () => {
             const sel = document.getElementById("explorer-type");
             if (sel) {
-                sel.addEventListener("change", (e) => renderExplorer(e.target.value));
+                sel.addEventListener("change", (e) => {
+                    renderExplorer(e.target.value);
+                    if (window.track) window.track('beebe_explorer_select', { type: e.target.value });
+                });
                 renderExplorer(sel.value);
             }
         });
     </script>
 
     <script src="chiyigo-auth.js?v=2"></script>
+    <script src="analytics.js?v=1"></script>
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');

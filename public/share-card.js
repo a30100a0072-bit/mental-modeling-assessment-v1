@@ -127,6 +127,7 @@
 
             const svg = buildSvg(primary, norm, prob, taglines);
 
+            if (window.track) window.track('share_card_generate', { type: primary, prob: prob || '' });
             (window.toast || alert)('正在產生分享卡…', { type: 'info', duration: 1200 });
             const pngBlob = await svgToPngBlob(svg);
             const url = URL.createObjectURL(pngBlob);

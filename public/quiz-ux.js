@@ -41,6 +41,14 @@
         if (typeof window.toast === 'function') {
             window.toast('🎯 過半啦！再撐一下就拿到結果。', { type: 'success', duration: 2400 });
         }
+        if (typeof window.track === 'function') {
+            const total = area.querySelectorAll('.question').length;
+            window.track('quiz_halfway', {
+                version: window.currentVersion || (new URLSearchParams(location.search).get('v') || ''),
+                phase: window.appState && window.appState.phase,
+                total_in_phase: total
+            });
+        }
     }
 
     function refreshSubProgress() {
