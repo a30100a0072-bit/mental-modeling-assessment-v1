@@ -174,6 +174,20 @@
                 btnDashboard: '進入儀表板',
                 contactReport: '如果你是從外部連結點過來且確定路徑正確，請寄信回報。',
                 contentZhOnly: '⚠️ 題目與人格報告目前僅提供繁體中文；介面已切換為英文。'
+            },
+            typeDetail: {
+                stackEgo: '主導 (Ego)',
+                stackParent: '輔助 (Parent)',
+                stackChild: '第三 (Child)',
+                stackInferior: '劣勢 (Inferior)',
+                tabCore: '◈ 核心特質',
+                tabCareer: '💼 職涯',
+                tabRelationship: '❤️ 感情',
+                tabShadow: '🌑 陰影',
+                tabEvolution: '🌱 進化',
+                coreHeader: '◈ 核心特質速覽',
+                btnBack: '🔙 返回 16 人格圖鑑',
+                notFound: '找不到該人格型態的資料，請返回上一頁。'
             }
         },
         'en': {
@@ -332,7 +346,21 @@
                 btnBackHome: 'Back to home',
                 btnDashboard: 'Dashboard',
                 contactReport: 'If you reached here from an external link with a correct path, please report by email.',
-                contentZhOnly: '⚠️ Assessment questions and personality reports are currently in Traditional Chinese only — UI is in English.'
+                contentZhOnly: '⚠️ Assessment questions are currently in Traditional Chinese only — UI and personality reports are in English.'
+            },
+            typeDetail: {
+                stackEgo: 'Dominant (Ego)',
+                stackParent: 'Auxiliary (Parent)',
+                stackChild: 'Tertiary (Child)',
+                stackInferior: 'Inferior',
+                tabCore: '◈ Core Traits',
+                tabCareer: '💼 Career',
+                tabRelationship: '❤️ Relationships',
+                tabShadow: '🌑 Shadow',
+                tabEvolution: '🌱 Evolution',
+                coreHeader: '◈ Core Traits Overview',
+                btnBack: '🔙 Back to 16 Types',
+                notFound: 'Could not find data for this type. Please go back.'
             }
         }
     };
