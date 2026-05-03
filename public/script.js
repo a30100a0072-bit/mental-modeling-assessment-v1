@@ -19,27 +19,34 @@ const m2Data = (currentVersion === 'A' && typeof m2Data_A !== 'undefined') ? m2D
 const m3Data = (currentVersion === 'A' && typeof m3Data_A !== 'undefined') ? m3Data_A : ((currentVersion === 'C' && typeof m3Data_C !== 'undefined') ? m3Data_C : (typeof m3Data_B !== 'undefined' ? m3Data_B : []));
 const m4Data = (currentVersion === 'A' && typeof m4Data_A !== 'undefined') ? m4Data_A : ((currentVersion === 'C' && typeof m4Data_C !== 'undefined') ? m4Data_C : (typeof m4Data_B !== 'undefined' ? m4Data_B : []));
 
-// 動態題庫指標 (D, E, F)
+// 動態題庫指標 (D, E, F) — pick EN bank when mbti_locale==='en' 且 questions-en.js 已載入
+function _pickQB(zhBank, key) {
+    if (typeof window.pickEnBank === 'function') {
+        const en = window.pickEnBank(key);
+        if (en) return en;
+    }
+    return zhBank;
+}
 let activeLikert = [];
 let activeForced = [];
 let activeSJT = [];
 let activeRanking = [];
 
 if (currentVersion === 'D') {
-    activeLikert = typeof mData_Likert_D !== 'undefined' ? mData_Likert_D : [];
-    activeForced = typeof mData_Forced_D !== 'undefined' ? mData_Forced_D : [];
-    activeSJT = typeof mData_SJT_D !== 'undefined' ? mData_SJT_D : [];
-    activeRanking = typeof mData_Ranking_D !== 'undefined' ? mData_Ranking_D : [];
+    activeLikert = _pickQB(typeof mData_Likert_D !== 'undefined' ? mData_Likert_D : [], 'mData_Likert_D');
+    activeForced = _pickQB(typeof mData_Forced_D !== 'undefined' ? mData_Forced_D : [], 'mData_Forced_D');
+    activeSJT = _pickQB(typeof mData_SJT_D !== 'undefined' ? mData_SJT_D : [], 'mData_SJT_D');
+    activeRanking = _pickQB(typeof mData_Ranking_D !== 'undefined' ? mData_Ranking_D : [], 'mData_Ranking_D');
 } else if (currentVersion === 'E') {
-    activeLikert = typeof mData_Likert_E !== 'undefined' ? mData_Likert_E : [];
-    activeForced = typeof mData_Forced_E !== 'undefined' ? mData_Forced_E : [];
-    activeSJT = typeof mData_SJT_E !== 'undefined' ? mData_SJT_E : [];
-    activeRanking = typeof mData_Ranking_E !== 'undefined' ? mData_Ranking_E : [];
+    activeLikert = _pickQB(typeof mData_Likert_E !== 'undefined' ? mData_Likert_E : [], 'mData_Likert_E');
+    activeForced = _pickQB(typeof mData_Forced_E !== 'undefined' ? mData_Forced_E : [], 'mData_Forced_E');
+    activeSJT = _pickQB(typeof mData_SJT_E !== 'undefined' ? mData_SJT_E : [], 'mData_SJT_E');
+    activeRanking = _pickQB(typeof mData_Ranking_E !== 'undefined' ? mData_Ranking_E : [], 'mData_Ranking_E');
 } else if (currentVersion === 'F') {
-    activeLikert = typeof mData_Likert_F !== 'undefined' ? mData_Likert_F : [];
-    activeForced = typeof mData_Forced_F !== 'undefined' ? mData_Forced_F : [];
-    activeSJT = typeof mData_SJT_F !== 'undefined' ? mData_SJT_F : [];
-    activeRanking = typeof mData_Ranking_F !== 'undefined' ? mData_Ranking_F : [];
+    activeLikert = _pickQB(typeof mData_Likert_F !== 'undefined' ? mData_Likert_F : [], 'mData_Likert_F');
+    activeForced = _pickQB(typeof mData_Forced_F !== 'undefined' ? mData_Forced_F : [], 'mData_Forced_F');
+    activeSJT = _pickQB(typeof mData_SJT_F !== 'undefined' ? mData_SJT_F : [], 'mData_SJT_F');
+    activeRanking = _pickQB(typeof mData_Ranking_F !== 'undefined' ? mData_Ranking_F : [], 'mData_Ranking_F');
 }
 
 // 改 var 讓 window.appScores / window.appState / window.quizStartTime 可被 IIFE 模組

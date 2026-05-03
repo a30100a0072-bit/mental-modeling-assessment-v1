@@ -16,11 +16,14 @@ const PROBES = {
 PROBES["Te_Ni"]=PROBES["Ni_Te"]; PROBES["Ne_Ti"]=PROBES["Ti_Ne"]; PROBES["Ne_Fi"]=PROBES["Fi_Ne"]; PROBES["Te_Si"]=PROBES["Si_Te"]; PROBES["Ni_Fe"]=PROBES["Fe_Ni"]; PROBES["Ti_Se"]=PROBES["Se_Ti"]; PROBES["Se_Fi"]=PROBES["Fi_Se"]; PROBES["Fe_Si"]=PROBES["Si_Fe"];
 
 function getDynamicProbe(f1, f2) {
-    const key = `${f1}_${f2}`; if (PROBES[key]) return PROBES[key];
-    const keyAlt = `${f2}_${f1}`; if (PROBES[keyAlt]) return PROBES[keyAlt];
+    // locale=en 且有 EN PROBES 時優先用 EN
+    const isEn = (typeof window !== 'undefined' && window.getLocale && window.getLocale() === 'en');
+    const enProbes = (isEn && window.QUESTIONS_EN && window.QUESTIONS_EN.PROBES) ? window.QUESTIONS_EN.PROBES : null;
+    const bank = enProbes || PROBES;
+    const key = `${f1}_${f2}`; if (bank[key]) return bank[key];
+    const keyAlt = `${f2}_${f1}`; if (bank[keyAlt]) return bank[keyAlt];
     const tipsLoc = (typeof window !== 'undefined' && window.ENGloc) ? window.ENGloc('tips') : ENGINE.tips;
     const splitFn = (s) => (s || '').split(/[：:]/)[0];
-    const isEn = (typeof window !== 'undefined' && window.getLocale && window.getLocale() === 'en');
     const qStr = isEn ? "Under extreme stress, the brain’s defense switches to:" : "極限狀態下，大腦防禦切換為：";
     const prefix = isEn ? 'extreme ' : '極致的 ';
     return [{ q: qStr, a: prefix + splitFn(tipsLoc[f1]), b: prefix + splitFn(tipsLoc[f2]), dA: [f1], dB: [f2] }];
@@ -71,7 +74,10 @@ const AXIS_PROBES = {
 
 // getAxisDeciders(axis, n)：拿該軸前 n 題決勝題
 function getAxisDeciders(axis, n) {
-    const bank = AXIS_PROBES[axis];
+    const isEn = (typeof window !== 'undefined' && window.getLocale && window.getLocale() === 'en');
+    const enAxis = (isEn && window.QUESTIONS_EN && window.QUESTIONS_EN.AXIS_PROBES) ? window.QUESTIONS_EN.AXIS_PROBES : null;
+    const source = enAxis || AXIS_PROBES;
+    const bank = source[axis];
     if (!bank) return null;
     return bank.slice(0, Math.max(1, Math.min(n || 3, bank.length)));
 }
