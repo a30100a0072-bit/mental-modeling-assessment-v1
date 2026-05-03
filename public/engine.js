@@ -65,6 +65,20 @@ const ENGINE = {
     }
 };
 
+// ==========================================
+// [i18n] 本地化 ENGINE 4 個內容字典 (tips / gripExit / blindspots / reports)
+// 依 locale 動態回傳對應語言的 dict；en 翻譯由 engine-i18n-en.js 提供 (window.ENGINE_I18N_EN)
+// 紀律：使用者切到 en 但本地化檔沒載 / key 缺 → fallback 中文 (避免 result 頁亂)
+// 用法: ENGloc('tips')[k] 取代原 ENGINE.tips[k]
+// ==========================================
+window.ENGloc = function (prop) {
+    const loc = (typeof window.getLocale === 'function') ? window.getLocale() : 'zh-Hant';
+    if (loc === 'en' && window.ENGINE_I18N_EN && window.ENGINE_I18N_EN[prop]) {
+        return window.ENGINE_I18N_EN[prop];
+    }
+    return ENGINE[prop];
+};
+
 function encodeScores(s) { return ENGINE.dimKeys.map(k => Math.max(0, Math.round(s[k] + 100)).toString(36)).join('-'); }
 function decodeScores(str) { const arr = str.split('-'); const res = {}; if(arr.length===8) ENGINE.dimKeys.forEach((k,i)=>res[k]=parseInt(arr[i],36)-100); return res; }
 

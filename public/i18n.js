@@ -406,6 +406,8 @@
         document.documentElement.setAttribute('lang', loc);
         applyDom();
         applyContentNotice();
+        // 廣播 localechange 給需要 re-render 內容層 (engine reports / personality data) 的頁面
+        try { document.dispatchEvent(new CustomEvent('localechange', { detail: { locale: loc } })); } catch (_) {}
         return true;
     };
     window.getLocale = function () { return current; };

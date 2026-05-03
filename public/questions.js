@@ -18,7 +18,12 @@ PROBES["Te_Ni"]=PROBES["Ni_Te"]; PROBES["Ne_Ti"]=PROBES["Ti_Ne"]; PROBES["Ne_Fi"
 function getDynamicProbe(f1, f2) {
     const key = `${f1}_${f2}`; if (PROBES[key]) return PROBES[key];
     const keyAlt = `${f2}_${f1}`; if (PROBES[keyAlt]) return PROBES[keyAlt];
-    return [{ q: "極限狀態下，大腦防禦切換為：", a: `極致的 ${ENGINE.tips[f1].split('：')[0]}`, b: `極致的 ${ENGINE.tips[f2].split('：')[0]}`, dA: [f1], dB: [f2] }];
+    const tipsLoc = (typeof window !== 'undefined' && window.ENGloc) ? window.ENGloc('tips') : ENGINE.tips;
+    const splitFn = (s) => (s || '').split(/[：:]/)[0];
+    const isEn = (typeof window !== 'undefined' && window.getLocale && window.getLocale() === 'en');
+    const qStr = isEn ? "Under extreme stress, the brain’s defense switches to:" : "極限狀態下，大腦防禦切換為：";
+    const prefix = isEn ? 'extreme ' : '極致的 ';
+    return [{ q: qStr, a: prefix + splitFn(tipsLoc[f1]), b: prefix + splitFn(tipsLoc[f2]), dA: [f1], dB: [f2] }];
 }
 
 // ==========================================

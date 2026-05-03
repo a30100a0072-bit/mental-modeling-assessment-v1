@@ -119,7 +119,8 @@
             const probMatch = (document.getElementById('spectrum-subtitle')?.innerText || '').match(/(\d+)%/);
             const prob = probMatch ? probMatch[1] : '';
 
-            const tag = (typeof ENGINE.reports === 'object' && ENGINE.reports[primary]) ? ENGINE.reports[primary] : null;
+            const reports = window.ENGloc ? window.ENGloc('reports') : (ENGINE.reports || {});
+            const tag = reports[primary] || null;
             const taglines = tag ? [
                 tag.b ? tag.b.split('。')[0] + '。' : '',
                 tag.e ? tag.e.split('。')[0] + '。' : '',

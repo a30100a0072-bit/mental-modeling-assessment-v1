@@ -18,7 +18,8 @@ function renderResult(isShared) {
         const p1S = getPhaseScores(0); const p4S = getPhaseScores(3);
         const p1Top = Object.keys(p1S).reduce((a,b)=>p1S[a]>p1S[b]?a:b); const p4Top = Object.keys(p4S).reduce((a,b)=>p4S[a]>p4S[b]?a:b);
         if (ENGINE.antagonist[p1Top] === p4Top) {
-            gripHTML = `<div class="diag-grip"><b>⚠️ 深層 Grip 狀態警告</b><br>核心(${p1Top})在高壓完全翻轉為對立面(${p4Top})。<div class="grip-exit"><b>💡 退出戰略：</b><br>${ENGINE.gripExit[p1Top]||'請減少極端消耗。'}</div></div>`;
+            const gripExit = window.ENGloc ? window.ENGloc('gripExit') : ENGINE.gripExit;
+            gripHTML = `<div class="diag-grip"><b>⚠️ 深層 Grip 狀態警告</b><br>核心(${p1Top})在高壓完全翻轉為對立面(${p4Top})。<div class="grip-exit"><b>💡 退出戰略：</b><br>${gripExit[p1Top]||'請減少極端消耗。'}</div></div>`;
         }
     }
     document.getElementById('grip-warning').innerHTML = gripHTML;
@@ -37,7 +38,8 @@ function renderResult(isShared) {
 
     updateCharts(primary, norm, backendProbs, backendSorted);
     if (typeof window.renderBeebeStack === 'function') window.renderBeebeStack(primary, norm);
-    document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>`<th data-tip="${ENGINE.tips[k]}" title="${ENGINE.tips[k]}">${k}</th>`).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
+    const tipsLoc = window.ENGloc ? window.ENGloc('tips') : ENGINE.tips;
+    document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>`<th data-tip="${tipsLoc[k]}" title="${tipsLoc[k]}">${k}</th>`).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
 
     const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     const tagEgo = _T('result.tag.ego', null, 'EGO');
@@ -141,10 +143,13 @@ function updateDetail(type) {
     document.querySelectorAll('.match-item').forEach(el => el.classList.remove('active'));
     document.getElementById('btn-'+type)?.classList.add('active');
 
-    const r = ENGINE.reports[type] || ENGINE.reports["ISFJ"];
+    const reports = window.ENGloc ? window.ENGloc('reports') : ENGINE.reports;
+    const blindspots = window.ENGloc ? window.ENGloc('blindspots') : ENGINE.blindspots;
+    const tipsLoc = window.ENGloc ? window.ENGloc('tips') : ENGINE.tips;
+    const r = reports[type] || reports["ISFJ"];
     const s = ENGINE.sides[type] || ENGINE.sides["ISFJ"];
     const stack = ENGINE.stacks[type] || ENGINE.stacks["ISFJ"];
-    const blind = ENGINE.blindspots[ENGINE.antagonist[stack[2]]];
+    const blind = blindspots[ENGINE.antagonist[stack[2]]];
 
     if(window.radarChartObj) {
         const ideal = { [stack[0]]:95, [stack[1]]:75, [stack[2]]:55, [stack[3]]:35 };
@@ -162,10 +167,20 @@ function updateDetail(type) {
         </div>
         <div class="report-section">
             <h3>◈ 實測塌陷盲區 (The Real Trickster)</h3>
-            <p style="color:#fca5a5;"><b>${ENGINE.antagonist[stack[2]]} (${ENGINE.tips[ENGINE.antagonist[stack[2]]].split('：')[0]})</b><br>${blind}</p>
+            <p style="color:#fca5a5;"><b>${ENGINE.antagonist[stack[2]]} (${(tipsLoc[ENGINE.antagonist[stack[2]]] || '').split(/[：:]/)[0]})</b><br>${blind}</p>
         </div>
         <div class="report-section" style="border-bottom:none;margin-bottom:0;">
             <h3>◈ 結構化解析</h3><p><b>■ 日常運作:</b><br>${r.b}</p><p><b>■ 極端衝突:</b><br>${r.c}</p><p><b>■ 覺醒進化:</b><br>${r.g}</p>
             <h4 style="margin-top: 20px;">◈ 動態處方籤</h4><p style="color:#6ee7b7; font-weight: bold;">${r.p}</p>
         </div>`;
 }
+
+// 切語言時重新渲染結果頁（result-area 顯示中才執行；否則使用者尚未完成測驗）
+document.addEventListener('localechange', () => {
+    const resultArea = document.getElementById('result-area');
+    if (!resultArea || resultArea.classList.contains('hidden')) return;
+    try {
+        // renderResult 重新渲染整頁；isShared 視 isSharedView 而定
+        renderResult(typeof isSharedView !== 'undefined' && isSharedView);
+    } catch (_) { /* 失敗就保留原內容；下次 setLocale 再試 */ }
+});
