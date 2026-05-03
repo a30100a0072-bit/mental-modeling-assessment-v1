@@ -119,35 +119,61 @@
                     <div class="type-badge">${targetType}</div>
                     <div class="type-name-hero">${data.name}</div>
                     <div class="type-tagline">"${data.tagline}"</div>
-                    
+
                     <div class="stack-container">
                         <div class="stack-box"><div class="stack-role">主導 (Ego)</div><div class="stack-func" data-tip="${getTip(data.stack.dom)}">${data.stack.dom}</div></div>
                         <div class="stack-box"><div class="stack-role">輔助 (Parent)</div><div class="stack-func" data-tip="${getTip(data.stack.aux)}">${data.stack.aux}</div></div>
                         <div class="stack-box"><div class="stack-role">第三 (Child)</div><div class="stack-func" data-tip="${getTip(data.stack.tert)}">${data.stack.tert}</div></div>
                         <div class="stack-box" style="border-color: #ef4444;"><div class="stack-role" style="color: #fca5a5;">劣勢 (Inferior)</div><div class="stack-func" style="color: #fca5a5;" data-tip="${getTip(data.stack.inf)}">${data.stack.inf}</div></div>
                     </div>
-
-                    <div class="traits-list">
-                        ${traitsHtml}
-                    </div>
                 </div>
 
-                <div class="content-section">
-                    ${data.career}
-                </div>
+                <nav class="td-tabs" id="td-tabs" role="tablist" aria-label="人格深度分類">
+                    <button class="td-tab is-active" data-target="td-pane-core" role="tab" aria-selected="true">◈ 核心特質</button>
+                    <button class="td-tab" data-target="td-pane-career" role="tab" aria-selected="false">💼 職涯</button>
+                    <button class="td-tab" data-target="td-pane-rel" role="tab" aria-selected="false">❤️ 感情</button>
+                    <button class="td-tab" data-target="td-pane-shadow" role="tab" aria-selected="false">🌑 陰影</button>
+                    <button class="td-tab" data-target="td-pane-evo" role="tab" aria-selected="false">🌱 進化</button>
+                </nav>
 
-                <div class="content-section">
-                    ${data.relationship}
-                </div>
-
-                <div class="content-section danger">
-                    ${data.shadow}
-                </div>
-
-                <div class="content-section evolution">
-                    ${data.evolution}
+                <div class="td-panes">
+                    <section class="td-pane is-active" id="td-pane-core" role="tabpanel">
+                        <div class="content-section">
+                            <h3>◈ 核心特質速覽</h3>
+                            <div class="traits-list">${traitsHtml}</div>
+                        </div>
+                    </section>
+                    <section class="td-pane" id="td-pane-career" role="tabpanel" hidden>
+                        <div class="content-section">${data.career}</div>
+                    </section>
+                    <section class="td-pane" id="td-pane-rel" role="tabpanel" hidden>
+                        <div class="content-section">${data.relationship}</div>
+                    </section>
+                    <section class="td-pane" id="td-pane-shadow" role="tabpanel" hidden>
+                        <div class="content-section danger">${data.shadow}</div>
+                    </section>
+                    <section class="td-pane" id="td-pane-evo" role="tabpanel" hidden>
+                        <div class="content-section evolution">${data.evolution}</div>
+                    </section>
                 </div>
             `;
+
+            // tab 切換
+            const tabs = document.querySelectorAll('.td-tab');
+            const panes = document.querySelectorAll('.td-pane');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.dataset.target;
+                    tabs.forEach(t => { t.classList.toggle('is-active', t === tab); t.setAttribute('aria-selected', t === tab); });
+                    panes.forEach(p => {
+                        const on = p.id === target;
+                        p.classList.toggle('is-active', on);
+                        p.hidden = !on;
+                    });
+                    // 切 tab 時，scroll 到 tabbar 上方一點點，避免內容被 sticky bar 遮住
+                    document.getElementById('td-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
         };
     </script>
     <script src="chiyigo-app-switcher.js?v=1"></script>

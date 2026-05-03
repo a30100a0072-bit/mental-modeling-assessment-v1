@@ -86,6 +86,7 @@ function renderDashboard(records) {
     document.getElementById('stat-stability').style.color = stability < 50 ? '#fca5a5' : '#6ee7b7';
 
     renderAggregatedCharts(records, total);
+    renderDichotomyTrend(records);
     renderVersionCompare(records);
     renderTimeline(records);
 
@@ -256,6 +257,127 @@ function renderVersionCompare(records) {
             animation: { duration: 1200, easing: 'easeOutQuart' }
         }
     });
+}
+
+// ── 四軸傾向時間序列：把每次測驗的 16 型後驗分佈 collapse 成 E/N/T/J 機率 ──
+// 基於 result_distribution（每型 0..100），E% = sum(probs[type] for type[0]==='E')…
+// 沒有 result_distribution（早期 record）時退回用 primary_type 二值（0 或 100）
+function renderDichotomyTrend(records) {
+    const section = document.getElementById('dichotomy-trend-section');
+    const canvas = document.getElementById('dichotomyTrendChart');
+    if (!section || !canvas || !records || records.length < 2) return; // 少於 2 筆畫不出趨勢
+
+    const ordered = [...records].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    function dichotomyFromRecord(r) {
+        let probs = null;
+        try { probs = JSON.parse(r.result_distribution); } catch (_) {}
+        const t = r.primary_type || 'ISFJ';
+
+        if (probs && Object.keys(probs).length) {
+            let total = 0, eP = 0, nP = 0, tP = 0, jP = 0;
+            for (const k in probs) {
+                const v = probs[k] || 0;
+                total += v;
+                if (k[0] === 'E') eP += v;
+                if (k[1] === 'N') nP += v;
+                if (k[2] === 'T') tP += v;
+                if (k[3] === 'J') jP += v;
+            }
+            if (total > 0) return {
+                E: Math.round((eP / total) * 100),
+                N: Math.round((nP / total) * 100),
+                T: Math.round((tP / total) * 100),
+                J: Math.round((jP / total) * 100)
+            };
+        }
+        return {
+            E: t[0] === 'E' ? 100 : 0,
+            N: t[1] === 'N' ? 100 : 0,
+            T: t[2] === 'T' ? 100 : 0,
+            J: t[3] === 'J' ? 100 : 0
+        };
+    }
+
+    const points = ordered.map(dichotomyFromRecord);
+    const labels = ordered.map(r => new Date(r.timestamp).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }));
+
+    const series = (key, color) => ({
+        label: key,
+        data: points.map(p => p[key]),
+        borderColor: color,
+        backgroundColor: color + '22',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        tension: 0.25,
+        fill: false
+    });
+
+    section.classList.remove('hidden');
+
+    if (window._trendChartObj) window._trendChartObj.destroy();
+    window._trendChartObj = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                series('E', '#38bdf8'),
+                series('N', '#a855f7'),
+                series('T', '#fde047'),
+                series('J', '#10b981')
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0, max: 100,
+                    grid: { color: '#1e293b' },
+                    ticks: { color: '#94a3b8', callback: (v) => v + '%' },
+                    title: { display: true, text: '傾向機率 (%)', color: '#94a3b8' }
+                },
+                x: {
+                    grid: { color: '#1e293b' },
+                    ticks: { color: '#94a3b8', maxRotation: 0, autoSkip: true }
+                }
+            },
+            plugins: {
+                legend: { display: true, labels: { color: '#cbd5e1', usePointStyle: true } },
+                datalabels: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (c) => {
+                            const opp = { E: 'I', N: 'S', T: 'F', J: 'P' };
+                            const v = c.raw;
+                            return `${c.dataset.label}: ${v}%  (${opp[c.dataset.label]}: ${100 - v}%)`;
+                        }
+                    }
+                }
+            },
+            animation: { duration: 1000, easing: 'easeOutQuart' }
+        }
+    });
+
+    // 首末對比：哪一軸漂移最大
+    const first = points[0], last = points[points.length - 1];
+    const deltas = ['E', 'N', 'T', 'F', 'J', 'P'].slice();
+    const axes = [
+        { key: 'E', pos: 'E', neg: 'I' },
+        { key: 'N', pos: 'N', neg: 'S' },
+        { key: 'T', pos: 'T', neg: 'F' },
+        { key: 'J', pos: 'J', neg: 'P' }
+    ];
+    const dEl = document.getElementById('trend-deltas');
+    if (dEl) {
+        dEl.innerHTML = axes.map(a => {
+            const diff = last[a.key] - first[a.key];
+            const sign = diff > 0 ? '+' : '';
+            const cls = Math.abs(diff) >= 15 ? 'trend-delta--big' : '';
+            const arrow = diff > 1 ? `→ ${a.pos}` : diff < -1 ? `→ ${a.neg}` : '≈ 持平';
+            return `<span class="trend-delta ${cls}"><b>${a.pos}/${a.neg}</b> ${sign}${diff}% <span class="trend-arrow">${arrow}</span></span>`;
+        }).join('');
+    }
 }
 
 function renderTimeline(records) {

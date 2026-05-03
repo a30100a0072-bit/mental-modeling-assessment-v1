@@ -183,6 +183,15 @@
                 </div>
             </div>
 
+            <div id="dichotomy-trend-section" class="hidden trend-section">
+                <h2 class="dash-h2">📉 四軸傾向時間序列 (Dichotomy Trend)</h2>
+                <p class="trend-hint">每次測驗的 E / N / T / J 機率（基於 16 型的後驗分佈），看出你大腦的偏好如何隨時間漂移。</p>
+                <div class="trend-chart-wrap">
+                    <canvas id="dichotomyTrendChart"></canvas>
+                </div>
+                <div class="trend-deltas" id="trend-deltas"></div>
+            </div>
+
             <div id="version-compare-section" class="hidden compare-section">
                 <h2 class="dash-h2">🆚 模組差異對比 (Version Compare)</h2>
                 <p class="compare-hint">每個模組最新一次的能量分布疊圖。日常 (A) vs 高壓 (B) vs 願景 (C) 的落差，就是你大腦在不同情境下的真實切換軌跡。</p>
@@ -220,7 +229,7 @@
     </div>
     
     <script src="chiyigo-auth.js?v=1"></script>
-    <script src="dashboard.js?v=7"></script>
+    <script src="dashboard.js?v=8"></script>
 
     <script>
         function toggleSidebar() {
