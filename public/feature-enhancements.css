@@ -85,3 +85,30 @@
     .compat-grid { grid-template-columns: 1fr; gap: 10px; }
     .compat-type { font-size: 1.6rem; }
 }
+
+/* ── Route A 提早結束 banner ─────────────────────────────────────── */
+.early-stop-banner {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px; margin: 0 0 22px;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.10));
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(56, 189, 248, 0.12);
+    animation: esbIn 0.45s ease;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.early-stop-banner.is-dismissed { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+.esb-icon { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
+.esb-body { flex: 1; min-width: 0; }
+.esb-headline { color: #e0f2fe; font-size: 0.95rem; line-height: 1.5; }
+.esb-headline b { color: #38bdf8; font-size: 1.05rem; letter-spacing: 1px; }
+.esb-sub { color: #94a3b8; font-size: 0.82rem; margin-top: 4px; line-height: 1.5; }
+.esb-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.esb-btn-stop, .esb-btn-continue { width: auto; padding: 8px 14px; font-size: 0.85rem; }
+@keyframes esbIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 600px) {
+    .early-stop-banner { flex-wrap: wrap; padding: 14px; gap: 10px; }
+    .esb-icon { font-size: 1.5rem; }
+    .esb-actions { flex-direction: row; width: 100%; }
+    .esb-btn-stop, .esb-btn-continue { flex: 1; padding: 10px 8px; }
+}

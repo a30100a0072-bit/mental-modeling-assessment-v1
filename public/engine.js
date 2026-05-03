@@ -243,3 +243,48 @@ window.determineDynamicRoute = function(answers, version) {
 window.calculateDynamicScores = function(answers, version) {
     return calculatePartialScores(answers, 3, version);
 };
+
+// ==========================================
+// [Route A] Early Stopping — 答到一半若已可信判定，offer 使用者直接看結果
+// ==========================================
+// evaluateConfidence(probs)：把 16 型機率 collapse 成 top/second + lead 三個指標
+//   probs 形狀：{ INTJ: 67.3, INTP: 12.4, ... }（由 calculateLocalProbabilities 產生）
+//   回傳：{ topType, topProb, secondType, secondProb, lead }
+function evaluateConfidence(probs) {
+    if (!probs || typeof probs !== 'object') {
+        return { topType: null, topProb: 0, secondType: null, secondProb: 0, lead: 0 };
+    }
+    const sorted = Object.keys(probs).sort((a, b) => {
+        const diff = (probs[b] || 0) - (probs[a] || 0);
+        return diff !== 0 ? diff : a.localeCompare(b);
+    });
+    const top = sorted[0];
+    const second = sorted[1];
+    const topProb = probs[top] || 0;
+    const secondProb = probs[second] || 0;
+    return {
+        topType: top,
+        topProb: topProb,
+        secondType: second,
+        secondProb: secondProb,
+        lead: topProb - secondProb
+    };
+}
+
+// canStopEarly(confidence, phasesAnswered)：threshold 隨已答 phase 數放寬。
+//   phasesAnswered=2 (32 題已答): 高標 top ≥65 且 lead ≥30 — 僅最篤定的型可提早 50% 結束
+//   phasesAnswered=3 (48 題已答): 中標 top ≥55 且 lead ≥25 — 多數穩定型在這邊可結束
+//   其餘 (1 / 4): 不 offer — 第 1 phase 資料太薄、第 4 phase 已沒幾題能省
+//
+// 設計權衡：偏保守（false negative > false positive）。寧可讓使用者多答 16 題，
+// 也不要把邊界型錯判導致他複試結果不一樣，引發「為什麼這次跟上次不同型」客訴。
+function canStopEarly(confidence, phasesAnswered) {
+    if (!confidence || typeof confidence.topProb !== 'number') return false;
+    if (phasesAnswered === 2) return confidence.topProb >= 65 && confidence.lead >= 30;
+    if (phasesAnswered === 3) return confidence.topProb >= 55 && confidence.lead >= 25;
+    return false;
+}
+
+// 暴露給 script.js（renderPhase 用）
+window.evaluateConfidence = evaluateConfidence;
+window.canStopEarly = canStopEarly;

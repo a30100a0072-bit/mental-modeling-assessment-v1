@@ -181,6 +181,12 @@ function renderPhase(p) {
         }).join('');
         
         btn.innerText = p < 4 ? `確認選項 (${p}/5)` : "掃描核心維度 (4/5)";
+
+        // Route A: 進入 phase 3 / 4 時，若前面 phase 累計信心夠，offer 提早看結果
+        if (p === 3 || p === 4) {
+            try { maybeShowEarlyStopBanner(p); } catch (_) { /* banner 失敗不擋主流程 */ }
+        }
+
         btn.onclick = () => {
             const qs = qArea.querySelectorAll('.question');
             for (let q of qs) { if(!q.querySelector('input:checked')) { (window.toast || alert)("請完成所有題目以利精準建模。", { type: 'warn' }); q.scrollIntoView({ behavior:'smooth', block:'center' }); return; } }
@@ -427,6 +433,90 @@ function preCalculatePhase1To4() {
             else if(ans === 'b') { item.dB.forEach(d => { appScores[d]+=item.w; appScores[ENGINE.antagonist[d]]-=item.w*0.5; }); }
         });
     });
+}
+
+// Route A: 算「只到第 uptoPhase phase」的 partial scores（不 mutate appScores），
+// 用來餵 calculateLocalProbabilities → evaluateConfidence。
+// 與 preCalculatePhase1To4 邏輯對稱（同樣 +w / -w*0.5 antagonist 扣分）但 scope 縮短。
+function calculatePartialPhaseScores(uptoPhase) {
+    const partial = { Ti:0, Te:0, Fi:0, Fe:0, Ni:0, Ne:0, Si:0, Se:0 };
+    [m1Data, m2Data, m3Data, m4Data].slice(0, uptoPhase).forEach((list, pIdx) => {
+        list.forEach((item, i) => {
+            const ans = appState.answers[`q_${pIdx+1}_${i}`];
+            if (ans === 'a') item.dA.forEach(d => { partial[d] += item.w; partial[ENGINE.antagonist[d]] -= item.w * 0.5; });
+            else if (ans === 'b') item.dB.forEach(d => { partial[d] += item.w; partial[ENGINE.antagonist[d]] -= item.w * 0.5; });
+        });
+    });
+    return partial;
+}
+
+// Route A: 在 phase 3 / 4 開頭注入「已可預測 → 直接看結果」banner（若信心夠）
+// 回傳：true = banner 已顯示；false = 信心不足，不打擾使用者
+function maybeShowEarlyStopBanner(currentPhase) {
+    if (!['A', 'B', 'C'].includes(currentVersion)) return false;
+    if (currentPhase < 3 || currentPhase > 4) return false; // 只在進入 phase 3/4 時 offer
+
+    const phasesAnswered = currentPhase - 1; // 進入 phase 3 = 已答完 phase 1+2
+    const partial = calculatePartialPhaseScores(phasesAnswered);
+    if (typeof calculateLocalProbabilities !== 'function') return false;
+    const local = calculateLocalProbabilities(partial);
+    const conf = window.evaluateConfidence(local.probs);
+    if (!window.canStopEarly(conf, phasesAnswered)) return false;
+
+    const totalRemain = (4 - phasesAnswered) * 16 + 1; // 後續 phase 各 16 題 + 第 5 phase 1 探針題
+    const qArea = document.getElementById('questions-area');
+    if (!qArea) return false;
+
+    const bannerHtml = `
+        <div class="early-stop-banner" role="region" aria-label="提早結束測驗">
+            <div class="esb-icon">🎯</div>
+            <div class="esb-body">
+                <div class="esb-headline">已可預測你是 <b>${conf.topType}</b>（信心 ${Math.round(conf.topProb)}%，領先第 2 名 ${Math.round(conf.lead)}%）</div>
+                <div class="esb-sub">繼續答 ${totalRemain} 題能讓邊界更精準，或現在直接看結果。</div>
+            </div>
+            <div class="esb-actions">
+                <button type="button" class="btn-primary esb-btn-stop" onclick="handleEarlyStop(${phasesAnswered}, '${conf.topType}', ${Math.round(conf.topProb)})">直接看結果</button>
+                <button type="button" class="btn-secondary esb-btn-continue" onclick="dismissEarlyStopBanner()">繼續答更精準</button>
+            </div>
+        </div>
+    `;
+    qArea.insertAdjacentHTML('afterbegin', bannerHtml);
+    if (window.track) {
+        window.track('quiz_early_stop_offered', {
+            version: currentVersion,
+            phases_answered: phasesAnswered,
+            top_type: conf.topType,
+            top_prob: Math.round(conf.topProb),
+            lead: Math.round(conf.lead)
+        });
+    }
+    return true;
+}
+
+function dismissEarlyStopBanner() {
+    const b = document.querySelector('.early-stop-banner');
+    if (b) {
+        b.classList.add('is-dismissed');
+        setTimeout(() => b.remove(), 200);
+    }
+}
+
+// 使用者按「直接看結果」：把目前 partial scores 寫進 appScores → 走正常 finalize → API
+function handleEarlyStop(phasesAnswered, topType, topProb) {
+    if (window.track) {
+        window.track('quiz_early_stop_taken', {
+            version: currentVersion,
+            phases_answered: phasesAnswered,
+            top_type: topType,
+            top_prob: topProb
+        });
+    }
+    // 不執行 phase 5 探針（沒這 1 題影響極小，UX 大於精度）。
+    // calculateFinalRawScores 會走 preCalculatePhase1To4 用「目前已答的所有題」，
+    // 沒答的 phase 自動跳過、不會 +0 也不會出錯。
+    appState.answers.phase5 = null;
+    saveState();
+    proceedToResultAPI();
 }
 
 // ==========================================
