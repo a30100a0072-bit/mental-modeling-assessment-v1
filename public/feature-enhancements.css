@@ -86,36 +86,30 @@
     .compat-type { font-size: 1.6rem; }
 }
 
-/* ── Route A 提早結束 banner ─────────────────────────────────────── */
-.early-stop-banner {
+/* ── 進度存檔 / 暫停測驗 banner ───────────────────────────────────────
+ * 設計：克制、低調、不浮誇 (給使用者放心關視窗的安全感, 不是促銷 / 不是預告結論)
+ * feedback_assessment_integrity: 中途不顯示已預測型 / 信心
+ */
+.resume-banner {
     display: flex; align-items: center; gap: 14px;
-    padding: 16px 18px; margin: 0 0 22px;
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.10));
-    border: 1px solid rgba(56, 189, 248, 0.35);
-    border-radius: 12px;
-    box-shadow: 0 4px 18px rgba(56, 189, 248, 0.12);
-    animation: esbIn 0.45s ease;
-    transition: opacity 0.18s ease, transform 0.18s ease;
+    padding: 14px 16px; margin: 0 0 22px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(110, 231, 183, 0.3); /* 綠色系：「儲存成功」的訊號顏色 */
+    border-left: 4px solid #6ee7b7;
+    border-radius: 10px;
+    animation: rsbIn 0.35s ease;
 }
-.early-stop-banner.is-dismissed { opacity: 0; transform: translateY(-6px); pointer-events: none; }
-.esb-icon { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
-.esb-body { flex: 1; min-width: 0; }
-.esb-headline { color: #e0f2fe; font-size: 0.95rem; line-height: 1.5; }
-.esb-headline b { color: #38bdf8; font-size: 1.05rem; letter-spacing: 1px; }
-.esb-sub { color: #94a3b8; font-size: 0.82rem; margin-top: 4px; line-height: 1.5; }
-.esb-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-.esb-btn-stop, .esb-btn-continue { width: auto; padding: 8px 14px; font-size: 0.85rem; }
-@keyframes esbIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.rsb-icon { font-size: 1.4rem; line-height: 1; flex-shrink: 0; opacity: 0.9; }
+.rsb-body { flex: 1; min-width: 0; }
+.rsb-headline { color: #d1fae5; font-size: 0.92rem; line-height: 1.5; font-weight: 600; }
+.rsb-sub { color: #94a3b8; font-size: 0.8rem; margin-top: 3px; line-height: 1.5; }
+.rsb-btn-pause { width: auto; padding: 8px 16px; font-size: 0.82rem; flex-shrink: 0; }
+@keyframes rsbIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 600px) {
-    .early-stop-banner { flex-wrap: wrap; padding: 14px; gap: 10px; }
-    .esb-icon { font-size: 1.5rem; }
-    .esb-actions { flex-direction: row; width: 100%; }
-    .esb-btn-stop, .esb-btn-continue { flex: 1; padding: 10px 8px; }
+    .resume-banner { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
+    .rsb-btn-pause { width: 100%; padding: 10px; }
 }
 @media (max-width: 380px) {
-    .early-stop-banner { padding: 12px; }
-    .esb-headline { font-size: 0.88rem; }
-    .esb-headline b { font-size: 0.95rem; letter-spacing: 0.5px; }
-    .esb-sub { font-size: 0.76rem; }
-    .esb-btn-stop, .esb-btn-continue { font-size: 0.78rem; padding: 9px 6px; }
+    .rsb-headline { font-size: 0.86rem; }
+    .rsb-sub { font-size: 0.74rem; }
 }

@@ -182,9 +182,10 @@ function renderPhase(p) {
         
         btn.innerText = p < 4 ? `確認選項 (${p}/5)` : "掃描核心維度 (4/5)";
 
-        // Route A: 進入 phase 3 / 4 時，若前面 phase 累計信心夠，offer 提早看結果
-        if (p === 3 || p === 4) {
-            try { maybeShowEarlyStopBanner(p); } catch (_) { /* banner 失敗不擋主流程 */ }
+        // 進入 phase 2/3/4 時注入「進度已存檔」提示，給使用者放心離開的安全感。
+        // 不主動偷看結論（feedback_assessment_integrity）。
+        if (p >= 2 && p <= 4) {
+            try { maybeShowResumeBanner(p); } catch (_) { /* banner 失敗不擋主流程 */ }
         }
 
         btn.onclick = () => {
@@ -495,74 +496,49 @@ function calculatePartialPhaseScores(uptoPhase) {
     return partial;
 }
 
-// Route A: 在 phase 3 / 4 開頭注入「已可預測 → 直接看結果」banner（若信心夠）
-// 回傳：true = banner 已顯示；false = 信心不足，不打擾使用者
-function maybeShowEarlyStopBanner(currentPhase) {
+// 進入 phase 2/3/4 開頭注入「進度已存檔」存檔提示。
+// 設計原則 (feedback_assessment_integrity)：
+//   - 不顯示已預測的型 / 信心（中途給結論=失專業）
+//   - 文案聚焦「存檔成功 → 下次回來會從這題接續」
+//   - 「暫停測驗」按鈕：toast 確認 + 回首頁；下次造訪 initStorage() 會接續
+//   - 不提供任何 shortcut 結論按鈕
+function maybeShowResumeBanner(currentPhase) {
     if (!['A', 'B', 'C'].includes(currentVersion)) return false;
-    if (currentPhase < 3 || currentPhase > 4) return false; // 只在進入 phase 3/4 時 offer
-
-    const phasesAnswered = currentPhase - 1; // 進入 phase 3 = 已答完 phase 1+2
-    const partial = calculatePartialPhaseScores(phasesAnswered);
-    if (typeof calculateLocalProbabilities !== 'function') return false;
-    const local = calculateLocalProbabilities(partial);
-    const conf = window.evaluateConfidence(local.probs);
-    if (!window.canStopEarly(conf, phasesAnswered)) return false;
-
-    const totalRemain = (4 - phasesAnswered) * 16 + 1; // 後續 phase 各 16 題 + 第 5 phase 1 探針題
+    if (currentPhase < 2 || currentPhase > 4) return false; // 第 1 phase 還沒有東西可存
+    const phasesAnswered = currentPhase - 1;
     const qArea = document.getElementById('questions-area');
     if (!qArea) return false;
 
     const bannerHtml = `
-        <div class="early-stop-banner" role="region" aria-label="提早結束測驗">
-            <div class="esb-icon">🎯</div>
-            <div class="esb-body">
-                <div class="esb-headline">已可預測你是 <b>${conf.topType}</b>（信心 ${Math.round(conf.topProb)}%，領先第 2 名 ${Math.round(conf.lead)}%）</div>
-                <div class="esb-sub">繼續答 ${totalRemain} 題能讓邊界更精準，或現在直接看結果。</div>
+        <div class="resume-banner" role="status" aria-label="進度已存檔">
+            <div class="rsb-icon">💾</div>
+            <div class="rsb-body">
+                <div class="rsb-headline">進度已自動存檔（已完成 ${phasesAnswered} / 4 階段）</div>
+                <div class="rsb-sub">隨時可以關閉視窗，下次造訪會從這題自動接續。</div>
             </div>
-            <div class="esb-actions">
-                <button type="button" class="btn-primary esb-btn-stop" onclick="handleEarlyStop(${phasesAnswered}, '${conf.topType}', ${Math.round(conf.topProb)})">直接看結果</button>
-                <button type="button" class="btn-secondary esb-btn-continue" onclick="dismissEarlyStopBanner()">繼續答更精準</button>
-            </div>
+            <button type="button" class="btn-secondary rsb-btn-pause" onclick="handlePauseAndExit(${phasesAnswered})">暫停測驗</button>
         </div>
     `;
     qArea.insertAdjacentHTML('afterbegin', bannerHtml);
     if (window.track) {
-        window.track('quiz_early_stop_offered', {
-            version: currentVersion,
-            phases_answered: phasesAnswered,
-            top_type: conf.topType,
-            top_prob: Math.round(conf.topProb),
-            lead: Math.round(conf.lead)
-        });
+        window.track('quiz_resume_banner_shown', { version: currentVersion, phases_answered: phasesAnswered });
     }
     return true;
 }
 
-function dismissEarlyStopBanner() {
-    const b = document.querySelector('.early-stop-banner');
-    if (b) {
-        b.classList.add('is-dismissed');
-        setTimeout(() => b.remove(), 200);
+// 使用者按「暫停測驗」：state 已自動存在 localStorage（quiz-ux.js 旁路存檔），
+// 我們只需 toast 確認 + 帶回首頁。下次造訪 assessment.html?v=X initStorage() 讀回 phase + answers，從原斷點繼續。
+function handlePauseAndExit(phasesAnswered) {
+    if (window.track) {
+        window.track('quiz_pause_taken', { version: currentVersion, phases_answered: phasesAnswered });
     }
+    saveState();
+    if (typeof window.toast === 'function') {
+        window.toast('進度已存檔，下次造訪會從這題接續 ✓', { type: 'success', duration: 2400 });
+    }
+    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
 }
 
-// 使用者按「直接看結果」：把目前 partial scores 寫進 appScores → 走正常 finalize → API
-function handleEarlyStop(phasesAnswered, topType, topProb) {
-    if (window.track) {
-        window.track('quiz_early_stop_taken', {
-            version: currentVersion,
-            phases_answered: phasesAnswered,
-            top_type: topType,
-            top_prob: topProb
-        });
-    }
-    // 不執行 phase 5 探針（沒這 1 題影響極小，UX 大於精度）。
-    // calculateFinalRawScores 會走 preCalculatePhase1To4 用「目前已答的所有題」，
-    // 沒答的 phase 自動跳過、不會 +0 也不會出錯。
-    appState.answers.phase5 = null;
-    saveState();
-    proceedToResultAPI();
-}
 
 // ==========================================
 // [共用] 結果渲染與圖表 — 已抽出至 result-render.js（renderResult / updateCharts /
