@@ -46,6 +46,23 @@ async function proceedToResultAPI() {
 
         const timeSpentMs = Date.now() - quizStartTime;
 
+        // Route A: 計算實際答了多少題（appState.answers 內 q_*_* 開頭的 key 數，
+        // 排除 phase5 ranking 等非題型 key），讓 worker 寫 D1 時能存進 questions_answered 欄位。
+        // 訪客 / Route A 提早結束 / Route A 走完都用同個算法，後端純被動接收。
+        const questionsAnswered = (function () {
+            try {
+                const ans = (typeof appState === 'object' && appState && appState.answers) ? appState.answers : {};
+                let n = 0;
+                for (const k in ans) {
+                    if (!Object.prototype.hasOwnProperty.call(ans, k)) continue;
+                    if (ans[k] === null || ans[k] === undefined || ans[k] === '') continue;
+                    if (k === 'phase5') { n += 1; continue; } // 第 5 phase 探針題（A/B/C 卷）算 1 題
+                    if (/^q_/.test(k)) n += 1;
+                }
+                return n;
+            } catch (_) { return null; }
+        })();
+
         // 登入用戶走 chiyigoFetch（自動 Bearer + 401 refresh）；訪客走純 fetch（不帶 token）
         const init = {
             method: "POST",
@@ -54,9 +71,12 @@ async function proceedToResultAPI() {
                 version: currentVersion,
                 rawScores: orderedScores,
                 timeSpentMs: timeSpentMs,
-                guestId: guestId
+                guestId: guestId,
+                questionsAnswered: questionsAnswered
             })
         };
+        // [埋碼] quiz_complete payload 帶 questions_answered 進 GA，讓「提早 vs 完整」可分群
+        window.__lastQuestionsAnswered = questionsAnswered;
         const response = token
             ? await chiyigoFetch(apiUrl, init)
             : await fetch(apiUrl, init);

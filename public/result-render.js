@@ -52,9 +52,13 @@ function renderResult(isShared) {
 
     updateDetail(primary);
 
-    // [埋碼] 測驗完成
+    // [埋碼] 測驗完成 — 帶 questions_answered 讓 GA 能分群「提早結束 vs 完整答」
     if (!isShared && !isSharedView) {
-        if (window.track) window.track('quiz_complete', { version: currentVersion, primary_type: primary });
+        if (window.track) window.track('quiz_complete', {
+            version: currentVersion,
+            primary_type: primary,
+            questions_answered: window.__lastQuestionsAnswered || null
+        });
     }
 }
 

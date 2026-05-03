@@ -163,7 +163,7 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
         if (!identity) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
 
         const historyReq = await env.MM_DB_D1.prepare(
-            "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC"
+            "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, questions_answered, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC"
         ).bind(identity.sub).all();
 
         return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -253,8 +253,17 @@ async function handleClaimGuestResults(request: Request, env: Env, ctx: Executio
 // ==========================================
 async function handleAssessmentSubmit(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>): Promise<Response> {
   try {
-    const payload = await request.json<{ version?: string; rawScores: number[]; timeSpentMs: number; guestId?: string }>();
+    const payload = await request.json<{ version?: string; rawScores: number[]; timeSpentMs: number; guestId?: string; questionsAnswered?: number }>();
     if (!payload.rawScores || payload.rawScores.length !== 8) throw new Error("無效的 Payload: 必須提供八維分數陣列");
+
+    // Route A 之後，前端會傳 questionsAnswered（提早結束 = 較少題；走完 = 全題）。
+    // 舊版 client 不傳 → 寫 NULL（資料分析時視為「不知道」）。
+    // 防呆：負數 / 不合理大值都丟棄，避免髒資料污染 dashboard 統計。
+    const questionsAnswered = (typeof payload.questionsAnswered === "number"
+        && payload.questionsAnswered >= 0
+        && payload.questionsAnswered <= 200)
+        ? Math.round(payload.questionsAnswered)
+        : null;
 
     let finalUserId: string | null = null;
     const authHeader = request.headers.get("Authorization");
@@ -280,7 +289,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     }
 
     await env.MM_DB_D1.prepare(
-        `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, psychic_energy_index, time_spent_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, psychic_energy_index, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
         reportId,
         finalUserId,
@@ -291,7 +300,8 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
         JSON.stringify(result.probabilities),
         result.primaryType,
         result.psychicEnergyIndex,
-        payload.timeSpentMs || 1000
+        payload.timeSpentMs || 1000,
+        questionsAnswered
     ).run();
 
     const resultData = { id: reportId, ...result, timestamp: new Date().toISOString() };

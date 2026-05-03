@@ -112,3 +112,10 @@
     .esb-actions { flex-direction: row; width: 100%; }
     .esb-btn-stop, .esb-btn-continue { flex: 1; padding: 10px 8px; }
 }
+@media (max-width: 380px) {
+    .early-stop-banner { padding: 12px; }
+    .esb-headline { font-size: 0.88rem; }
+    .esb-headline b { font-size: 0.95rem; letter-spacing: 0.5px; }
+    .esb-sub { font-size: 0.76rem; }
+    .esb-btn-stop, .esb-btn-continue { font-size: 0.78rem; padding: 9px 6px; }
+}

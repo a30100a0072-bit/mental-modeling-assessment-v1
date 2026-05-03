@@ -85,6 +85,18 @@ function renderDashboard(records) {
     document.getElementById('stat-stability').innerText = `${stability}%`;
     document.getElementById('stat-stability').style.color = stability < 50 ? '#fca5a5' : '#6ee7b7';
 
+    // Route A: 平均答題數 — 只算有 questions_answered 欄位的紀錄（早期資料 NULL 跳過）
+    const qaRecords = records.filter(r => typeof r.questions_answered === 'number' && r.questions_answered > 0);
+    if (qaRecords.length > 0) {
+        const avgQ = Math.round(qaRecords.reduce((s, r) => s + r.questions_answered, 0) / qaRecords.length);
+        const card = document.getElementById('stat-card-avgq');
+        const val = document.getElementById('stat-avgq');
+        if (card && val) {
+            val.innerText = avgQ;
+            card.style.display = '';
+        }
+    }
+
     renderAggregatedCharts(records, total);
     renderDichotomyTrend(records);
     renderVersionCompare(records);
