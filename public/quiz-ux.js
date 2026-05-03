@@ -33,10 +33,21 @@
         return el;
     }
 
+    // 50% 過半里程碑：每段只觸發一次 toast，避免反覆答題反覆彈
+    const milestoneFired = new WeakSet();
+    function fireHalfwayCelebration(area) {
+        if (!area || milestoneFired.has(area)) return;
+        milestoneFired.add(area);
+        if (typeof window.toast === 'function') {
+            window.toast('🎯 過半啦！再撐一下就拿到結果。', { type: 'success', duration: 2400 });
+        }
+    }
+
     function refreshSubProgress() {
         const sub = ensureSubProgress();
         if (!sub) return;
-        const qs = document.querySelectorAll(`#${QUESTIONS_AREA} .question`);
+        const area = document.getElementById(QUESTIONS_AREA);
+        const qs = area ? area.querySelectorAll('.question') : [];
         const total = qs.length;
         if (total === 0) { sub.style.display = 'none'; return; }
         sub.style.display = '';
@@ -44,22 +55,35 @@
         let answered = 0;
         qs.forEach(q => { if (q.querySelector('input:checked') || q.querySelector('.ranking-item[data-ranked="1"]')) answered++; });
 
+        const remain = total - answered;
         const pct = total ? Math.round((answered / total) * 100) : 0;
-        sub.querySelector('.progress-sub-text').textContent =
-            `本段已完成 ${answered} / ${total}（${pct}%）`;
+        // 心理錨點：lead with「剩 N 題」（剩餘比起 X% 更直覺、更降跳出率）
+        // 但快做完時切回正向 framing（剩 0~2 題改成「就快了！」）
+        let mainText;
+        if (remain === 0) {
+            mainText = `✅ 本段全數完成（${total} 題）`;
+        } else if (remain <= 2) {
+            mainText = `🔥 剩最後 ${remain} 題！（已完成 ${answered}/${total}）`;
+        } else {
+            mainText = `剩 ${remain} 題 · 已完成 ${answered}/${total}（${pct}%）`;
+        }
+        sub.querySelector('.progress-sub-text').textContent = mainText;
 
         // ETA: 用已花時間外推（每題 ~ elapsed/answered 秒）
         const eta = sub.querySelector('.progress-sub-eta');
         if (answered >= 2 && answered < total) {
             const elapsed = (Date.now() - startTime()) / 1000;
             const perQ = elapsed / answered;
-            const remain = Math.round(perQ * (total - answered));
-            eta.textContent = remain > 60
-                ? `· 預估還需 ${Math.round(remain / 60)} 分鐘`
-                : `· 預估還需 ${remain} 秒`;
+            const remainSec = Math.round(perQ * remain);
+            eta.textContent = remainSec > 60
+                ? `· 預估還需 ${Math.round(remainSec / 60)} 分鐘`
+                : `· 預估還需 ${remainSec} 秒`;
         } else {
             eta.textContent = '';
         }
+
+        // 50% 里程碑微互動（這段中途段最容易跳出）
+        if (area && total >= 6 && pct >= 50) fireHalfwayCelebration(area);
     }
 
     // -------- 自動存檔指示 --------

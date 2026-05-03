@@ -982,3 +982,21 @@ section.temperament-section { scroll-margin-top: 150px; }
     .td-tabs { top: 56px; gap: 2px; padding: 6px; }
     .td-tab { padding: 8px 10px; font-size: 0.8rem; }
 }
+
+/* ── 結果頁互補配對 (Compatibility) ───────────────────────────── */
+.compat-section { padding: var(--sp-5) 0; border-bottom: 1px solid var(--bd-subtle); margin-bottom: var(--sp-4); }
+.compat-section h3 { color: var(--c-cyan); font-size: 1.15rem; margin: 0 0 8px; }
+.compat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.compat-card { display: flex; flex-direction: column; gap: 6px; padding: 16px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--bd-subtle); border-radius: 10px; text-decoration: none; color: inherit; transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s; cursor: pointer; }
+.compat-card:hover { transform: translateY(-3px); border-color: #38bdf8; box-shadow: 0 8px 20px rgba(56, 189, 248, 0.18); }
+.compat-card:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+.compat-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.compat-label { color: #e0f2fe; font-weight: 700; font-size: 0.9rem; }
+.compat-sub { color: #64748b; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; }
+.compat-type { font-size: 1.8rem; font-weight: 900; color: #38bdf8; letter-spacing: 3px; line-height: 1.1; margin: 4px 0 2px; }
+.compat-desc { color: #cbd5e1; font-size: 0.82rem; line-height: 1.5; flex-grow: 1; }
+.compat-cta { color: #7dd3fc; font-size: 0.78rem; font-weight: 600; margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--bd-subtle); }
+@media (max-width: 600px) {
+    .compat-grid { grid-template-columns: 1fr; gap: 10px; }
+    .compat-type { font-size: 1.6rem; }
+}

@@ -467,7 +467,8 @@ function renderResult(isShared) {
     }).join('');
     
     const matrixLabel = isSharedView ? "16人格判定概率矩陣 (本地還原)" : "16人格判定概率矩陣 (雲端運算)";
-    document.getElementById('analysis-text').innerHTML = `<div class="report-section" style="padding-bottom:10px;"><h3>◈ ${matrixLabel}</h3><div class="match-list">${listHtml}</div></div><div id="detail-box"></div>`;
+    const compatHtml = buildCompatSection(primary);
+    document.getElementById('analysis-text').innerHTML = `<div class="report-section" style="padding-bottom:10px;"><h3>◈ ${matrixLabel}</h3><div class="match-list">${listHtml}</div></div>${compatHtml}<div id="detail-box"></div>`;
     
     updateDetail(primary);
 
@@ -476,6 +477,46 @@ function renderResult(isShared) {
         gtag('event', 'quiz_complete', { 'version': currentVersion, 'primary_type': primary });
         if(typeof fbq !== 'undefined') fbq('trackCustom', 'QuizComplete', { version: currentVersion, primary_type: primary });
     }
+}
+
+// 結果頁互補配對卡：
+//   - Duality：你的劣勢是 TA 的英雄。Socionics 中最舒服的關係，安全感來源。
+//     直接用 ENGINE.sides[primary][1]（已經是 dual / subconscious）。
+//   - Mirror：相同核心價值，但 J/P 偏好相反。互相照鏡子，磨合中成長。
+//   - Activator：相同氣質但 I/E 相反，能量極性互推進，破解卡關。
+function buildCompatSection(primary) {
+    if (!primary || primary.length !== 4) return '';
+    const sides = (typeof ENGINE !== 'undefined' && ENGINE.sides[primary]) || [];
+    const dual = sides[1];
+    const mirror = primary.slice(0, 3) + (primary[3] === 'J' ? 'P' : 'J');
+    const activator = (primary[0] === 'I' ? 'E' : 'I') + primary.slice(1);
+
+    const cards = [
+        { type: dual,      label: '🔮 互補伴侶',  sub: 'Duality',     desc: '你的劣勢，是 TA 的英雄。最深的安全感與互補。' },
+        { type: mirror,    label: '🪞 鏡像成長',  sub: 'Mirror',      desc: '相同核心價值，但執行風格相反。互相照鏡子。' },
+        { type: activator, label: '⚡ 啟動夥伴',  sub: 'Activator',   desc: '相同氣質，能量極性相反，互相推進不卡關。' }
+    ].filter(c => c.type && /^[A-Z]{4}$/.test(c.type));
+
+    if (!cards.length) return '';
+
+    const cardsHtml = cards.map(c =>
+        `<a class="compat-card" href="type-detail.html?type=${c.type}" target="_blank" rel="noopener">
+            <div class="compat-row">
+                <span class="compat-label">${c.label}</span>
+                <span class="compat-sub">${c.sub}</span>
+            </div>
+            <div class="compat-type">${c.type}</div>
+            <div class="compat-desc">${c.desc}</div>
+            <div class="compat-cta">查看 ${c.type} 全解析 →</div>
+        </a>`
+    ).join('');
+
+    return `
+        <div class="report-section compat-section">
+            <h3>◈ 與你最互補的人格 (Compatibility)</h3>
+            <p style="color:#94a3b8; font-size:0.92rem; margin-bottom:14px;">不是「誰跟誰絕配」這種星座式廢話，而是榮格 / Socionics 的軸線互補：你的盲點是 TA 的本能。</p>
+            <div class="compat-grid">${cardsHtml}</div>
+        </div>`;
 }
 
 function updateCharts(p, norm, probs, sorted) {
