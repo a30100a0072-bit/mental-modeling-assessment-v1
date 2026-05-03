@@ -370,13 +370,241 @@
         }
     ];
 
+    // ==========================================
+    // [Module A] Daily Comfort Zone — m1-4Data_A
+    // ==========================================
+    const m1Data_A = [
+        { q: "Organizing daily notes or files:", a: "Build clear categories so I can search fast", b: "Construct a personal underlying knowledge web", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Buying a new piece of tech:", a: "Compare specs and bang-for-buck", b: "Research the underlying technology and principles", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Playing a casual strategy game:", a: "Pursue the fastest, most efficient clear", b: "Test the limits of every in-game mechanic", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Hearing a brand-new concept:", a: "Think about where it can be applied", b: "Verify whether the concept is logically self-consistent", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Picking a restaurant with friends:", a: "Pick a place most people will be happy with", b: "Insist on a place that matches my own taste", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Choosing a daily outfit:", a: "Match the occasion and mainstream aesthetic", b: "Express my unique mood of the moment", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Hearing gossip in the social circle:", a: "Track the relational dynamics between people", b: "Judge whether it aligns with my own ethics", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "A friend vents a small frustration to you:", a: "Resonate emotionally and soothe them", b: "Quietly stay with them and empathize inside", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Drafting personal future plans:", a: "Imagine many different fun possibilities", b: "Lock onto one clear core target", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Reading a book you find interesting:", a: "Often diverge — link to other fields", b: "Try to capture the author's single core idea", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Weekend trip to a big supermarket:", a: "Love exploring new products I haven't seen", b: "Head straight to the section I planned to buy from", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Listening to a casual talk:", a: "Get sparked by all the novel viewpoints", b: "Predict the conclusion the speaker is heading to", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Enjoying leisure downtime:", a: "Chase sensory rush or outdoor activity", b: "Stay in familiar surroundings, repeat my routines", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "Looking at a beautiful painting:", a: "Feel the vivid visual impact of the moment", b: "Recall a similar past scene I experienced", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "Tasting a delicious dish:", a: "Focus on the real layers of flavor in my mouth", b: "Be reminded of a familiar taste from memory", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "Decor and layout of your room:", a: "Like swapping it occasionally to keep it fresh", b: "Keep it fixed — the consistency is grounding", dA: ["Se"], dB: ["Si"], w: 1 }
+    ];
+    const m2Data_A = [
+        { q: "Planning a family or team trip:", a: "Make sure the schedule flows efficiently", b: "Make sure everyone has a great time", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "Receiving a birthday gift:", a: "Evaluate the practical value of the item", b: "Be moved by the thought the giver put in", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "Helping run a hobby club:", a: "Volunteer to plan and assign tasks", b: "Volunteer to lift the vibe and break the ice", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "Watching a popular show or film:", a: "Pick at the plot's structural soundness", b: "Empathize with the characters' feelings and bonds", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "In a friendly debate:", a: "Point out the logical holes in their argument", b: "Hold to the core conviction inside me", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Evaluating a person's worth:", a: "Weight their intellectual depth", b: "Weight their sincerity and moral purity", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Daily decision criterion:", a: "Pure objective pros-and-cons analysis", b: "Intuition that doesn't violate my conscience", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Brain activity in solitude:", a: "Run interesting theoretical models in my head", b: "Reflect on my feelings and values", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Exploring a new city on a holiday:", a: "No itinerary — drift into new places", b: "Hunt for activities with strong sensory rush", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Your definition of \"freedom\":", a: "Mind unbounded — free to imagine", b: "Body unbounded — free to move", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Killing daily boredom:", a: "Connect absurd new ideas in my head", b: "Go outside, seek physical environmental change", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Learning a new skill:", a: "Grasp the concept first, then invent new ways to use it", b: "Just do it — build muscle memory through reps", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Long-range financial planning:", a: "Trust my own intuition and big trends", b: "Lean on past historical data and experience", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "Recalling childhood:", a: "Only remember the lessons I drew from it then", b: "Recall ultra-HD scene details", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "Handling repetitive admin chores:", a: "Boring — try to automate it away", b: "Reassuring — work through it step by step", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "Your view on \"tradition\":", a: "If it doesn't serve the future vision, break it", b: "It's the crystallized wisdom of those before us — respect it", dA: ["Ni"], dB: ["Si"], w: 1 }
+    ];
+    const m3Data_A = [
+        { q: "Driving a brand-new project:", a: "Set the SOP, expect everyone to follow", b: "Analyze risks, give objective recommendations", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "A friend asks for your advice:", a: "Give concrete, problem-solving steps", b: "Help them sort their thinking from multiple angles", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Facing an unreasonable new rule:", a: "Comply on the surface — do my own thing privately", b: "Try to surface the logical hole behind the rule", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "In a team brainstorm:", a: "Take charge of converging ideas and assessing feasibility", b: "Pitch the theory and harmonize everyone's input", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Defining personal success:", a: "Hit worldly metrics and realize my personal ideal", b: "Win collective acknowledgment and understand how the world works", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Handling interpersonal conflict:", a: "Draw a line — protect my own rights", b: "Find the logical balance point between the two sides", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Writing a public-facing article:", a: "Clean structure, sharp personal stance", b: "Tight reasoning, sensitive to different audiences", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Most-satisfying daily state:", a: "Inbox zero — feeling solidly grounded inside", b: "Cracked a puzzle — sharing the joy with others", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Handling a small unexpected mishap:", a: "Reflex — solve it fast with whatever's at hand", b: "Pause — has something like this happened before?", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Planning a perfect date:", a: "Build the moment — guide it to a romantic finish", b: "Have several backups and lean on past good experiences", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Tidying a cluttered storage room:", a: "See the layout instantly, snap things into place", b: "Tidy and reminisce — sink into past memories", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Driving on an unfamiliar road:", a: "Focus on the road, navigate by sense of direction", b: "Glue eyes to the GPS — fear missing any cue", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Listening to a favorite song:", a: "Sink into the rhythm, feel the emotion flow", b: "Imagine the lyric's scene, stir up old feelings", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Ideal living environment:", a: "Minimalist modern — texture and dynamic beauty", b: "Full of mementos — warm and historical", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Observing a stranger:", a: "See through their aura and current body language", b: "Imagine what kind of job they might have", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Perception of \"time\":", a: "Time is a single line flowing toward the future", b: "Time is layered fragments of the past", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 }
+    ];
+    const m4Data_A = [
+        { q: "Entering peak (flow) state:", a: "Extreme physical operation and environmental control", b: "Perfect detail recall and order", dA: ["Se"], dB: ["Si"], w: 2 },
+        { q: "Greatest sense of achievement from:", a: "High-efficiency completion of a huge complex project", b: "Cracking a logic puzzle no one else could solve", dA: ["Te"], dB: ["Ti"], w: 2 },
+        { q: "Best-case future expectation:", a: "Everything inside my precise prediction", b: "Endless possibilities and novel exploration", dA: ["Ni"], dB: ["Ne"], w: 2 },
+        { q: "Feeling self-worth comes from:", a: "Successfully moving the room emotionally — being beloved", b: "Holding inner conviction without drifting with the tide", dA: ["Fe"], dB: ["Fi"], w: 2 },
+        { q: "Most-enjoyed leisure mode:", a: "Burning physical energy and sweat without restraint", b: "Free-flowing creative jam with people", dA: ["Se"], dB: ["Ne"], w: 2 },
+        { q: "Source of deep peace:", a: "The instant of seeing through a thing's essence", b: "A safe house full of beautiful memories", dA: ["Ni"], dB: ["Si"], w: 2 },
+        { q: "Mode of leadership:", a: "Clear orders, drive the team to the goal", b: "Spark team passion, build deep bonds", dA: ["Te"], dB: ["Fe"], w: 2 },
+        { q: "Ultimate truth pursued:", a: "The objective laws of how the universe runs", b: "The purest soul-essence of being human", dA: ["Ti"], dB: ["Fi"], w: 2 },
+        { q: "Moments of greatest confidence:", a: "Intuition validated, fearing no challenge", b: "Logic airtight, experience flawless", dA: ["Ni", "Fi"], dB: ["Ti", "Si"], w: 2 },
+        { q: "Strongest weapon you broadcast outward:", a: "Spread creativity and enthusiasm", b: "Awe the room with achievements and presence", dA: ["Ne", "Fe"], dB: ["Te", "Se"], w: 2 },
+        { q: "Best state for solving complex problems:", a: "Inspiration surge — break the frame and find the genius move", b: "Detail focus — peel layers and find the core", dA: ["Ne", "Fi"], dB: ["Si", "Ti"], w: 2 },
+        { q: "Ideal interpersonal interaction:", a: "Together in thrilling, fun, physical activities", b: "Warm gathering — share what we've each seen", dA: ["Se", "Te"], dB: ["Fe", "Ne"], w: 2 },
+        { q: "Ultimate pursuit of \"beauty\":", a: "Creation that matches inner soul and deep meaning", b: "Design with perfect structure and practical function", dA: ["Fi", "Ni"], dB: ["Te", "Si"], w: 2 },
+        { q: "Path to social recognition:", a: "Show flexible footwork and sharp reflexes", b: "Pitch forward-looking views, build collective consensus", dA: ["Se", "Ti"], dB: ["Ne", "Fe"], w: 2 },
+        { q: "Facing a major life pivot:", a: "Cool strategic projection, advance without hesitation", b: "Reference past experience, lean on family and friends", dA: ["Ni", "Ti"], dB: ["Si", "Fe"], w: 2 },
+        { q: "Defining life's success:", a: "Hold real power, leave a world-changing legacy", b: "Build a wide network, live a rich and varied life", dA: ["Te", "Ne"], dB: ["Fe", "Se"], w: 2 }
+    ];
+
+    // ==========================================
+    // [Module B] High-Pressure Defense — m1-4Data_B
+    // ==========================================
+    const m1Data_B = [
+        { q: "A defect surfaces in the project:", a: "Push it to launch, patch it post-hoc", b: "Delay the schedule, refactor the underlying code", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Team operations are chaotic:", a: "Issue forceful direct orders", b: "Quietly investigate the root of the chaos", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Learning a new tool:", a: "Only learn the parts I'll use", b: "Must understand the underlying mechanics", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Faced with an unreasonable demand:", a: "Counter with real-world data", b: "Counter by exposing logical holes", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "A team core member errs:", a: "Compromise to preserve the bigger picture", b: "Hold the line — call it out openly", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Facing group pressure:", a: "Comply with the group to survive", b: "Refuse — even if it gets me ostracized", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Friend's emotional breakdown:", a: "Absorb their negative emotion", b: "Offer an objective solution", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Evaluating a controversial figure:", a: "Weight their substantive contribution", b: "Cannot tolerate their private misconduct", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Stuck in unknown adversity:", a: "Keep multiple backup options alive", b: "Lock onto one ultimate target", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Processing massive information:", a: "Diverge — connect every angle", b: "Converge — find the single core", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Searching for a breakthrough:", a: "Soak up cross-disciplinary input", b: "Cut all distractions, derive deeply", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "What you fear most:", a: "Losing every other option", b: "Losing control of the goal", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Sudden physical crisis:", a: "Trust instinct and reflex to dodge", b: "Lean on safety protocols", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "Operating precise instruments:", a: "Probe and test as I go", b: "Strictly follow the manual", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "Organizing physical space:", a: "Wherever it's easiest to grab is fine", b: "Must return to its fixed spot", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "Competitive sport:", a: "Adapt on the fly to current conditions", b: "Drill the standard form repeatedly", dA: ["Se"], dB: ["Si"], w: 1 }
+    ];
+    const m2Data_B = [
+        { q: "Team resources running out:", a: "Coldly execute layoffs and downsizing", b: "Convince everyone to ride it out together", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "Reporting failed results:", a: "Show the raw data losses directly", b: "Prioritize team morale", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "Worst leadership taboo:", a: "Inefficient emotional drain", b: "Cold pressure that crushes humanity", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "Greatest sense of accomplishment from:", a: "The system runs precisely and efficiently", b: "The group reaches deep consensus", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "Under attack from authority's logic:", a: "Counter ruthlessly — expose their gaps", b: "Silently defend personal dignity", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Facing severe setback:", a: "Construct a more perfect theory", b: "Retreat inward and recover the original intent", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Basis for a hard decision:", a: "Pure compute, sentiment removed", b: "Intuition that doesn't betray conscience", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Brain activity right before sleep:", a: "Patching theory holes from the day", b: "Reflecting on the purity of self-value", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Encountering an unfamiliar crisis:", a: "Imagine many escape scripts", b: "Find a physical weapon nearby", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Pursuit of the ultimate thrill:", a: "Information overload — peak in the head", b: "Push physical limits — body-rush", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Venting in a dull environment:", a: "Wire absurd ideas in my head", b: "Demand physical change in the environment", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Way to change the world:", a: "Propose a disruptive new framework", b: "Seize control of real resources", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "Long-term investment risk:", a: "Trust intuition, refuse backups", b: "Without historical data, I won't invest", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "Memory-retrieval style:", a: "Only the core skeleton-pattern remains", b: "High-fidelity scene details preserved", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "Coping with future uncertainty:", a: "Project the endgame, accept the cost", b: "Lock down rules and prevent disaster", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "Most-hated interruption:", a: "Trivial admin detail breaking flow", b: "Unproven new ideas ambushing me", dA: ["Ni"], dB: ["Si"], w: 1 }
+    ];
+    const m3Data_B = [
+        { q: "At the org's life-or-death moment:", a: "Force the system to keep running", b: "Coldly analyze the group's blind spots", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Holding decisive proof against an opponent:", a: "Use it as bargaining chip for resource", b: "Annihilate their entire logic", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "A hellish character judgment dilemma:", a: "Bear the bad name to push efficiency", b: "Preserve harmony, keep multiple perspectives", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "A fatal bug appears in the system:", a: "Stop the bleed, eject the people who erred", b: "Investigate the underlying beauty of the code", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Pillar that keeps you alive on a deserted island:", a: "Drive to establish order and control", b: "Drive to derive the universe's objectivity", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Coping with vulgar people / events:", a: "Marginalize them via administrative power", b: "Deconstruct them with logical analysis", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Hit by malicious group attack:", a: "Counter-strike with real-world resources", b: "Steer the group's psychology to disintegrate it", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Source of deepest loneliness:", a: "No one understands the weight of decisions", b: "No one sees through to the world's essence", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Sudden lethal physical disaster:", a: "Bet on instinct, escape on a gamble", b: "Mind floods with countless ways to die", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Massive effort obliterated in an instant:", a: "Pivot directly to the next breakthrough", b: "Replay endlessly — where did it go wrong", dA: ["Se", "Ni"], dB: ["Si", "Ne"], w: 1.5 },
+        { q: "Survival fight with ambiguous rules:", a: "Focus on now, grab resources", b: "Fear the unknown — freeze in place", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Extreme craving for speed:", a: "Burn through everything to hit the target", b: "For safety, willing to drop to zero speed", dA: ["Se", "Ni"], dB: ["Si", "Ne"], w: 1.5 },
+        { q: "Inside a deceitful environment:", a: "Read the opponent's physical intent", b: "Over-interpret — fall into chaos", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Release after long-term high pressure:", a: "Extreme bodily sensory rush", b: "Collapse and absorb meaningless info", dA: ["Se", "Ni"], dB: ["Si", "Ne"], w: 1.5 },
+        { q: "Visual image of the future:", a: "A single, piercing solid line", b: "A divergent web-like maze", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "What you trust at the limit:", a: "Current muscle memory", b: "Past safety data", dA: ["Se", "Ni"], dB: ["Si", "Ne"], w: 1.5 }
+    ];
+    const m4Data_B = [
+        { q: "Behavior when reason snaps:", a: "Vengeful pursuit of sensory rush", b: "OCD-style obsession over details", dA: ["Se"], dB: ["Si"], w: 2 },
+        { q: "When professional dignity is trampled:", a: "Crush them with rigid rules", b: "Tear them apart with sarcastic logic", dA: ["Te"], dB: ["Ti"], w: 2 },
+        { q: "Facing unmeasurable crisis:", a: "Sink into fatalist despair", b: "Panic-imagine every bad possibility", dA: ["Ni"], dB: ["Ne"], w: 2 },
+        { q: "Devotion utterly betrayed:", a: "Crave external validation desperately", b: "Shut down all pain receptors", dA: ["Fe"], dB: ["Fi"], w: 2 },
+        { q: "Trapped in a dull, repetitive environment:", a: "Urge to physically destroy something", b: "Sink into absurd conspiracy theories", dA: ["Se"], dB: ["Ne"], w: 2 },
+        { q: "Major life trauma:", a: "Cold-blooded — sever all old memory", b: "Replay the wounding moment endlessly", dA: ["Ni"], dB: ["Si"], w: 2 },
+        { q: "Major goal severely behind:", a: "Frantically handle pointless busy-work", b: "Abnormally try to please those around me", dA: ["Te"], dB: ["Fe"], w: 2 },
+        { q: "Cherished truth overturned:", a: "Mental infinite-debug crash", b: "Suspect my own nature is evil", dA: ["Ti"], dB: ["Fi"], w: 2 },
+        { q: "Stuck in long deep self-attrition:", a: "Feel the world is full of malice", b: "Obsess over tiny logical holes", dA: ["Ni", "Fi"], dB: ["Ti", "Si"], w: 2 },
+        { q: "Method of escaping reality:", a: "Issue blind empty promises", b: "Short-sightedly seize nearby resources", dA: ["Ne", "Fe"], dB: ["Te", "Se"], w: 2 },
+        { q: "System hits a severe bottleneck:", a: "Fantasize about parallel perfect timelines", b: "Hold on tight to past minor mistakes", dA: ["Ne", "Fi"], dB: ["Si", "Ti"], w: 2 },
+        { q: "Loss of purpose:", a: "Robotically chase low-grade stimuli", b: "Fake socializing with no real connection", dA: ["Se", "Te"], dB: ["Fe", "Ne"], w: 2 },
+        { q: "Confronted with chaos beyond comprehension:", a: "Self-blame and catastrophic delusion", b: "Crush it with crude binary thinking", dA: ["Fi", "Ni"], dB: ["Te", "Si"], w: 2 },
+        { q: "Faith betrayed for personal gain:", a: "Indulge in danger and rationalize it", b: "Spin a story to fish for sympathy", dA: ["Se", "Ti"], dB: ["Ne", "Fe"], w: 2 },
+        { q: "Trapped in an unchanging environment:", a: "Build paranoid defensive conspiracy theories", b: "Ruminate over past social slip-ups", dA: ["Ni", "Ti"], dB: ["Si", "Fe"], w: 2 },
+        { q: "Lost all sense of life meaning:", a: "Coldly switch battlefields, abandon the old crew", b: "No-floor compliance with mass entertainment", dA: ["Te", "Ne"], dB: ["Fe", "Se"], w: 2 }
+    ];
+
+    // ==========================================
+    // [Module C] Vision / Awakening — m1-4Data_C
+    // ==========================================
+    const m1Data_C = [
+        { q: "Which kind of leader do you most genuinely admire?", a: "One who builds a perfect system that runs itself", b: "One who sees the underlying truth and proposes the ultimate theory", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "If your power allowed it, you'd want to become:", a: "The merciless executor pushing the world's wheels forward", b: "The lonely sage solving the universe's ultimate riddles", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "The highest expression of human intelligence is:", a: "Turning complex theory into highly-efficient worldly tools", b: "Distilling pure, flawless logic out of chaos", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Deep down, when facing worldly success, you crave:", a: "Absolute power to allocate resources", b: "Absolute freedom from worldly noise", dA: ["Te"], dB: ["Ti"], w: 1 },
+        { q: "Which kind of protagonist moves you most?", a: "The hero who sacrifices themselves for collective good", b: "The lone wanderer who guards their soul-line even against the world", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "What \"superpower\" do you wish you had?", a: "Instantly melt others' walls and warm everyone", b: "Absolute steadiness — never moved by external noise", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "The most beautiful version of the world is:", a: "A harmonious utopia where everyone understands and supports each other", b: "Everyone able to be authentic, with zero pretense", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Looking back, the verdict you most want is:", a: "\"He was warm and gave countless people strength.\"", b: "\"He was pure, sincere, and never betrayed himself.\"", dA: ["Fe"], dB: ["Fi"], w: 1 },
+        { q: "Which genius's gift do you envy most?", a: "Endless inspiration — disrupts disciplines and reframes cognition", b: "One glance and you see the inevitable endgame", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "If you could pick a life trajectory:", a: "A rhapsody of dozens of careers and possibilities", b: "An epic march toward one grand destined goal", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "The key to advancing the era is:", a: "Disruptive divergent thinking that breaks every frame", b: "Strategy that sees through history and captures future trends", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Looking at the night sky, you crave to:", a: "Discover countless parallel universes intersecting in strange ways", b: "Realize the single, fated law pulling all of this together", dA: ["Ne"], dB: ["Ni"], w: 1 },
+        { q: "Which lifestyle do you most yearn for?", a: "Free-flowing — savor every moment of extreme sensory feast", b: "Quiet years — settled in a memory-rich safe harbor", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "Which state feels most reassuring?", a: "A strong body and reflex that handles any sudden crisis", b: "A perfect defense system and rich reserve against disaster", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "On \"craftsmanship,\" you yearn more for:", a: "Sharp sense of the material in real time, improvisational artistry", b: "Through ten thousand tedious reps, achieving absolute precision", dA: ["Se"], dB: ["Si"], w: 1 },
+        { q: "The depth of life comes from:", a: "Burning the most brilliant physical experience in finite years", b: "Carrying beautiful traditions and memory forward, intact", dA: ["Se"], dB: ["Si"], w: 1 }
+    ];
+    const m2Data_C = [
+        { q: "You wish you were better at:", a: "Ignoring emotional pressure and ruling coldly for the whole", b: "Letting go of efficiency, patiently listening to others' fragility", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "The core of a great organization is:", a: "Clear reward and punishment, an iron-rule of efficiency", b: "Strong cohesion and a shared resonance network of belief", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "In your perfect future, you are:", a: "On the throne, calmly directing global resources", b: "Among the people, healing souls with love and care", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "True maturity is:", a: "Acknowledging the world is result-driven and mastering its rules", b: "Understanding logic doesn't solve everything — emotion is the final home", dA: ["Te"], dB: ["Fe"], w: 1 },
+        { q: "If you could keep only one quality, you'd choose:", a: "Pure objective rationality, no sentimental noise", b: "Pure inner conscience, no profit-driven contamination", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "The biggest psychological barrier you want to break:", a: "Weakness — being hijacked by emotion and unable to hold to objective truth", b: "Numbness — over-reliance on cold logic, losing the ability to empathize", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "Your ideal spiritual mentor is:", a: "A prophet who can perfectly explain how everything in the universe runs", b: "A sage who guides you to find your soul's true belonging", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "The legacy you want to leave behind:", a: "An exquisite theory that perfectly explains complex phenomena", b: "An artistic creation that deeply moves and saves countless souls", dA: ["Ti"], dB: ["Fi"], w: 1 },
+        { q: "What trait do you most envy in others?", a: "Childlike mind — always sparking brilliant new ideas, unbound by reality", b: "Sharp ability to instantly adapt to and master any physical environment", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "For an epic journey you'd lean toward:", a: "Sail the ocean of thought, link knowledge across dimensions", b: "Climb the highest peak with your body — feel heartbeat and wind for real", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "True freedom lives in:", a: "Endless expansion of cognitive frame and freedom to imagine", b: "Unbounded physical space and freedom to act", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "The \"awakening\" moment you most want:", a: "Eureka — the sudden link between hidden things across topics", b: "Adrenaline blast — fully fused with the present environment", dA: ["Ne"], dB: ["Se"], w: 1 },
+        { q: "The best strategy against the unknown is:", a: "Strategic intuition that sees through fog and predicts the inevitable trajectory", b: "Encyclopedic historical experience, ready for every situation", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "On the road to extremes, you value more:", a: "Absolute faith and obsession with the final grand vision", b: "Perfect insistence and polishing of every microscopic detail", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "The transcendent attitude you'd want is:", a: "Indifference to instant gain, all serving the fated long-term layout", b: "Fearless of the unknown — feet on the ground, defending each daily inch", dA: ["Ni"], dB: ["Si"], w: 1 },
+        { q: "The value of history is:", a: "It's the cyclical track — used to predict the inevitable future", b: "It's hard evidence of what really happened — the cornerstone of defense", dA: ["Ni"], dB: ["Si"], w: 1 }
+    ];
+    const m3Data_C = [
+        { q: "The ultimate trial of a hero is:", a: "Cutting personal ties with your own hand for the greater efficiency", b: "Bearing collective contempt to defend truth", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "After full transformation, you wish to:", a: "Use forceful real-world means to protect the soft beliefs inside", b: "Use exquisite underlying logic to weave a net of happiness for everyone", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "Your deepest hidden desire is actually:", a: "Cold on the outside — but craving someone to understand your high moral purity", b: "Fitting in with the group — but craving someone to see your absolute objective wisdom", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "True salvation comes from:", a: "Building flawless order so every soul has fair shelter", b: "Tearing down every fallacy so the group resonates in absolute truth", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "You envy people who paradoxically combine:", a: "Extreme performance dictator with an untouchable romantic core", b: "Extremely tender beloved figure with a machine-cold mind", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "If you could heal the fatal flaw of personality, you'd pick:", a: "No more derailing plans by clinging too hard to personal principle", b: "No more covering critical logical errors out of social regard", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "The highest state you yearn for:", a: "Strongarming abstract soul-belief into concrete reality", b: "Tenderly translating cold logical law for the whole world", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "At life's end, you want to say:", a: "\"I spent my life defending the things I knew were worth defending.\"", b: "\"I finally saw through it all — and gave that wisdom to everyone.\"", dA: ["Te", "Fi"], dB: ["Ti", "Fe"], w: 1.5 },
+        { q: "True foresight must include:", a: "Inevitable long-term projection plus absolute control of present physical resources", b: "Divergence over parallel possibilities plus deep absorption of historical experience", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "In extreme chaos, you want to display:", a: "Beast-like physical instinct paired with chess-master endgame projection", b: "Magician-like strange association paired with historian-level precision of memory", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Combining two extreme gifts, you'd pick:", a: "Strike fatally in an instant, while every step lays groundwork for the future", b: "Find infinite life in the seeming dead-end, while every backup is rock-solid", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "The most fascinating tension in life is:", a: "Fated long convergence colliding with the present's blazing instant", b: "Mind's infinite divergence pulling against the rigid safe boundary", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "Blind spot you want to overcome:", a: "Stop losing real-world action because of over-fantasizing", b: "Stop killing every chance of change out of fear of the unknown", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "The \"god's-eye view\" you most want to experience:", a: "Become a hawk — see from above the single endpoint of time's flow", b: "Become a creator — build countless wildly different universes in the head", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "True groundedness comes from:", a: "Driving an ethereal vision into reality with raw physical force", b: "Stabilizing wild flying inspiration through rigorous standardized process", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 },
+        { q: "The ultimate balance you yearn for:", a: "Predict the era at the macro level, yet savor the texture of one cup of coffee at the micro", b: "Break tradition without limit, yet revere precious past memory", dA: ["Ni", "Se"], dB: ["Ne", "Si"], w: 1.5 }
+    ];
+    const m4Data_C = [
+        { q: "When you fully overcome your weakness, you'll:", a: "Shift from a fantasy-dweller to a master of matter and reality", b: "Shift from a change-refuser to an explorer embracing every unknown", dA: ["Se"], dB: ["Ne"], w: 2 },
+        { q: "Your soul's hidden form deep inside is:", a: "A dictator who craves to protect the weak by building absolute authority", b: "A hermit who craves to sever every bond by perceiving the universe's truth", dA: ["Te"], dB: ["Ti"], w: 2 },
+        { q: "If you fully \"went dark,\" it'd most likely be because:", a: "You saw humanity has no future and decided to end it early", b: "You carried too much of others' hopes and got swallowed by collective emotion", dA: ["Ni"], dB: ["Fe"], w: 2 },
+        { q: "If your mind were a fortress, you'd want it to have:", a: "Walls indestructible against any physical attack", b: "An inner sanctum holding the purest art and morality", dA: ["Si"], dB: ["Fi"], w: 2 },
+        { q: "What you secretly crave but rarely show is:", a: "Drop every long-term concern and unleash sensory desire without restraint", b: "Ignore every worldly metric of efficiency, indulge in useless inspiration", dA: ["Se"], dB: ["Ne"], w: 2 },
+        { q: "The light of humanity will ultimately shine in:", a: "Facing past trauma and turning it into the safe foundation of forward motion", b: "Holding the deepest values, even at the cost of total isolation", dA: ["Si"], dB: ["Fi"], w: 2 },
+        { q: "What you most want to say to your past, immature self:", a: "\"Don't fear showing dominance — your strength brings real order.\"", b: "\"Don't fear seeking group acknowledgment — your tenderness is not weakness.\"", dA: ["Te"], dB: ["Fe"], w: 2 },
+        { q: "The \"cure\" you've been chasing your whole life is:", a: "A perfect logic that lets you find absolute right and wrong in chaos", b: "A place to drop every defense and show pure self", dA: ["Ti"], dB: ["Fi"], w: 2 },
+        { q: "In old age, you wish to be:", a: "An elder who has seen through the world and gives uncannily accurate predictions", b: "A walking library — vast experience, precisely recounting countless historical details", dA: ["Ni"], dB: ["Si"], w: 2 },
+        { q: "To reach true self-actualization, you must learn to:", a: "Embrace chaos and divergence — allow yourself seemingly meaningless attempts", b: "Face physical reality — exchange action and sweat for tangible result", dA: ["Ne"], dB: ["Se"], w: 2 },
+        { q: "What kind of strength do you most want to be remembered for?", a: "Execution that moves vast organizations and resources, reshaping the world map", b: "Influence that gathers strangers and makes them cry over the same idea", dA: ["Te"], dB: ["Fe"], w: 2 },
+        { q: "Facing the vastness of the universe, you crave to:", a: "Decode its structure with the most rigorous underlying mathematics", b: "Feel its beauty with the purest art and inner soul", dA: ["Ti"], dB: ["Fi"], w: 2 },
+        { q: "The limit of your potential lies in:", a: "Cashing out your grand vision into the world by force, perfectly", b: "Stabilizing your unbounded ideas through rigorous historical experience", dA: ["Ni", "Te"], dB: ["Ne", "Si"], w: 2 },
+        { q: "The hero's journey ending you most yearn for:", a: "After extreme sensory adventure, see through the underlying logic and choose retreat", b: "After countless emotional betrayals, still embrace the world with love", dA: ["Se", "Ti"], dB: ["Fe", "Ni"], w: 2 },
+        { q: "The hardest yet most worthwhile life-discipline:", a: "Admit you don't know the future and learn to enjoy the uncertainty of now", b: "Admit you over-rely on logic and learn to accept your own emotional fragility", dA: ["Ne", "Si"], dB: ["Ti", "Fe"], w: 2 },
+        { q: "In the end, what do you want your existence to mean to the world?", a: "An unfalling lighthouse — providing absolute objective and cold guidance", b: "An unending campfire — providing absolute warmth and selfless protection", dA: ["Te", "Ni"], dB: ["Fe", "Si"], w: 2 }
+    ];
+
     // Expose
     window.QUESTIONS_EN = {
         AXIS_PROBES: AXIS_PROBES,
         PROBES: PROBES,
-        m1Data_A: null, m2Data_A: null, m3Data_A: null, m4Data_A: null,
-        m1Data_B: null, m2Data_B: null, m3Data_B: null, m4Data_B: null,
-        m1Data_C: null, m2Data_C: null, m3Data_C: null, m4Data_C: null,
+        m1Data_A: m1Data_A, m2Data_A: m2Data_A, m3Data_A: m3Data_A, m4Data_A: m4Data_A,
+        m1Data_B: m1Data_B, m2Data_B: m2Data_B, m3Data_B: m3Data_B, m4Data_B: m4Data_B,
+        m1Data_C: m1Data_C, m2Data_C: m2Data_C, m3Data_C: m3Data_C, m4Data_C: m4Data_C,
         mData_Likert_D: mData_Likert_D, mData_Forced_D: mData_Forced_D, mData_SJT_D: mData_SJT_D, mData_Ranking_D: mData_Ranking_D,
         mData_Likert_E: mData_Likert_E, mData_Forced_E: mData_Forced_E, mData_SJT_E: mData_SJT_E, mData_Ranking_E: mData_Ranking_E,
         mData_Likert_F: mData_Likert_F, mData_Forced_F: mData_Forced_F, mData_SJT_F: mData_SJT_F, mData_Ranking_F: mData_Ranking_F

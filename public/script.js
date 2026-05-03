@@ -13,13 +13,7 @@ if (!['A', 'B', 'C', 'D', 'E', 'F'].includes(currentVersion)) {
     currentVersion = 'B'; // 防呆預設
 }
 
-// 靜態題庫載入 (A, B, C)
-const m1Data = (currentVersion === 'A' && typeof m1Data_A !== 'undefined') ? m1Data_A : ((currentVersion === 'C' && typeof m1Data_C !== 'undefined') ? m1Data_C : (typeof m1Data_B !== 'undefined' ? m1Data_B : []));
-const m2Data = (currentVersion === 'A' && typeof m2Data_A !== 'undefined') ? m2Data_A : ((currentVersion === 'C' && typeof m2Data_C !== 'undefined') ? m2Data_C : (typeof m2Data_B !== 'undefined' ? m2Data_B : []));
-const m3Data = (currentVersion === 'A' && typeof m3Data_A !== 'undefined') ? m3Data_A : ((currentVersion === 'C' && typeof m3Data_C !== 'undefined') ? m3Data_C : (typeof m3Data_B !== 'undefined' ? m3Data_B : []));
-const m4Data = (currentVersion === 'A' && typeof m4Data_A !== 'undefined') ? m4Data_A : ((currentVersion === 'C' && typeof m4Data_C !== 'undefined') ? m4Data_C : (typeof m4Data_B !== 'undefined' ? m4Data_B : []));
-
-// 動態題庫指標 (D, E, F) — pick EN bank when mbti_locale==='en' 且 questions-en.js 已載入
+// 動態題庫指標 helper — pick EN bank when mbti_locale==='en' 且 questions-en.js 已載入
 function _pickQB(zhBank, key) {
     if (typeof window.pickEnBank === 'function') {
         const en = window.pickEnBank(key);
@@ -27,6 +21,17 @@ function _pickQB(zhBank, key) {
     }
     return zhBank;
 }
+
+// 靜態題庫載入 (A, B, C) — 同樣支援 EN bank 切換
+const _verSuffix = (currentVersion === 'A' || currentVersion === 'C') ? currentVersion : 'B';
+const _zhM1 = (currentVersion === 'A' && typeof m1Data_A !== 'undefined') ? m1Data_A : ((currentVersion === 'C' && typeof m1Data_C !== 'undefined') ? m1Data_C : (typeof m1Data_B !== 'undefined' ? m1Data_B : []));
+const _zhM2 = (currentVersion === 'A' && typeof m2Data_A !== 'undefined') ? m2Data_A : ((currentVersion === 'C' && typeof m2Data_C !== 'undefined') ? m2Data_C : (typeof m2Data_B !== 'undefined' ? m2Data_B : []));
+const _zhM3 = (currentVersion === 'A' && typeof m3Data_A !== 'undefined') ? m3Data_A : ((currentVersion === 'C' && typeof m3Data_C !== 'undefined') ? m3Data_C : (typeof m3Data_B !== 'undefined' ? m3Data_B : []));
+const _zhM4 = (currentVersion === 'A' && typeof m4Data_A !== 'undefined') ? m4Data_A : ((currentVersion === 'C' && typeof m4Data_C !== 'undefined') ? m4Data_C : (typeof m4Data_B !== 'undefined' ? m4Data_B : []));
+const m1Data = _pickQB(_zhM1, 'm1Data_' + _verSuffix);
+const m2Data = _pickQB(_zhM2, 'm2Data_' + _verSuffix);
+const m3Data = _pickQB(_zhM3, 'm3Data_' + _verSuffix);
+const m4Data = _pickQB(_zhM4, 'm4Data_' + _verSuffix);
 let activeLikert = [];
 let activeForced = [];
 let activeSJT = [];
