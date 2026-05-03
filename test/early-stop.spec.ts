@@ -1,7 +1,14 @@
 // test/early-stop.spec.ts
 // ============================================================
-// Route A: Early-Stopping helpers — evaluateConfidence / canStopEarly
-// 行為錨點：閾值放寬時這組 test 會立刻擋下，避免「使用者答 16 題就被判型」。
+// 信心評估 / 4 軸機率 純函式行為錨點
+// （檔名保留歷史名稱以免影響 git blame；實際內容已不限於 Route A）
+//
+// 涵蓋:
+//   - evaluateConfidence / canStopEarly  (原 Route A 助手, 現為後台分析用純函式)
+//   - calculateAxisProbabilities / findMostAmbiguousAxis  (phase 5 動態挑題引擎)
+//
+// 紀律：這些函式仍 production code，但**不再從測驗 UI 暴露**
+// (見 CLAUDE.md 測驗 UX 紀律 / memory feedback_assessment_integrity)
 // ============================================================
 import { describe, it, expect, beforeAll } from "vitest";
 // vite ?raw — 把 engine.js 內容當字串讀，eval 在沙盒裡跑，不需要 jsdom

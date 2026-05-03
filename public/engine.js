@@ -245,8 +245,12 @@ window.calculateDynamicScores = function(answers, version) {
 };
 
 // ==========================================
-// [Route A] Early Stopping — 答到一半若已可信判定，offer 使用者直接看結果
+// [信心評估純函式] — 後台 / 分析用，**不再從測驗 UI 暴露**
 // ==========================================
+// 歷史背景：原本是 Route A（早停 banner）的 UI 邏輯，2026-05-03 拆掉 UI 後保留
+// 這組純函式作為內部工具：dashboard 統計、GA threshold 調整、後台分析皆可用。
+// 使用紀律見 CLAUDE.md 「測驗 UX 紀律」+ memory feedback_assessment_integrity。
+//
 // evaluateConfidence(probs)：把 16 型機率 collapse 成 top/second + lead 三個指標
 //   probs 形狀：{ INTJ: 67.3, INTP: 12.4, ... }（由 calculateLocalProbabilities 產生）
 //   回傳：{ topType, topProb, secondType, secondProb, lead }

@@ -22,15 +22,19 @@ function getDynamicProbe(f1, f2) {
 }
 
 // ==========================================
-// [Route B] 軸線決勝題庫 (Axis Deciders)
+// [Phase 5 動態題庫] 4 軸決勝題池
 // ==========================================
 // 當 phase 1-4 答完，4 軸 (E/I, S/N, T/F, J/P) 中有任一軸機率接近 50/50 時，
-// phase 5 從原來的「1 題 cognitive function 探針」擴成「N 題該軸決勝題」。
+// 後端動態挑題 → phase 5 抽 3 題該軸決勝題；都篤定則回退 1 題 cognitive function 探針。
+//
+// 紀律：UI 對使用者完全透明 — 不揭露「我們偵測到你 T/F 軸接近 50/50」這類分析
+// （見 CLAUDE.md 「測驗 UX 紀律」+ memory feedback_assessment_integrity）。
+// phase 5 統一以「最終校準」框架呈現，使用者只看到「最後 N 題」的中性訊息。
 //
 // 設計原則：
 //   - 題目用通俗語言（非 cognitive function 術語），對「該軸」鑑別力高
 //   - dA/dB 標 cognitive function 是因為下游 calculateFinalRawScores 直接累加
-//   - 每題 w: 1.5（比 phase 1-4 的 w:1 稍重，畢竟是決勝題）
+//   - 每題 w: 1.5（比 phase 1-4 的 w:1 稍重，畢竟是校準題）
 //
 // 軸對應的 cognitive functions:
 //   E: Te/Fe/Ne/Se     I: Ti/Fi/Ni/Si
