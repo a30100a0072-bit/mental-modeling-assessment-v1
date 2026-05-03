@@ -72,7 +72,7 @@
     <link rel="stylesheet" href="feature-enhancements.css?v=1">
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
-    <script src="i18n.js?v=1" defer></script>
+    <script src="i18n.js?v=2" defer></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -81,44 +81,44 @@
     <header class="landing-header">
         <div class="logo" onclick="window.location.href='index.html'">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'">進入儀表板</button>
-            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'">登入 / 註冊</button>
-            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
+            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
         </div>
     </header>
 
     <div class="quick-nav-bar">
         <span class="qnav-pad"></span>
-        <a href="assessment.html?v=A&new=1" class="qnav-item">▶ 模組 A (日常舒適圈)</a>
-        <a href="assessment.html?v=B&new=1" class="qnav-item">▶ 模組 B (高壓防禦)</a>
-        <a href="assessment.html?v=C&new=1" class="qnav-item">▶ 模組 C (覺醒願景)</a>
-        <a href="assessment.html?v=D&new=1" class="qnav-item qnav-item--new">▶ 模組 D (日常行為)</a>
-        <a href="assessment.html?v=E&new=1" class="qnav-item qnav-item--new">▶ 模組 E (決策情境)</a>
-        <a href="assessment.html?v=F&new=1" class="qnav-item qnav-item--new">▶ 模組 F (認知偏好)</a>
+        <a href="assessment.html?v=A&new=1" class="qnav-item" data-i18n="quickNav.A">▶ 模組 A (日常舒適圈)</a>
+        <a href="assessment.html?v=B&new=1" class="qnav-item" data-i18n="quickNav.B">▶ 模組 B (高壓防禦)</a>
+        <a href="assessment.html?v=C&new=1" class="qnav-item" data-i18n="quickNav.C">▶ 模組 C (覺醒願景)</a>
+        <a href="assessment.html?v=D&new=1" class="qnav-item qnav-item--new" data-i18n="quickNav.D">▶ 模組 D (日常行為)</a>
+        <a href="assessment.html?v=E&new=1" class="qnav-item qnav-item--new" data-i18n="quickNav.E">▶ 模組 E (決策情境)</a>
+        <a href="assessment.html?v=F&new=1" class="qnav-item qnav-item--new" data-i18n="quickNav.F">▶ 模組 F (認知偏好)</a>
         <span class="qnav-pad"></span>
     </div>
 
     <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
-            <span>導覽選單</span>
-            <button class="close-btn" type="button" aria-label="關閉導覽選單" onclick="toggleSidebar()">✕</button>
+            <span data-i18n="sidebar.title">導覽選單</span>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()">✕</button>
         </div>
         <div class="sidebar-content">
-            <a href="index.html">首頁 (Home)</a>
-            <a href="assessment.html?v=A&new=1">模組 A：日常舒適圈 (已開放)</a>
-            <a href="assessment.html?v=B&new=1">模組 B：高壓防禦 (已開放)</a>
-            <a href="assessment.html?v=C&new=1">模組 C：覺醒願景 (已開放)</a>
+            <a href="index.html" data-i18n="sidebar.home">首頁 (Home)</a>
+            <a href="assessment.html?v=A&new=1" data-i18n="sidebar.moduleA">模組 A：日常舒適圈 (已開放)</a>
+            <a href="assessment.html?v=B&new=1" data-i18n="sidebar.moduleB">模組 B：高壓防禦 (已開放)</a>
+            <a href="assessment.html?v=C&new=1" data-i18n="sidebar.moduleC">模組 C：覺醒願景 (已開放)</a>
             <hr>
-            <a href="assessment.html?v=D&new=1" class="is-new">模組 D：日常行為量表 (全新開放)</a>
-            <a href="assessment.html?v=E&new=1" class="is-new">模組 E：決策情境量表 (全新開放)</a>
-            <a href="assessment.html?v=F&new=1" class="is-new">模組 F：認知偏好量表 (全新開放)</a>
+            <a href="assessment.html?v=D&new=1" class="is-new" data-i18n="sidebar.moduleD">模組 D：日常行為量表 (全新開放)</a>
+            <a href="assessment.html?v=E&new=1" class="is-new" data-i18n="sidebar.moduleE">模組 E：決策情境量表 (全新開放)</a>
+            <a href="assessment.html?v=F&new=1" class="is-new" data-i18n="sidebar.moduleF">模組 F：認知偏好量表 (全新開放)</a>
             <hr>
-            <a href="jung-theory.html">📖 榮格八維科普 (Jungian Theory)</a>
-            <a href="beebe-model.html">📖 畢比模型科普 (Beebe Model)</a>
-            <a href="mbti-types.html">👥 MBTI 16人格特質</a>
-            <a href="mbti-stats.html">📊 MBTI 有趣數據</a>
+            <a href="jung-theory.html" data-i18n="sidebar.jung">📖 榮格八維科普 (Jungian Theory)</a>
+            <a href="beebe-model.html" data-i18n="sidebar.beebe">📖 畢比模型科普 (Beebe Model)</a>
+            <a href="mbti-types.html" data-i18n="sidebar.types">👥 MBTI 16人格特質</a>
+            <a href="mbti-stats.html" data-i18n="sidebar.stats">📊 MBTI 有趣數據</a>
             <hr>
-            <a href="dashboard.html" class="active">會員儀表板 (Dashboard)</a>
+            <a href="dashboard.html" class="active" data-i18n="sidebar.dashboard">會員儀表板 (Dashboard)</a>
         </div>
     </div>
     <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
@@ -154,28 +154,28 @@
         </div>
 
         <div id="dashboard-content" class="hidden">
-            <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-bottom: 15px; margin-top:10px;">◈ 核心拓撲指標 (Stability Metrics)</h2>
+            <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-bottom: 15px; margin-top:10px;" data-i18n="dashboard.stabilityHeader">◈ 核心拓撲指標 (Stability Metrics)</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="stat-total">0</div>
-                    <div class="stat-label">測驗總數</div>
+                    <div class="stat-label" data-i18n="dashboard.statTotal">測驗總數</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="stat-latest">--</div>
-                    <div class="stat-label">當前主導人格</div>
+                    <div class="stat-label" data-i18n="dashboard.statLatest">當前主導人格</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="stat-stability">--%</div>
-                    <div class="stat-label">心智穩定度</div>
+                    <div class="stat-label" data-i18n="dashboard.statStability">心智穩定度</div>
                 </div>
                 <div class="stat-card" id="stat-card-avgq" style="display:none;">
                     <div class="stat-value" id="stat-avgq">--</div>
-                    <div class="stat-label">平均答題數</div>
+                    <div class="stat-label" data-i18n="dashboard.statAvgQ">平均答題數</div>
                 </div>
             </div>
 
             <div id="aggregated-charts-section" class="hidden">
-                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;">🧠 綜合心智拓撲分析 (Aggregated Overview)</h2>
+                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;" data-i18n="dashboard.aggregatedHeader">🧠 綜合心智拓撲分析 (Aggregated Overview)</h2>
                 <div class="charts-flex-container">
                     <div class="chart-box">
                         <div class="chart-label">◈ 歷史平均功能能量</div>
@@ -189,8 +189,8 @@
             </div>
 
             <div id="dichotomy-trend-section" class="hidden trend-section">
-                <h2 class="dash-h2">📉 四軸傾向時間序列 (Dichotomy Trend)</h2>
-                <p class="trend-hint">每次測驗的 E / N / T / J 機率（基於 16 型的後驗分佈），看出你大腦的偏好如何隨時間漂移。</p>
+                <h2 class="dash-h2" data-i18n="dashboard.trendHeader">📉 四軸傾向時間序列 (Dichotomy Trend)</h2>
+                <p class="trend-hint" data-i18n="dashboard.trendHint">每次測驗的 E / N / T / J 機率（基於 16 型的後驗分佈），看出你大腦的偏好如何隨時間漂移。</p>
                 <div class="trend-chart-wrap">
                     <canvas id="dichotomyTrendChart"></canvas>
                 </div>
@@ -198,8 +198,8 @@
             </div>
 
             <div id="version-compare-section" class="hidden compare-section">
-                <h2 class="dash-h2">🆚 模組差異對比 (Version Compare)</h2>
-                <p class="compare-hint">每個模組最新一次的能量分布疊圖。日常 (A) vs 高壓 (B) vs 願景 (C) 的落差，就是你大腦在不同情境下的真實切換軌跡。</p>
+                <h2 class="dash-h2" data-i18n="dashboard.compareHeader">🆚 模組差異對比 (Version Compare)</h2>
+                <p class="compare-hint" data-i18n="dashboard.compareHint">每個模組最新一次的能量分布疊圖。日常 (A) vs 高壓 (B) vs 願景 (C) 的落差，就是你大腦在不同情境下的真實切換軌跡。</p>
                 <div class="compare-legend" id="compare-legend"></div>
                 <div class="compare-radar-wrap">
                     <canvas id="compareRadarChart"></canvas>
@@ -207,7 +207,7 @@
             </div>
 
             <div id="timeline-section" class="hidden" style="margin-top: 25px;">
-                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-bottom: 12px;">📈 心智演化軌跡 (Type Evolution)</h2>
+                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-bottom: 12px;" data-i18n="dashboard.timelineHeader">📈 心智演化軌跡 (Type Evolution)</h2>
                 <div class="timeline-legend">
                     <span><span class="tl-dot tl-nt"></span>NT 分析家</span>
                     <span><span class="tl-dot tl-nf"></span>NF 外交家</span>
@@ -218,24 +218,24 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 25px; margin-bottom: 15px;">
-                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin:0;">◈ 歷史軌跡 (History & Versions)</h2>
-                <button class="btn-primary" style="width:auto; padding: 8px 15px; font-size: 0.85rem;" onclick="window.location.href='assessment.html?v=B&new=1'">➕ 啟動新測驗</button>
+                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin:0;" data-i18n="dashboard.historyHeader">◈ 歷史軌跡 (History & Versions)</h2>
+                <button class="btn-primary" style="width:auto; padding: 8px 15px; font-size: 0.85rem;" onclick="window.location.href='assessment.html?v=B&new=1'" data-i18n="dashboard.btnNewQuiz">➕ 啟動新測驗</button>
             </div>
-            
+
             <div class="history-list" id="history-container">
             </div>
 
             <div class="danger-zone" style="margin-top: 40px;">
-                <h3>⚠️ GDPR 遺忘權限 (Data Deletion)</h3>
-                <p>執行此操作將觸發硬刪除 (Hard Delete)，永久清除您的帳號、密碼雜湊與所有大腦建模紀錄，無法復原。</p>
-                <button class="btn-danger" onclick="handleDeleteAccount()">永久銷毀檔案</button>
+                <h3 data-i18n="dashboard.dangerHeader">⚠️ GDPR 遺忘權限 (Data Deletion)</h3>
+                <p data-i18n="dashboard.dangerDesc">執行此操作將觸發硬刪除 (Hard Delete)，永久清除您的帳號、密碼雜湊與所有大腦建模紀錄，無法復原。</p>
+                <button class="btn-danger" onclick="handleDeleteAccount()" data-i18n="dashboard.btnDelete">永久銷毀檔案</button>
             </div>
         </div>
     </div>
     
     <script src="chiyigo-auth.js?v=1"></script>
     <script src="analytics.js?v=1"></script>
-    <script src="dashboard.js?v=9"></script>
+    <script src="dashboard.js?v=10"></script>
 
     <script>
         function toggleSidebar() {

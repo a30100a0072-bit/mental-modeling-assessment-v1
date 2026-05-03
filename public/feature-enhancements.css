@@ -113,3 +113,32 @@
     .rsb-headline { font-size: 0.86rem; }
     .rsb-sub { font-size: 0.74rem; }
 }
+
+/* ── 語言切換按鈕（i18n.js 自動注入到 .header-actions） ───────────── */
+.lang-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--bd-subtle);
+    border-radius: 6px;
+    background: rgba(15, 23, 42, 0.6);
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.lang-toggle:hover { color: #38bdf8; border-color: #38bdf8; background: rgba(56, 189, 248, 0.08); }
+.lang-toggle:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+@media (max-width: 480px) { .lang-toggle { min-width: 32px; height: 32px; padding: 0 8px; font-size: 0.78rem; } }
+
+/* ── 內容層尚未翻 (en) 提醒橫幅 ──────────────────────────────────── */
+.i18n-content-notice {
+    background: rgba(253, 224, 71, 0.1);
+    border-bottom: 1px solid rgba(253, 224, 71, 0.3);
+    color: #fde68a;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}

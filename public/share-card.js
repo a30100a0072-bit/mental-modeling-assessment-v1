@@ -87,12 +87,13 @@
         });
     }
 
+    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     window.generateShareCard = async function () {
         try {
             const typeEl = document.getElementById('mbti-type');
             const primary = typeEl ? typeEl.innerText.trim() : '';
             if (!primary || primary === '--' || typeof ENGINE === 'undefined') {
-                (window.toast || alert)('結果尚未準備好，無法產生分享卡。', { type: 'warn' });
+                (window.toast || alert)(_T('result.msg.notReady', null, '結果尚未準備好，無法產生分享卡。'), { type: 'warn' });
                 return;
             }
 
@@ -110,7 +111,7 @@
                 if (tdEls.length === dimKeys.length) {
                     tdEls.forEach((td, i) => { norm[dimKeys[i]] = parseInt(td.innerText, 10) || 0; });
                 } else {
-                    (window.toast || alert)('結果尚未渲染完成，請稍候再試。', { type: 'warn' });
+                    (window.toast || alert)(_T('result.msg.notRendered', null, '結果尚未渲染完成，請稍候再試。'), { type: 'warn' });
                     return;
                 }
             }
@@ -128,7 +129,7 @@
             const svg = buildSvg(primary, norm, prob, taglines);
 
             if (window.track) window.track('share_card_generate', { type: primary, prob: prob || '' });
-            (window.toast || alert)('正在產生分享卡…', { type: 'info', duration: 1200 });
+            (window.toast || alert)(_T('result.msg.generating', null, '正在產生分享卡…'), { type: 'info', duration: 1200 });
             const pngBlob = await svgToPngBlob(svg);
             const url = URL.createObjectURL(pngBlob);
 
@@ -150,10 +151,10 @@
             a.click();
             a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 5000);
-            (window.toast || alert)('分享卡已下載 ✓', { type: 'success' });
+            (window.toast || alert)(_T('result.msg.shareDownloaded', null, '分享卡已下載 ✓'), { type: 'success' });
         } catch (e) {
             console.error(e);
-            (window.toast || alert)('產生分享卡失敗：' + (e.message || e), { type: 'error' });
+            (window.toast || alert)(_T('result.msg.shareFailed', { msg: e.message || String(e) }, '產生分享卡失敗：' + (e.message || e)), { type: 'error' });
         }
     };
 })();

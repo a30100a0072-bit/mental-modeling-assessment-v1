@@ -7,6 +7,8 @@
 (function () {
     'use strict';
 
+    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
+
     const QUIZ_FLOW = 'quiz-flow';
     const QUIZ_CONTAINER = 'quiz-container';
     const QUESTIONS_AREA = 'questions-area';
@@ -39,7 +41,7 @@
         if (!area || milestoneFired.has(area)) return;
         milestoneFired.add(area);
         if (typeof window.toast === 'function') {
-            window.toast('🎯 過半啦！再撐一下就拿到結果。', { type: 'success', duration: 2400 });
+            window.toast(_T('quiz.halfwayToast', null, '🎯 過半啦！再撐一下就拿到結果。'), { type: 'success', duration: 2400 });
         }
         if (typeof window.track === 'function') {
             const total = area.querySelectorAll('.question').length;
@@ -69,11 +71,11 @@
         // 但快做完時切回正向 framing（剩 0~2 題改成「就快了！」）
         let mainText;
         if (remain === 0) {
-            mainText = `✅ 本段全數完成（${total} 題）`;
+            mainText = _T('quiz.subProgressDone', { total }, `✅ 本段全數完成（${total} 題）`);
         } else if (remain <= 2) {
-            mainText = `🔥 剩最後 ${remain} 題！（已完成 ${answered}/${total}）`;
+            mainText = _T('quiz.subProgressLast', { remain, done: answered, total }, `🔥 剩最後 ${remain} 題！（已完成 ${answered}/${total}）`);
         } else {
-            mainText = `剩 ${remain} 題 · 已完成 ${answered}/${total}（${pct}%）`;
+            mainText = _T('quiz.subProgressRemain', { remain, done: answered, total, pct }, `剩 ${remain} 題 · 已完成 ${answered}/${total}（${pct}%）`);
         }
         sub.querySelector('.progress-sub-text').textContent = mainText;
 
@@ -84,8 +86,8 @@
             const perQ = elapsed / answered;
             const remainSec = Math.round(perQ * remain);
             eta.textContent = remainSec > 60
-                ? `· 預估還需 ${Math.round(remainSec / 60)} 分鐘`
-                : `· 預估還需 ${remainSec} 秒`;
+                ? _T('quiz.etaMinutes', { n: Math.round(remainSec / 60) }, `· 預估還需 ${Math.round(remainSec / 60)} 分鐘`)
+                : _T('quiz.etaSeconds', { n: remainSec }, `· 預估還需 ${remainSec} 秒`);
         } else {
             eta.textContent = '';
         }
@@ -102,7 +104,7 @@
         el.id = 'autosave-indicator';
         el.className = 'autosave-indicator';
         el.setAttribute('aria-live', 'polite');
-        el.innerHTML = '<span class="autosave-dot"></span><span class="autosave-text">已自動儲存</span>';
+        el.innerHTML = '<span class="autosave-dot"></span><span class="autosave-text">' + _T('quiz.autosaved', null, '已自動儲存') + '</span>';
         document.body.appendChild(el);
         return el;
     }
@@ -297,7 +299,7 @@
         if (!hasUnsubmittedAnswers()) return;
         // 現代瀏覽器忽略自訂訊息，但 returnValue 設值才會觸發確認對話框
         e.preventDefault();
-        e.returnValue = '測驗尚未提交，離開將會中斷進度，確定要離開嗎？';
+        e.returnValue = _T('quiz.leavingWarn', null, '測驗尚未提交，離開將會中斷進度，確定要離開嗎？');
         return e.returnValue;
     }
     window.addEventListener('beforeunload', onBeforeUnload);

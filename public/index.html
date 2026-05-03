@@ -45,9 +45,10 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
+    <link rel="stylesheet" href="feature-enhancements.css?v=1">
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
-    <script src="i18n.js?v=1" defer></script>
+    <script src="i18n.js?v=2" defer></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
@@ -55,110 +56,110 @@
         <div class="header-actions">
             <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
             <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
-            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
         </div>
     </header>
 
     <div class="quick-nav-bar">
         <span class="qnav-pad"></span>
-        <a href="assessment.html?v=A&new=1" class="qnav-item">▶ 模組 A (日常舒適圈)</a>
-        <a href="assessment.html?v=B&new=1" class="qnav-item">▶ 模組 B (高壓防禦)</a>
-        <a href="assessment.html?v=C&new=1" class="qnav-item">▶ 模組 C (覺醒願景)</a>
-        <a href="assessment.html?v=D&new=1" class="qnav-item qnav-item--new">▶ 模組 D (日常行為)</a>
-        <a href="assessment.html?v=E&new=1" class="qnav-item qnav-item--new">▶ 模組 E (決策情境)</a>
-        <a href="assessment.html?v=F&new=1" class="qnav-item qnav-item--new">▶ 模組 F (認知偏好)</a>
+        <a href="assessment.html?v=A&new=1" class="qnav-item" data-i18n="quickNav.A">▶ 模組 A (日常舒適圈)</a>
+        <a href="assessment.html?v=B&new=1" class="qnav-item" data-i18n="quickNav.B">▶ 模組 B (高壓防禦)</a>
+        <a href="assessment.html?v=C&new=1" class="qnav-item" data-i18n="quickNav.C">▶ 模組 C (覺醒願景)</a>
+        <a href="assessment.html?v=D&new=1" class="qnav-item qnav-item--new" data-i18n="quickNav.D">▶ 模組 D (日常行為)</a>
+        <a href="assessment.html?v=E&new=1" class="qnav-item qnav-item--new" data-i18n="quickNav.E">▶ 模組 E (決策情境)</a>
+        <a href="assessment.html?v=F&new=1" class="qnav-item qnav-item--new" data-i18n="quickNav.F">▶ 模組 F (認知偏好)</a>
         <span class="qnav-pad"></span>
     </div>
 
     <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
-            <span>導覽選單</span>
-            <button class="close-btn" type="button" aria-label="關閉導覽選單" onclick="toggleSidebar()">✕</button>
+            <span data-i18n="sidebar.title">導覽選單</span>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()">✕</button>
         </div>
         <div class="sidebar-content">
-            <a href="index.html" class="active">首頁 (Home)</a>
-            
-            <a href="assessment.html?v=A&new=1">模組 A：日常舒適圈 (已開放)</a>
-            <a href="assessment.html?v=B&new=1">模組 B：高壓防禦 (已開放)</a>
-            <a href="assessment.html?v=C&new=1">模組 C：覺醒願景 (已開放)</a>
-            
+            <a href="index.html" class="active" data-i18n="sidebar.home">首頁 (Home)</a>
+
+            <a href="assessment.html?v=A&new=1" data-i18n="sidebar.moduleA">模組 A：日常舒適圈 (已開放)</a>
+            <a href="assessment.html?v=B&new=1" data-i18n="sidebar.moduleB">模組 B：高壓防禦 (已開放)</a>
+            <a href="assessment.html?v=C&new=1" data-i18n="sidebar.moduleC">模組 C：覺醒願景 (已開放)</a>
+
             <hr>
-            <a href="assessment.html?v=D&new=1" class="is-new">模組 D：日常行為量表 (全新開放)</a>
-            <a href="assessment.html?v=E&new=1" class="is-new">模組 E：決策情境量表 (全新開放)</a>
-            <a href="assessment.html?v=F&new=1" class="is-new">模組 F：認知偏好量表 (全新開放)</a>
+            <a href="assessment.html?v=D&new=1" class="is-new" data-i18n="sidebar.moduleD">模組 D：日常行為量表 (全新開放)</a>
+            <a href="assessment.html?v=E&new=1" class="is-new" data-i18n="sidebar.moduleE">模組 E：決策情境量表 (全新開放)</a>
+            <a href="assessment.html?v=F&new=1" class="is-new" data-i18n="sidebar.moduleF">模組 F：認知偏好量表 (全新開放)</a>
             <hr>
-            
-            <a href="jung-theory.html">📖 榮格八維科普 (Jungian Theory)</a>
-            <a href="beebe-model.html">📖 畢比模型科普 (Beebe Model)</a>
-            <a href="mbti-types.html">👥 MBTI 16人格特質</a>
-            <a href="mbti-stats.html">📊 MBTI 有趣數據</a>
-            
+
+            <a href="jung-theory.html" data-i18n="sidebar.jung">📖 榮格八維科普 (Jungian Theory)</a>
+            <a href="beebe-model.html" data-i18n="sidebar.beebe">📖 畢比模型科普 (Beebe Model)</a>
+            <a href="mbti-types.html" data-i18n="sidebar.types">👥 MBTI 16人格特質</a>
+            <a href="mbti-stats.html" data-i18n="sidebar.stats">📊 MBTI 有趣數據</a>
+
             <hr>
-            <a href="dashboard.html">會員儀表板 (Dashboard)</a>
+            <a href="dashboard.html" data-i18n="sidebar.dashboard">會員儀表板 (Dashboard)</a>
         </div>
     </div>
     <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
 
     <main class="hero-section">
         <h1 data-i18n="hero.title">發現你的<span class="highlight">深層心智</span>模型</h1>
-        <p>基於榮格八維與畢比模型 (John Beebe) 構建的專業測評工具。<br>不只測量你的表層人格，更深究你在高壓、崩潰與成長時的動態轉換軌跡，為您提供專屬的心智拓撲圖。</p>
-        
+        <p data-i18n="hero.subtitle">基於榮格八維與畢比模型 (John Beebe) 構建的專業測評工具。<br>不只測量你的表層人格，更深究你在高壓、崩潰與成長時的動態轉換軌跡，為您提供專屬的心智拓撲圖。</p>
+
         <div class="hero-buttons">
             <button class="btn-primary large" onclick="window.location.href='assessment.html?v=B&new=1'" data-i18n="hero.ctaPrimary">開始測驗 (高壓解析模組)</button>
         </div>
 
         <div class="version-cards">
             <div class="v-card active" data-version="A" onclick="window.location.href='assessment.html?v=A&new=1'">
-                <div class="badge">已上線</div>
+                <div class="badge" data-i18n="home.cardA.badge">已上線</div>
                 <div class="v-icon" aria-hidden="true">🌿</div>
-                <h3>Phase A (日常版)</h3>
-                <p>低壓舒適圈決策。測量 Ego (自我) 與輔助功能的自然展現順位。</p>
-                <div class="v-meta"><span class="v-time">⏱ 約 8 分鐘</span></div>
+                <h3 data-i18n="home.cardA.title">Phase A (日常版)</h3>
+                <p data-i18n="home.cardA.desc">低壓舒適圈決策。測量 Ego (自我) 與輔助功能的自然展現順位。</p>
+                <div class="v-meta"><span class="v-time" data-i18n="home.cardA.time">⏱ 約 8 分鐘</span></div>
                 <div class="v-status" data-version-status="A"></div>
             </div>
 
             <div class="v-card active" data-version="B" onclick="window.location.href='assessment.html?v=B&new=1'">
-                <div class="badge">已上線</div>
+                <div class="badge" data-i18n="home.cardB.badge">已上線</div>
                 <div class="v-icon" aria-hidden="true">⚡</div>
-                <h3>Phase B (高壓版)</h3>
-                <p>極端環境防禦。精準測量 Shadow (陰影) 盲區與系統崩潰軌跡。</p>
-                <div class="v-meta"><span class="v-time">⏱ 約 8 分鐘</span></div>
+                <h3 data-i18n="home.cardB.title">Phase B (高壓版)</h3>
+                <p data-i18n="home.cardB.desc">極端環境防禦。精準測量 Shadow (陰影) 盲區與系統崩潰軌跡。</p>
+                <div class="v-meta"><span class="v-time" data-i18n="home.cardB.time">⏱ 約 8 分鐘</span></div>
                 <div class="v-status" data-version-status="B"></div>
             </div>
 
             <div class="v-card active" data-version="C" onclick="window.location.href='assessment.html?v=C&new=1'">
-                <div class="badge">已上線</div>
+                <div class="badge" data-i18n="home.cardC.badge">已上線</div>
                 <div class="v-icon" aria-hidden="true">🌌</div>
-                <h3>Phase C (願景版)</h3>
-                <p>劣勢功能覺醒。測量 Anima (潛意識) 整合度與未來成長潛力。</p>
-                <div class="v-meta"><span class="v-time">⏱ 約 10 分鐘</span><span class="v-lock-hint">🔒 需登入</span></div>
+                <h3 data-i18n="home.cardC.title">Phase C (願景版)</h3>
+                <p data-i18n="home.cardC.desc">劣勢功能覺醒。測量 Anima (潛意識) 整合度與未來成長潛力。</p>
+                <div class="v-meta"><span class="v-time" data-i18n="home.cardC.time">⏱ 約 10 分鐘</span><span class="v-lock-hint" data-i18n="home.cardC.lock">🔒 需登入</span></div>
                 <div class="v-status" data-version-status="C"></div>
             </div>
 
             <div class="v-card active is-new" data-version="D" onclick="window.location.href='assessment.html?v=D&new=1'">
-                <div class="badge">全新動態架構</div>
+                <div class="badge" data-i18n="home.cardD.badge">全新動態架構</div>
                 <div class="v-icon" aria-hidden="true">🧭</div>
-                <h3>Phase D (日常行為量表)</h3>
-                <p>專注於習慣、空間互動與無意識行為。包含李克特量表與自適應補題機制。</p>
-                <div class="v-meta"><span class="v-time">⏱ 約 12 分鐘</span><span class="v-lock-hint">🔒 需登入</span></div>
+                <h3 data-i18n="home.cardD.title">Phase D (日常行為量表)</h3>
+                <p data-i18n="home.cardD.desc">專注於習慣、空間互動與無意識行為。包含李克特量表與自適應補題機制。</p>
+                <div class="v-meta"><span class="v-time" data-i18n="home.cardD.time">⏱ 約 12 分鐘</span><span class="v-lock-hint" data-i18n="home.cardD.lock">🔒 需登入</span></div>
                 <div class="v-status" data-version-status="D"></div>
             </div>
 
             <div class="v-card active is-new" data-version="E" onclick="window.location.href='assessment.html?v=E&new=1'">
-                <div class="badge">全新動態架構</div>
+                <div class="badge" data-i18n="home.cardE.badge">全新動態架構</div>
                 <div class="v-icon" aria-hidden="true">🎯</div>
-                <h3>Phase E (決策情境量表)</h3>
-                <p>專注於投資、職場高壓選擇與利益權衡。結合 SJT 情境驗證，徹底消除偽裝。</p>
-                <div class="v-meta"><span class="v-time">⏱ 約 12 分鐘</span><span class="v-lock-hint">🔒 需登入</span></div>
+                <h3 data-i18n="home.cardE.title">Phase E (決策情境量表)</h3>
+                <p data-i18n="home.cardE.desc">專注於投資、職場高壓選擇與利益權衡。結合 SJT 情境驗證，徹底消除偽裝。</p>
+                <div class="v-meta"><span class="v-time" data-i18n="home.cardE.time">⏱ 約 12 分鐘</span><span class="v-lock-hint" data-i18n="home.cardE.lock">🔒 需登入</span></div>
                 <div class="v-status" data-version-status="E"></div>
             </div>
 
             <div class="v-card active is-new" data-version="F" onclick="window.location.href='assessment.html?v=F&new=1'">
-                <div class="badge">全新動態架構</div>
+                <div class="badge" data-i18n="home.cardF.badge">全新動態架構</div>
                 <div class="v-icon" aria-hidden="true">🧬</div>
-                <h3>Phase F (認知偏好量表)</h3>
-                <p>探索最底層的世界觀、學習模式與價值排序。強制解構心智模型。</p>
-                <div class="v-meta"><span class="v-time">⏱ 約 12 分鐘</span><span class="v-lock-hint">🔒 需登入</span></div>
+                <h3 data-i18n="home.cardF.title">Phase F (認知偏好量表)</h3>
+                <p data-i18n="home.cardF.desc">探索最底層的世界觀、學習模式與價值排序。強制解構心智模型。</p>
+                <div class="v-meta"><span class="v-time" data-i18n="home.cardF.time">⏱ 約 12 分鐘</span><span class="v-lock-hint" data-i18n="home.cardF.lock">🔒 需登入</span></div>
                 <div class="v-status" data-version-status="F"></div>
             </div>
         </div>

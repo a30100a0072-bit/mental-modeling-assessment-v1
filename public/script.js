@@ -57,9 +57,12 @@ var backendSorted = [];
 window.isGodMode = false;
 window.backendPrimaryType = null; 
 
-function updateProgress(p, max = 5) { 
-    document.getElementById('progress-fill').style.width = `${(p/max)*100}%`; 
-    document.getElementById('progress-text').innerText = `當前進度: 模組 ${p} / ${max}`; 
+function updateProgress(p, max = 5) {
+    document.getElementById('progress-fill').style.width = `${(p/max)*100}%`;
+    const txt = (typeof window.t === 'function')
+        ? window.t('quiz.progressOf', { p: p, max: max })
+        : `當前進度: 模組 ${p} / ${max}`;
+    document.getElementById('progress-text').innerText = txt;
 }
 
 window.injectGodMode = function(mode) {
@@ -127,7 +130,7 @@ function initApp() {
         updateProgress(p, 3);
         
         if (activeLikert.length === 0) {
-            (window.toast || alert)("偵測到手機瀏覽器快取異常，請清除快取重新載入。", { type: 'warn', duration: 5000 });
+            (window.toast || alert)((window.t ? window.t('error.cacheCorrupt') : "偵測到手機瀏覽器快取異常，請清除快取重新載入。"), { type: 'warn', duration: 5000 });
             return;
         }
         renderPhaseDEF(p);
@@ -136,7 +139,7 @@ function initApp() {
         if(p > 5) p = 5; 
         updateProgress(p, 5);
         if (m1Data.length === 0) {
-            (window.toast || alert)("偵測到手機瀏覽器快取異常，請清除快取重新載入。", { type: 'warn', duration: 5000 });
+            (window.toast || alert)((window.t ? window.t('error.cacheCorrupt') : "偵測到手機瀏覽器快取異常，請清除快取重新載入。"), { type: 'warn', duration: 5000 });
             return;
         }
         renderPhase(p);
@@ -180,7 +183,9 @@ function renderPhase(p) {
             return `<div class="question"><p><strong>${starts[p-1]+i}. ${item.q}</strong></p><div class="options"><label><input type="radio" name="${qK}" value="a" ${s==='a'?'checked':''}> ${item.a}</label><label><input type="radio" name="${qK}" value="b" ${s==='b'?'checked':''}> ${item.b}</label></div></div>`;
         }).join('');
         
-        btn.innerText = p < 4 ? `確認選項 (${p}/5)` : "掃描核心維度 (4/5)";
+        btn.innerText = p < 4
+            ? (window.t ? window.t('quiz.btnConfirmStep', { p: p }) : `確認選項 (${p}/5)`)
+            : (window.t ? window.t('quiz.btnScanCore') : "掃描核心維度 (4/5)");
 
         // 進入 phase 2/3/4 時注入「進度已存檔」提示，給使用者放心離開的安全感。
         // 不主動偷看結論（feedback_assessment_integrity）。
@@ -190,7 +195,7 @@ function renderPhase(p) {
 
         btn.onclick = () => {
             const qs = qArea.querySelectorAll('.question');
-            for (let q of qs) { if(!q.querySelector('input:checked')) { (window.toast || alert)("請完成所有題目以利精準建模。", { type: 'warn' }); q.scrollIntoView({ behavior:'smooth', block:'center' }); return; } }
+            for (let q of qs) { if(!q.querySelector('input:checked')) { (window.toast || alert)((window.t ? window.t('quiz.pleaseFinish') : "請完成所有題目以利精準建模。"), { type: 'warn' }); q.scrollIntoView({ behavior:'smooth', block:'center' }); return; } }
             for(let i=0; i<lists[p-1].length; i++) { 
                 const sel = document.querySelector(`input[name="q_${p}_${i}"]:checked`);
                 if(sel) appState.answers[`q_${p}_${i}`] = sel.value; 
@@ -231,20 +236,22 @@ function renderPhase(p) {
         }
 
         // 統一中性文案 — 不分軸線 / 不揭露分析；只告訴使用者「還剩 N 題、性質是校準」
-        header.innerText = "PHASE 05: 最終校準";
+        header.innerText = window.t ? window.t('quiz.finalCalibrationHeader') : "PHASE 05: 最終校準";
         const restCount = probe.length;
-        desc.innerText = restCount > 1
-            ? `最後 ${restCount} 題，請憑直覺作答以完成測驗。`
-            : "最後 1 題，請憑直覺作答以完成測驗。";
+        if (restCount > 1) {
+            desc.innerText = window.t ? window.t('quiz.finalCalibrationDescMulti', { n: restCount }) : `最後 ${restCount} 題，請憑直覺作答以完成測驗。`;
+        } else {
+            desc.innerText = window.t ? window.t('quiz.finalCalibrationDescOne') : "最後 1 題，請憑直覺作答以完成測驗。";
+        }
         qArea.innerHTML = probe.map((it, i) => `<div class="question"><p><strong>${65 + i}. ${it.q}</strong></p><div class="options"><label><input type="radio" name="q5_${i}" value="a"> ${it.a}</label><label><input type="radio" name="q5_${i}" value="b"> ${it.b}</label></div></div>`).join('');
         window.mbtiActiveProbe = probe;
-        btn.innerText = "提交並連接 Cloudflare V1 引擎";
+        btn.innerText = window.t ? window.t('quiz.btnSubmitFinal') : "提交並連接 Cloudflare V1 引擎";
         btn.onclick = () => {
             // 多題模式：每題都要選；單題模式：只 q5_0
             const answers = [];
             for (let i = 0; i < probe.length; i++) {
                 const sel = document.querySelector('input[name="q5_' + i + '"]:checked');
-                if (!sel) return (window.toast || alert)("請完成所有最後的校準題目。", { type: 'warn' });
+                if (!sel) return (window.toast || alert)((window.t ? window.t('quiz.pleaseFinishCalibration') : "請完成所有最後的校準題目。"), { type: 'warn' });
                 answers.push({ val: sel.value, dA: probe[i].dA, dB: probe[i].dB, w: probe[i].w || 3 });
             }
             // 多題：array；單題：保留舊格式（向下相容）
@@ -510,14 +517,15 @@ function maybeShowResumeBanner(currentPhase) {
     const qArea = document.getElementById('questions-area');
     if (!qArea) return false;
 
+    const _t = (k, vars, fb) => (window.t ? window.t(k, vars, fb) : fb);
     const bannerHtml = `
         <div class="resume-banner" role="status" aria-label="進度已存檔">
             <div class="rsb-icon">💾</div>
             <div class="rsb-body">
-                <div class="rsb-headline">進度已自動存檔（已完成 ${phasesAnswered} / 4 階段）</div>
-                <div class="rsb-sub">隨時可以關閉視窗，下次造訪會從這題自動接續。</div>
+                <div class="rsb-headline">${_t('quiz.resumeHeadline', { n: phasesAnswered }, `進度已自動存檔（已完成 ${phasesAnswered} / 4 階段）`)}</div>
+                <div class="rsb-sub">${_t('quiz.resumeSub', null, '隨時可以關閉視窗，下次造訪會從這題自動接續。')}</div>
             </div>
-            <button type="button" class="btn-secondary rsb-btn-pause" onclick="handlePauseAndExit(${phasesAnswered})">暫停測驗</button>
+            <button type="button" class="btn-secondary rsb-btn-pause" onclick="handlePauseAndExit(${phasesAnswered})">${_t('action.pauseQuiz', null, '暫停測驗')}</button>
         </div>
     `;
     qArea.insertAdjacentHTML('afterbegin', bannerHtml);
@@ -535,7 +543,8 @@ function handlePauseAndExit(phasesAnswered) {
     }
     saveState();
     if (typeof window.toast === 'function') {
-        window.toast('進度已存檔，下次造訪會從這題接續 ✓', { type: 'success', duration: 2400 });
+        const msg = window.t ? window.t('quiz.pauseToast') : '進度已存檔，下次造訪會從這題接續 ✓';
+        window.toast(msg, { type: 'success', duration: 2400 });
     }
     setTimeout(() => { window.location.href = 'index.html'; }, 1200);
 }
@@ -554,7 +563,7 @@ function restartQuiz() {
     window.location.reload(); 
 }
 
-function copyShareLink() { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?s=${encodeScores(appScores)}`).then(()=>(window.toast || alert)("防篡改連結已複製", { type: 'success' })); }
+function copyShareLink() { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?s=${encodeScores(appScores)}`).then(()=>(window.toast || alert)((window.t ? window.t('result.msg.copySuccess') : "防篡改連結已複製"), { type: 'success' })); }
 
 function goToTalo() {
     const TALO_URL = 'https://talo.chiyigo.com';

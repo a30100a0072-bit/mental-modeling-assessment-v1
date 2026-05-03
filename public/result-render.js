@@ -39,14 +39,20 @@ function renderResult(isShared) {
     if (typeof window.renderBeebeStack === 'function') window.renderBeebeStack(primary, norm);
     document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>`<th data-tip="${ENGINE.tips[k]}" title="${ENGINE.tips[k]}">${k}</th>`).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
 
+    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
+    const tagEgo = _T('result.tag.ego', null, 'EGO');
+    const tagSub = _T('result.tag.subconscious', null, '潛意識');
+    const tagShadow = _T('result.tag.shadow', null, '陰影');
     const sMap = ENGINE.sides[primary] || ENGINE.sides["ISFJ"];
     const listHtml = backendSorted.map(t => {
-        let tag = (t===sMap[0]) ? `<span class="tag-ego">EGO</span>` : (t===sMap[1] ? `<span class="tag-sub">潛意識</span>` : (t===sMap[2] ? `<span class="tag-unc">陰影</span>` : ""));
+        let tag = (t===sMap[0]) ? `<span class="tag-ego">${tagEgo}</span>` : (t===sMap[1] ? `<span class="tag-sub">${tagSub}</span>` : (t===sMap[2] ? `<span class="tag-unc">${tagShadow}</span>` : ""));
         const p = Math.round(backendProbs[t]||0);
         return `<div class="match-item" id="btn-${t}" onclick="updateDetail('${t}')"><div class="match-info"><b>${t}</b>${tag}<div class="match-bar-bg"><div class="match-bar-fill" style="width:${p}%"></div></div></div><span class="match-pct">${p<1?"<1":p}%</span></div>`;
     }).join('');
 
-    const matrixLabel = isSharedView ? "16人格判定概率矩陣 (本地還原)" : "16人格判定概率矩陣 (雲端運算)";
+    const matrixLabel = isSharedView
+        ? _T('result.label.matrixLocal', null, "16人格判定概率矩陣 (本地還原)")
+        : _T('result.label.matrixCloud', null, "16人格判定概率矩陣 (雲端運算)");
     const compatHtml = buildCompatSection(primary);
     document.getElementById('analysis-text').innerHTML = `<div class="report-section" style="padding-bottom:10px;"><h3>◈ ${matrixLabel}</h3><div class="match-list">${listHtml}</div></div>${compatHtml}<div id="detail-box"></div>`;
 
@@ -74,10 +80,11 @@ function buildCompatSection(primary) {
     const mirror = primary.slice(0, 3) + (primary[3] === 'J' ? 'P' : 'J');
     const activator = (primary[0] === 'I' ? 'E' : 'I') + primary.slice(1);
 
+    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     const cards = [
-        { type: dual,      label: '🔮 互補伴侶',  sub: 'Duality',     desc: '你的劣勢，是 TA 的英雄。最深的安全感與互補。' },
-        { type: mirror,    label: '🪞 鏡像成長',  sub: 'Mirror',      desc: '相同核心價值，但執行風格相反。互相照鏡子。' },
-        { type: activator, label: '⚡ 啟動夥伴',  sub: 'Activator',   desc: '相同氣質，能量極性相反，互相推進不卡關。' }
+        { type: dual,      label: _T('result.label.compatDuality',   null, '🔮 互補伴侶'), sub: 'Duality',   desc: _T('result.label.compatDualityDesc',   null, '你的劣勢，是 TA 的英雄。最深的安全感與互補。') },
+        { type: mirror,    label: _T('result.label.compatMirror',    null, '🪞 鏡像成長'), sub: 'Mirror',    desc: _T('result.label.compatMirrorDesc',    null, '相同核心價值，但執行風格相反。互相照鏡子。') },
+        { type: activator, label: _T('result.label.compatActivator', null, '⚡ 啟動夥伴'), sub: 'Activator', desc: _T('result.label.compatActivatorDesc', null, '相同氣質，能量極性相反，互相推進不卡關。') }
     ].filter(c => c.type && /^[A-Z]{4}$/.test(c.type));
 
     if (!cards.length) return '';
@@ -91,14 +98,16 @@ function buildCompatSection(primary) {
             </div>
             <div class="compat-type">${c.type}</div>
             <div class="compat-desc">${c.desc}</div>
-            <div class="compat-cta">查看 ${c.type} 全解析 →</div>
+            <div class="compat-cta">${_T('result.label.compatCta', { type: c.type }, '查看 ' + c.type + ' 全解析 →')}</div>
         </a>`
     ).join('');
 
+    const compatTitle = _T('result.label.compatTitle', null, '◈ 與你最互補的人格 (Compatibility)');
+    const compatHint = _T('result.label.compatHint', null, '不是「誰跟誰絕配」這種星座式廢話，而是榮格 / Socionics 的軸線互補：你的盲點是 TA 的本能。');
     return `
         <div class="report-section compat-section">
-            <h3>◈ 與你最互補的人格 (Compatibility)</h3>
-            <p style="color:#94a3b8; font-size:0.92rem; margin-bottom:14px;">不是「誰跟誰絕配」這種星座式廢話，而是榮格 / Socionics 的軸線互補：你的盲點是 TA 的本能。</p>
+            <h3>${compatTitle}</h3>
+            <p style="color:#94a3b8; font-size:0.92rem; margin-bottom:14px;">${compatHint}</p>
             <div class="compat-grid">${cardsHtml}</div>
         </div>`;
 }

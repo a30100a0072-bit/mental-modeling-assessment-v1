@@ -3,10 +3,12 @@ Chart.register(ChartDataLabels);
 const API_BASE = "/api/v1";
 // chiyigoFetch / chiyigoRefresh 由 chiyigo-auth.js 提供（HTML 必須先載入）
 
+const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
+
 window.onload = () => {
     const token = sessionStorage.getItem('chiyigo_access_token');
     if (!token) {
-        (window.toast || alert)("未偵測到神經連結授權，請重新登入。", { type: 'warn' });
+        (window.toast || alert)(_T('dashboard.noAuth', null, "未偵測到神經連結授權，請重新登入。"), { type: 'warn' });
         setTimeout(() => { window.location.href = 'login.html'; }, 1200);
         return;
     }
@@ -16,8 +18,8 @@ window.onload = () => {
 async function fetchHistory() {
     try {
         const response = await chiyigoFetch(`${API_BASE}/user/history`, { method: 'GET' });
-        if (response.status === 401) throw new Error("授權過期，請重新登入");
-        if (!response.ok) throw new Error("無法連接歷史資料庫");
+        if (response.status === 401) throw new Error(_T('error.unauthorized', null, "授權過期，請重新登入"));
+        if (!response.ok) throw new Error(_T('dashboard.fetchFailed', null, "無法連接歷史資料庫"));
 
         const result = await response.json();
         renderDashboard(result.data);
@@ -426,19 +428,19 @@ function handleLogout() {
 }
 
 async function handleDeleteAccount() {
-    const confirmDelete = confirm("⚠️ 警告：這將永久刪除您的帳號與所有測驗歷史。此操作不可逆。確定執行嗎？");
+    const confirmDelete = confirm(_T('dashboard.deleteConfirm', null, "⚠️ 警告：這將永久刪除您的帳號與所有測驗歷史。此操作不可逆。確定執行嗎？"));
     if (!confirmDelete) return;
 
     try {
         const response = await chiyigoFetch(`${API_BASE}/user/account`, { method: 'DELETE' });
         if (response.ok) {
-            (window.toast || alert)("您的神經連結檔案已從系統中永久銷毀。", { type: 'success' });
+            (window.toast || alert)(_T('dashboard.deleteSuccess', null, "您的神經連結檔案已從系統中永久銷毀。"), { type: 'success' });
             setTimeout(handleLogout, 1500);
         } else if (response.status === 401) {
-            (window.toast || alert)("授權過期，請重新登入。", { type: 'warn' });
+            (window.toast || alert)(_T('dashboard.deleteAuthExpired', null, "授權過期，請重新登入。"), { type: 'warn' });
             setTimeout(handleLogout, 1200);
         } else {
-            throw new Error("銷毀失敗，請稍後再試。");
+            throw new Error(_T('dashboard.deleteFailed', null, "銷毀失敗，請稍後再試。"));
         }
     } catch (error) {
         (window.toast || alert)(error.message, { type: 'error' });
