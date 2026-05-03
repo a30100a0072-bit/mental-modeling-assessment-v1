@@ -162,17 +162,11 @@ function renderPhase(p) {
     const btn = document.getElementById('next-btn');
 
     if (p <= 4) {
-        let headers, descs;
-        if (currentVersion === 'A') {
-            headers = ["PHASE 01: 日常資訊濾鏡", "PHASE 02: 舒適圈價值偏好", "PHASE 03: 慣性任務處理", "PHASE 04: 心流與自我驗證"];
-            descs = ["在毫無壓力的狀態下，大腦最自然攝取資訊的方式。", "資源充足時，您日常決策的優先考量基準。", "面對一般任務與人際，您最習慣的應對模式。", "當您感到極度自信與滿足時，所展現出的顛峰狀態。"];
-        } else if (currentVersion === 'C') {
-            headers = ["PHASE 01: 終極信仰覺醒", "PHASE 02: 潛意識渴望投射", "PHASE 03: 劣勢功能整合", "PHASE 04: 靈魂歸屬與願景"];
-            descs = ["跳脫當下現實，您內心深處最由衷敬佩的特質。", "放下防備時，您對自我蛻變的最深層渴望。", "若能克服性格的致命弱點，您希望能達到的境界。", "測量您的 Anima (潛意識)，尋找人生旅程的最終意義。"];
-        } else {
-            headers = ["PHASE 01: 內外傾代價純化", "PHASE 02: 同域感知判斷交火", "PHASE 03: 榮格軸向拮抗檢驗", "PHASE 04: 系統崩潰極端防禦"];
-            descs = ["情境皆伴隨極端代價。請在痛苦中選擇大腦最底層的本能防禦。", "資源極度稀缺時，您的決策優先權將徹底暴露。", "強迫測試大腦功能連動。您必須做出殘酷取捨。", "逆向測量潛意識物理防禦。請誠實回憶谷底時的失控狀態。"];
-        }
+        const verKey = (currentVersion === 'A' || currentVersion === 'C') ? currentVersion : 'B';
+        const _hk = (i) => window.t ? window.t('quiz.phaseHeaders.' + verKey + '.' + i) : '';
+        const _dk = (i) => window.t ? window.t('quiz.phaseDescs.' + verKey + '.' + i) : '';
+        const headers = [_hk(0), _hk(1), _hk(2), _hk(3)];
+        const descs = [_dk(0), _dk(1), _dk(2), _dk(3)];
 
         const lists = [m1Data, m2Data, m3Data, m4Data]; 
         const starts = [1, 17, 33, 49];
@@ -271,11 +265,12 @@ function renderPhaseDEF(p) {
     const btn = document.getElementById('next-btn');
     
     // 動態標題前綴
-    let moduleTitle = currentVersion === 'D' ? "日常行為" : (currentVersion === 'E' ? "決策情境" : "認知偏好");
+    const _moduleFb = currentVersion === 'D' ? "日常行為" : (currentVersion === 'E' ? "決策情境" : "認知偏好");
+    const moduleTitle = window.t ? window.t('quizDef.module.' + currentVersion, null, _moduleFb) : _moduleFb;
 
     if (p === 1) {
-        header.innerText = `Step 1：${moduleTitle}量表 (Likert)`;
-        desc.innerText = "請根據直覺，評估以下描述與你真實狀態的相符程度。(1: 極度不符 ~ 5: 極度符合)";
+        header.innerText = window.t ? window.t('quizDef.step1Header', { module: moduleTitle }) : `Step 1：${moduleTitle}量表 (Likert)`;
+        desc.innerText = window.t ? window.t('quizDef.step1Desc') : "請根據直覺，評估以下描述與你真實狀態的相符程度。(1: 極度不符 ~ 5: 極度符合)";
         
         qArea.innerHTML = activeLikert.map((item, i) => {
             const qK = `q_1_likert_${i}`; const s = appState.answers[qK];
@@ -289,22 +284,22 @@ function renderPhaseDEF(p) {
             return `<div class="question"><p><strong>${i+1}. ${item.q}</strong></p><div class="options likert-row">${optionsHtml}</div></div>`;
         }).join('');
         
-        btn.innerText = "進入下一步 (1/3)";
+        btn.innerText = window.t ? window.t('quizDef.btnStep1') : "進入下一步 (1/3)";
         btn.onclick = () => {
             if(!validateAndSaveDEF('1_likert', activeLikert.length)) return;
             appState.phase = 2; saveState(); updateProgress(2, 3); window.scrollTo(0,0); renderPhaseDEF(2);
         };
-    } 
+    }
     else if (p === 2) {
-        header.innerText = "Step 2：功能迫選 (Forced Choice)";
-        desc.innerText = "請在兩個互斥的極端情境中，選擇你大腦最本能的防禦或偏好傾向。";
+        header.innerText = window.t ? window.t('quizDef.step2Header') : "Step 2：功能迫選 (Forced Choice)";
+        desc.innerText = window.t ? window.t('quizDef.step2Desc') : "請在兩個互斥的極端情境中，選擇你大腦最本能的防禦或偏好傾向。";
         
         qArea.innerHTML = activeForced.map((item, i) => {
             const qK = `q_2_forced_${i}`; const s = appState.answers[qK];
             return `<div class="question"><p><strong>${i+1}. ${item.q}</strong></p><div class="options"><label><input type="radio" name="${qK}" value="a" ${s==='a'?'checked':''}> ${item.a}</label><label><input type="radio" name="${qK}" value="b" ${s==='b'?'checked':''}> ${item.b}</label></div></div>`;
         }).join('');
         
-        btn.innerText = "進行邊界解析 (2/3)";
+        btn.innerText = window.t ? window.t('quizDef.btnStep2') : "進行邊界解析 (2/3)";
         btn.onclick = () => {
             if(!validateAndSaveDEF('2_forced', activeForced.length)) return;
             
@@ -327,8 +322,8 @@ function renderPhaseDEF(p) {
         }
         
         if (appState.dynamicRoute === 'SJT') {
-            header.innerText = "Step 3：情境行為驗證 (SJT)";
-            desc.innerText = "面對以下複雜情境，請選擇你最可能採取的行動。";
+            header.innerText = window.t ? window.t('quizDef.step3SjtHeader') : "Step 3：情境行為驗證 (SJT)";
+            desc.innerText = window.t ? window.t('quizDef.step3SjtDesc') : "面對以下複雜情境，請選擇你最可能採取的行動。";
             qArea.innerHTML = activeSJT.map((item, i) => {
                 const qK = `q_3_sjt_${i}`; const s = appState.answers[qK];
                 let opts = item.options.map((opt, optIdx) => {
@@ -337,15 +332,15 @@ function renderPhaseDEF(p) {
                 return `<div class="question"><p><strong>${i+1}. ${item.q}</strong></p><div class="options">${opts}</div></div>`;
             }).join('');
             
-            btn.innerText = "提交並計算最終拓撲 (3/3)";
+            btn.innerText = window.t ? window.t('quizDef.btnStep3') : "提交並計算最終拓撲 (3/3)";
             btn.onclick = () => {
                 if(!validateAndSaveDEF('3_sjt', activeSJT.length)) return;
                 proceedToResultAPI();
             };
-        } 
+        }
         else if (appState.dynamicRoute === 'RANKING') {
-            header.innerText = "Step 3：認知結構排序";
-            desc.innerText = "請依序點擊選項賦予名次 (點擊順序即為 1, 2, 3, 4)。點錯可點擊右側「重設」按鈕。";
+            header.innerText = window.t ? window.t('quizDef.step3RankHeader') : "Step 3：認知結構排序";
+            desc.innerText = window.t ? window.t('quizDef.step3RankDesc') : "請依序點擊選項賦予名次 (點擊順序即為 1, 2, 3, 4)。點錯可點擊右側「重設」按鈕。";
             
             window.rankingStates = window.rankingStates || {};
             
@@ -364,15 +359,16 @@ function renderPhaseDEF(p) {
                     </div>`;
                 }).join('');
 
-                return `<div class="question" id="container_${qK}"><div class="rank-q-head"><strong>${i+1}. ${item.q}</strong> <button class="btn-outline rank-reset-btn" type="button" onclick="resetRanking('${qK}')">🔄 重設</button></div><div class="options" id="opts_${qK}">${itemsHtml}</div></div>`;
+                const _resetLabel = window.t ? window.t('quizDef.rankResetBtn') : '🔄 重設';
+                return `<div class="question" id="container_${qK}"><div class="rank-q-head"><strong>${i+1}. ${item.q}</strong> <button class="btn-outline rank-reset-btn" type="button" onclick="resetRanking('${qK}')">${_resetLabel}</button></div><div class="options" id="opts_${qK}">${itemsHtml}</div></div>`;
             }).join('');
-            
-            btn.innerText = "提交並計算最終拓撲 (3/3)";
+
+            btn.innerText = window.t ? window.t('quizDef.btnStep3') : "提交並計算最終拓撲 (3/3)";
             btn.onclick = () => {
                 for(let i=0; i < activeRanking.length; i++){
                     let qK = `q_3_rank_${i}`;
                     if(window.rankingStates[qK].length !== activeRanking[i].items.length){
-                        (window.toast || alert)(`請完成第 ${i+1} 題的所有選項排序。`, { type: 'warn' });
+                        (window.toast || alert)((window.t ? window.t('quizDef.rankPleaseFinish', { n: i+1 }) : `請完成第 ${i+1} 題的所有選項排序。`), { type: 'warn' });
                         document.getElementById(`container_${qK}`).scrollIntoView({ behavior:'smooth', block:'center' });
                         return;
                     }
@@ -390,7 +386,7 @@ function validateAndSaveDEF(prefix, max) {
         let qK = `q_${prefix}_${i}`;
         let sel = document.querySelector(`input[name="${qK}"]:checked`);
         if(!sel){
-            (window.toast || alert)("請完成所有題目以利精準建模。", { type: 'warn' });
+            (window.toast || alert)((window.t ? window.t('quiz.pleaseFinish') : "請完成所有題目以利精準建模。"), { type: 'warn' });
             document.querySelector(`input[name="${qK}"]`).closest('.question').scrollIntoView({ behavior:'smooth', block:'center' });
             return false;
         }

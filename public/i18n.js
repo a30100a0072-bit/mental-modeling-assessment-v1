@@ -99,7 +99,33 @@
                 subProgressLast: '🔥 剩最後 {remain} 題！（已完成 {done}/{total}）',
                 subProgressDone: '✅ 本段全數完成（{total} 題）',
                 etaMinutes: '· 預估還需 {n} 分鐘',
-                etaSeconds: '· 預估還需 {n} 秒'
+                etaSeconds: '· 預估還需 {n} 秒',
+                phaseHeaders: {
+                    A: ['PHASE 01: 日常資訊濾鏡', 'PHASE 02: 舒適圈價值偏好', 'PHASE 03: 慣性任務處理', 'PHASE 04: 心流與自我驗證'],
+                    B: ['PHASE 01: 內外傾代價純化', 'PHASE 02: 同域感知判斷交火', 'PHASE 03: 榮格軸向拮抗檢驗', 'PHASE 04: 系統崩潰極端防禦'],
+                    C: ['PHASE 01: 終極信仰覺醒', 'PHASE 02: 潛意識渴望投射', 'PHASE 03: 劣勢功能整合', 'PHASE 04: 靈魂歸屬與願景']
+                },
+                phaseDescs: {
+                    A: ['在毫無壓力的狀態下，大腦最自然攝取資訊的方式。', '資源充足時，您日常決策的優先考量基準。', '面對一般任務與人際，您最習慣的應對模式。', '當您感到極度自信與滿足時，所展現出的顛峰狀態。'],
+                    B: ['情境皆伴隨極端代價。請在痛苦中選擇大腦最底層的本能防禦。', '資源極度稀缺時，您的決策優先權將徹底暴露。', '強迫測試大腦功能連動。您必須做出殘酷取捨。', '逆向測量潛意識物理防禦。請誠實回憶谷底時的失控狀態。'],
+                    C: ['跳脫當下現實，您內心深處最由衷敬佩的特質。', '放下防備時，您對自我蛻變的最深層渴望。', '若能克服性格的致命弱點，您希望能達到的境界。', '測量您的 Anima (潛意識)，尋找人生旅程的最終意義。']
+                }
+            },
+            quizDef: {
+                module: { D: '日常行為', E: '決策情境', F: '認知偏好' },
+                step1Header: 'Step 1：{module}量表 (Likert)',
+                step1Desc: '請根據直覺，評估以下描述與你真實狀態的相符程度。(1: 極度不符 ~ 5: 極度符合)',
+                step2Header: 'Step 2：功能迫選 (Forced Choice)',
+                step2Desc: '請在兩個互斥的極端情境中，選擇你大腦最本能的防禦或偏好傾向。',
+                step3SjtHeader: 'Step 3：情境行為驗證 (SJT)',
+                step3SjtDesc: '面對以下複雜情境，請選擇你最可能採取的行動。',
+                step3RankHeader: 'Step 3：認知結構排序',
+                step3RankDesc: '請依序點擊選項賦予名次 (點擊順序即為 1, 2, 3, 4)。點錯可點擊右側「重設」按鈕。',
+                btnStep1: '進入下一步 (1/3)',
+                btnStep2: '進行邊界解析 (2/3)',
+                btnStep3: '提交並計算最終拓撲 (3/3)',
+                rankResetBtn: '🔄 重設',
+                rankPleaseFinish: '請完成第 {n} 題的所有選項排序。'
             },
             result: {
                 label: {
@@ -272,7 +298,33 @@
                 subProgressLast: '🔥 Just {remain} left! ({done}/{total} done)',
                 subProgressDone: '✅ Section complete ({total} questions)',
                 etaMinutes: '· ~{n} min remaining',
-                etaSeconds: '· ~{n} sec remaining'
+                etaSeconds: '· ~{n} sec remaining',
+                phaseHeaders: {
+                    A: ['PHASE 01: Daily Information Filter', 'PHASE 02: Comfort-Zone Value Preference', 'PHASE 03: Habitual Task Handling', 'PHASE 04: Flow & Self-Validation'],
+                    B: ['PHASE 01: E/I Cost Purification', 'PHASE 02: Same-Domain Perception/Judgment Conflict', 'PHASE 03: Jungian Axis Antagonism', 'PHASE 04: System Collapse — Extreme Defense'],
+                    C: ['PHASE 01: Ultimate Belief Awakening', 'PHASE 02: Subconscious Desire Projection', 'PHASE 03: Inferior-Function Integration', 'PHASE 04: Soul Anchor & Vision']
+                },
+                phaseDescs: {
+                    A: ['How your brain naturally takes in information when there is zero pressure.', 'Your default priority criteria for everyday decisions when resources are sufficient.', 'Your most habitual mode of handling routine tasks and people.', 'Your peak state when you feel extremely confident and fulfilled.'],
+                    B: ['Every scenario carries an extreme cost. Choose the deepest instinctive defense from pain.', 'Under extreme resource scarcity, your real decision priority is fully exposed.', 'Forces a coupling test of brain functions — you must make brutal trade-offs.', 'Reverse-measures unconscious physical defense. Recall honestly your loss-of-control rock-bottom.'],
+                    C: ['Stepping out of present reality — the trait you most genuinely admire deep down.', 'When defenses are dropped, your deepest yearning for self-transformation.', 'If you could overcome your fatal weakness, the height you hope to reach.', 'Measuring your Anima (subconscious), searching for the ultimate meaning of your life journey.']
+                }
+            },
+            quizDef: {
+                module: { D: 'Daily Behavior', E: 'Decision Scenario', F: 'Cognitive Preference' },
+                step1Header: 'Step 1: {module} Scale (Likert)',
+                step1Desc: 'Rate intuitively how each statement matches your real state. (1: strongly disagree — 5: strongly agree)',
+                step2Header: 'Step 2: Forced Choice',
+                step2Desc: 'Between two mutually exclusive extreme scenarios, choose your brain’s most instinctive defense or preference.',
+                step3SjtHeader: 'Step 3: Situational Judgment (SJT)',
+                step3SjtDesc: 'For each complex scenario, pick the action you would most likely take.',
+                step3RankHeader: 'Step 3: Cognitive Structure Ranking',
+                step3RankDesc: 'Click options in order to rank them (click order = rank 1, 2, 3, 4). Click "Reset" on the right if you mis-click.',
+                btnStep1: 'Next (1/3)',
+                btnStep2: 'Boundary analysis (2/3)',
+                btnStep3: 'Submit & compute final topology (3/3)',
+                rankResetBtn: '🔄 Reset',
+                rankPleaseFinish: 'Please finish ranking every option in question {n}.'
             },
             result: {
                 label: {
