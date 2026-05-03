@@ -96,7 +96,7 @@ async function startLogin() {
 
 async function claimGuestResults(token) {
   const guestId = localStorage.getItem('mbti_guest_id')
-  if (!guestId) return
+  if (!guestId) return null
   const res = await fetch('/api/v1/user/claim-guest-results', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -105,7 +105,9 @@ async function claimGuestResults(token) {
   if (res.ok) {
     localStorage.removeItem('mbti_guest_id')
     localStorage.removeItem('mbti_guest_report_id')
+    try { return await res.json() } catch (_) { return null }
   }
+  return null
 }
 
 function setStatus(msg, isError) {
@@ -179,7 +181,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     sessionStorage.setItem('chiyigo_access_token', data.access_token)
     if (data.id_token) sessionStorage.setItem('chiyigo_id_token', data.id_token)
 
-    await claimGuestResults(data.access_token).catch(err => console.warn('claim guest failed:', err))
+    const claim = await claimGuestResults(data.access_token).catch(err => { console.warn('claim guest failed:', err); return null })
+
+    // [埋碼] 登入 / 註冊完成（OIDC PKCE 回跳成功）— 後驗證 token + claim guest 結果之後
+    if (window.track) window.track('login_success', { merged_count: (claim && claim.merged_count) || 0 })
 
     window.history.replaceState({}, '', 'login.html')
     window.location.href = 'dashboard.html'

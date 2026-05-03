@@ -11,7 +11,7 @@
 // ⚠️ 部署紀律：每次 css / js / html 改動上線前都要 bump 這個版號（建議 'mbti-v1-YYYY-MM-DD-NN'）。
 //    不 bump 的話 cache-first 的舊使用者下次造訪不會拿到新版（除非檔名變動或他們手動清快取）。
 //    SW activate 時會把所有舊版 cache 清掉，所以版號可放心遞增不必怕雪崩。
-const CACHE_VERSION = 'mbti-v1-2026-05-03-15';
+const CACHE_VERSION = 'mbti-v1-2026-05-04-01';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 

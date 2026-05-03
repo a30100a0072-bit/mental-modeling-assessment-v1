@@ -157,10 +157,9 @@ function initApp() {
         renderPhase(p);
     }
     
-    // [埋碼] 測驗開始
-    if (typeof gtag !== 'undefined' && !urlS && p === 1) {
-        gtag('event', 'quiz_start', { 'version': currentVersion });
-        if(typeof fbq !== 'undefined') fbq('trackCustom', 'QuizStart', { version: currentVersion });
+    // [埋碼] 測驗開始 — 走 window.track 統一入口 (analytics.js)
+    if (!urlS && p === 1 && window.track) {
+        window.track('quiz_start', { version: currentVersion });
     }
 }
 
