@@ -55,7 +55,8 @@
       if (payload.iss !== ISSUER) return false;
       var audOk = Array.isArray(payload.aud) ? payload.aud.indexOf(AUD) !== -1 : payload.aud === AUD;
       if (!audOk) return false;
-      if (payload.exp && payload.exp * 1000 < Date.now()) return false;
+      // chiyigo 端確認 100% 簽 exp（functions/utils/jwt.js:127），缺 exp 視為偽造
+      if (typeof payload.exp !== 'number' || payload.exp * 1000 < Date.now()) return false;
       return true;
     } catch (_) {
       return false;

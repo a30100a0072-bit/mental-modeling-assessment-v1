@@ -139,7 +139,8 @@ async function verifyChiyigoToken(token: string, _env: Env): Promise<ChiyigoIden
       sub?: string; exp?: number; iss?: string; aud?: string | string[]; email?: string; role?: string;
     };
     if (!payload.sub) return null;
-    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+    // chiyigo 端確認 100% 簽 exp（functions/utils/jwt.js:127），缺 exp 視為偽造
+    if (typeof payload.exp !== "number" || payload.exp * 1000 < Date.now()) return null;
     if (payload.iss !== EXPECTED_ISS) return null;
     const audOk = Array.isArray(payload.aud) ? payload.aud.includes(EXPECTED_AUD) : payload.aud === EXPECTED_AUD;
     if (!audOk) return null;

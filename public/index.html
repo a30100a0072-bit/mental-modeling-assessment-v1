@@ -4,35 +4,35 @@
     <meta charset="UTF-8">
     <!-- ── 跨站 SSO：接收來自 chiyigo IAM 的 token
          安全強化（2026-05-09）：
-           1. 砍掉 query 路徑，只接 fragment（query token 會洩到 referer / server log）
+           1. fragment + query 雙讀（chiyigo portfolio.js / oauth callback.js 仍用 query 傳，
+              強制 fragment-only 會打壞 SSO；query 路徑長期應由 chiyigo 端逐步遷移到 fragment）
            2. JWKS 簽章驗證 + iss + aud + exp 全綠才寫 sessionStorage（擋偽造 token）
            3. 已登入則不覆蓋（防釣魚切換成攻擊者帳號）
-         舊名 mbti_token 仍保留接收（不接 query），下個過渡期可刪 ── -->
-    <script src="chiyigo-token-verify.js?v=1"></script>
+           4. 不論驗成功/失敗，URL 上的 token 立刻 history.replaceState 清掉（避免進 referer）
+         舊名 mbti_token 仍保留接收，下個過渡期可刪 ── -->
+    <script src="chiyigo-token-verify.js?v=2"></script>
     <script>
     (async function () {
       try {
         var q = new URLSearchParams(location.search);
         var h = new URLSearchParams(location.hash.replace(/^#/, ''));
-        var hadQueryToken = q.has('chiyigo_token') || q.has('mbti_token');
+        var t = h.get('chiyigo_token') || h.get('mbti_token')
+             || q.get('chiyigo_token') || q.get('mbti_token');
+        var e = h.get('chiyigo_email') || h.get('mbti_email')
+             || q.get('chiyigo_email') || q.get('mbti_email');
         q.delete('chiyigo_token'); q.delete('chiyigo_email');
         q.delete('mbti_token'); q.delete('mbti_email');
         var qs = q.toString();
         function cleanUrl() { try { history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '')); } catch (_) {} }
 
-        // query token 一律拒收，但要把 URL 清掉避免後續 referer 洩漏
-        if (hadQueryToken) cleanUrl();
-
-        var t = h.get('chiyigo_token') || h.get('mbti_token');
         if (!t) return;
 
-        // 已登入則不覆蓋（防釣魚），但仍清掉 fragment
+        // 已登入則不覆蓋（防釣魚），但仍清掉 URL 上的 token
         if (sessionStorage.getItem('chiyigo_access_token')) { cleanUrl(); return; }
 
         var ok = await window.verifyChiyigoToken(t);
         if (!ok) { cleanUrl(); return; }
 
-        var e = h.get('chiyigo_email') || h.get('mbti_email');
         sessionStorage.setItem('chiyigo_access_token', t);
         if (e) sessionStorage.setItem('chiyigo_email', e);
         cleanUrl();
