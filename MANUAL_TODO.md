@@ -115,49 +115,14 @@ Light mode / PWA service worker / 自訂 404 / i18n 基礎建設 / IAM bridge �
 
 ## 4. 待辦：UX 大改後續（非緊急）
 
-### 4.1 PWA app icon（小投入大效果） — ☐ 未做
-- 目前 manifest 用 `og-image.jpg`（1200×630）當 icon，加桌捷會被裁
-- 需要 192×192、512×512 maskable PNG 各一張，更新 `manifest.webmanifest` 的 `icons` 陣列
-- 可用 [maskable.app](https://maskable.app/editor) 從 logo 生成
+### 4.1 i18n native review — ☐ 未做
+- ~880 字串為 LLM 一次性產出（Phase 1-2e, 2026-05-03 完工，commit `c3446c1` 收尾）
+- 個別措辭需 native review；MBTI 認知功能術語要對齊：
+  - Te=execution/efficiency, Ti=underlying logic, Fe=group resonance, Fi=inner conviction
+  - Ni=convergent endgame, Ne=divergent possibilities, Si=stored experience/SOP, Se=physical present
+- 待實機驗收：點右上 EN → assessment.html?v=A&new=1 → 應全英文（含題目）；走完一輪結果頁也應全英文
 
-### 4.2 og-image.jpg 壓縮 — ☐ 未做
-- 拖到 [tinypng.com](https://tinypng.com) 壓 50%+ 後覆蓋，重 deploy 即可
-- 影響：首次造訪 / 社群分享預覽載入快 200~400ms
-
-### 4.3 內嵌 `<style>` 抽出 — ✅ 已完成 (commit dc89ca5, 2026-05-02)
-- mbti-stats.html / mbti-types.html / type-detail.html 三檔的內嵌 style 已抽到 `component.css [模塊 8]`
-- 順手做了 token 化，硬編碼色全改 `var(--*)`，light mode 也讀得對
-- jung-theory.html / beebe-model.html 本來就沒 inline `<style>`，不需處理
-- §3.6 驗收第 4 點（科普頁 light mode 對比度）的嚴重程度應已大幅改善
-
-### 4.4 i18n 真正落地 — ✅ 全套完成 (Phase 1-2e, 2026-05-03)
-- **Phase 1** (commit `7411374`)：i18n.js 機制 + chrome 雙語介面 (hero/nav/sidebar/quickNav/home/phase/action/quiz/theme/error/ui)
-- **Phase 2a** (commit `98e2757`)：engine-i18n-en.js — ENGINE.tips/gripExit/blindspots/reports 16 型完整英譯
-- **Phase 2b** (commit `f7357d4`)：personality-data-en.js + type-detail.html 動態雙語 (renderTypeDetail + localechange listener)
-- **Phase 2c** (commit `45d31ed`)：script.js phase headers (A/B/C × 4) + DEF step1/2/3 + ranking 全走 t()
-- **Phase 2d** (commit `c05a017`)：questions-en.js — AXIS_PROBES + PROBES + Module D/E/F (~270 字串)
-- **Phase 2e** (commit `c3446c1`)：questions-en.js — Module A/B/C (576 字串)，總計 ~880 字串
-- 切換機制：右上 EN 按鈕 → setLocale + localStorage 持久化 + localechange event
-- 題庫 picker：`window.pickEnBank()` locale-aware，找不到 EN bank 自動 fallback ZH
-
-**待人工校對**：~880 字串為 LLM 一次性產出，個別措辭需 native review；MBTI 認知功能術語要對齊 (Te=execution/efficiency, Ti=underlying logic, Fe=group resonance, Fi=inner conviction, Ni=convergent endgame, Ne=divergent possibilities, Si=stored experience/SOP, Se=physical present)
-**待實機驗收**：點右上 EN → assessment.html?v=A&new=1 → 應全英文 (含題目本體)；走完一輪到結果頁 → 報告也應全英文
-
-### 4.5 結果頁 action-buttons 視覺 — ✅ 已完成 (commit dc89ca5, 2026-05-02)
-- `.action-buttons` grid 改 `repeat(auto-fit, minmax(180px, 1fr))`，5 顆按鈕自適應排列
-
-### 4.6 SW 升版維護紀律 — ✅ 已制度化 (commit dc89ca5, 2026-05-02)
-- `public/sw.js` 頂部的 `CACHE_VERSION` 加註解警告
-- `CLAUDE.md` 部署慣例補：每次部署前必須 bump 版號
-- 現在版號 `mbti-v1-2026-05-02-02`，下次部署改 `-03` 或換日期
-- **這是紀律不是 todo**：每次部署都要記得做
-
-### 4.7 script.js scope 重構 — ✅ 已完成 (commit dc89ca5, 2026-05-02)
-- `appState` / `appScores` / `quizStartTime` / `backendProbs` / `backendSorted` 等 `let` 改 `var`
-- `share-card.js` 優先讀 `window.appScores`（DOM 表格 fallback 保留）
-- `quiz-ux.js` 優先寫 `window.appState` + `saveState()`（localStorage fallback 保留）
-
-### 4.8 Cloudflare Pages debug 三大坑（CLAUDE.md 已記） — ☐ 持續注意
+### 4.2 Cloudflare Pages debug 三大坑（紀律，不是 todo）
 - HEAD method 假陽性 404 → 用 GET 驗
 - wrangler 從 cwd 找 functions/，不是 deploy dir
 - dashboard rollback 會把 production 釘死，要再 rollback 一次才會跟最新 push
