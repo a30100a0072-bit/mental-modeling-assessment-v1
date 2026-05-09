@@ -2,43 +2,38 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <!-- ── 跨站 SSO：接收來自 chiyigo IAM 的 token。優先讀 fragment（不進 Referer/log）
-         驗證：iss=https://chiyigo.com + aud=mbti（防 session fixation 釣魚）；簽章由 worker 那端驗
-         param 名統一 chiyigo_token，舊名 mbti_token 暫保留兼容（過渡期過後可刪）
-         若已有 token 不覆蓋（同上理由） ── -->
+    <!-- ── 跨站 SSO：接收來自 chiyigo IAM 的 token
+         安全強化（2026-05-09）：
+           1. 砍掉 query 路徑，只接 fragment
+           2. JWKS 簽章驗證 + iss + aud + exp 全綠才寫 sessionStorage（不再只驗 payload claim）
+           3. 已登入則不覆蓋（防釣魚切換成攻擊者帳號）
+         舊名 mbti_token 仍保留接收（不接 query），下個過渡期可刪 ── -->
+    <script src="chiyigo-token-verify.js?v=1"></script>
     <script>
-    (function () {
-      function decodePayload(jwt) {
-        try {
-          var b64 = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-          // pad to multiple of 4
-          while (b64.length % 4) b64 += '=';
-          return JSON.parse(decodeURIComponent(escape(atob(b64))));
-        } catch (_) { return null; }
-      }
-      function cleanUrl(qs) {
-        try { history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '')); } catch (_) {}
-      }
+    (async function () {
       try {
         var q = new URLSearchParams(location.search);
         var h = new URLSearchParams(location.hash.replace(/^#/, ''));
-        var t = h.get('chiyigo_token') || q.get('chiyigo_token') || h.get('mbti_token') || q.get('mbti_token');
-        if (!t) return;
+        var hadQueryToken = q.has('chiyigo_token') || q.has('mbti_token');
         q.delete('chiyigo_token'); q.delete('chiyigo_email');
         q.delete('mbti_token'); q.delete('mbti_email');
         var qs = q.toString();
+        function cleanUrl() { try { history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '')); } catch (_) {} }
 
-        // 已登入 → 不覆蓋（防釣魚切換成攻擊者帳號），但仍清掉 URL 上的 token
-        if (sessionStorage.getItem('chiyigo_access_token')) { cleanUrl(qs); return; }
+        if (hadQueryToken) cleanUrl();
 
-        // 驗 payload aud / iss（client-side check；簽章由 worker 那端驗）
-        var p = decodePayload(t);
-        if (!p || p.iss !== 'https://chiyigo.com' || p.aud !== 'mbti') { cleanUrl(qs); return; }
+        var t = h.get('chiyigo_token') || h.get('mbti_token');
+        if (!t) return;
 
-        var e = h.get('chiyigo_email') || q.get('chiyigo_email') || h.get('mbti_email') || q.get('mbti_email');
+        if (sessionStorage.getItem('chiyigo_access_token')) { cleanUrl(); return; }
+
+        var ok = await window.verifyChiyigoToken(t);
+        if (!ok) { cleanUrl(); return; }
+
+        var e = h.get('chiyigo_email') || h.get('mbti_email');
         sessionStorage.setItem('chiyigo_access_token', t);
         if (e) sessionStorage.setItem('chiyigo_email', e);
-        cleanUrl(qs);
+        cleanUrl();
       } catch (_) {}
     })();
     </script>
@@ -78,8 +73,11 @@
     <script src="i18n.js?v=2" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <!-- chart.js 未鎖版號（業務端依 latest 修 bug），暫無 SRI；下次升級時改 @x.y 並補 integrity -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"
+            integrity="sha384-M00GJNq2IplZCB3+JOJEl2H0un45ODvqJSSnIc4DvG8gPn8RX5ToITFXcv3AvOx5"
+            crossorigin="anonymous"></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">

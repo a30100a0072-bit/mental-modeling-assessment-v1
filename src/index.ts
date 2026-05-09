@@ -169,7 +169,7 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
         return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (error: any) {
         logError(env, "handleGetHistory", error, {}, ctx);
-        return new Response(JSON.stringify({ error: "DB Error: " + error.message }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
     }
 }
 
@@ -190,7 +190,7 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
         return new Response(JSON.stringify({ status: "Deleted" }), { headers: corsHeaders });
     } catch (err: any) {
         logError(env, "handleDeleteAccount", err, { sub: identity.sub }, ctx);
-        return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
     }
 }
 
@@ -244,26 +244,82 @@ async function handleClaimGuestResults(request: Request, env: Env, ctx: Executio
         return new Response(JSON.stringify({ status: "Claimed", claimed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (err: any) {
         logError(env, "handleClaimGuestResults:db", err, { sub: identity.sub, guestIdCount: guestIds.length }, ctx);
-        return new Response(JSON.stringify({ error: "DB Error: " + err.message }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
     }
 }
 
 // ==========================================
 // [模組 3] 測驗結果提交
 // ==========================================
+// 驗證上限：rawScores 來自 8 個面向的累加，個別維度題目權重總和遠小於 1000，
+// 取 ±1000 既擋下 NaN/Infinity/極端髒資料，又不會誤殺合理範圍。
+const RAW_SCORE_MIN = -1000;
+const RAW_SCORE_MAX = 1000;
+const TIME_SPENT_MS_MIN = 1;
+const TIME_SPENT_MS_MAX = 24 * 60 * 60 * 1000; // 24 小時
+const ALLOWED_VERSIONS = new Set(["A", "B", "C", "D", "E", "F"]);
+const GUEST_ONLY_VERSIONS = new Set(["A", "B"]);
+
+function badRequest(msg: string, corsHeaders: Record<string, string>): Response {
+    return new Response(JSON.stringify({ error: msg }), { status: 400, headers: corsHeaders });
+}
+
 async function handleAssessmentSubmit(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>): Promise<Response> {
   try {
-    const payload = await request.json<{ version?: string; rawScores: number[]; timeSpentMs: number; guestId?: string; questionsAnswered?: number }>();
-    if (!payload.rawScores || payload.rawScores.length !== 8) throw new Error("無效的 Payload: 必須提供八維分數陣列");
+    const url = new URL(request.url);
+    const routeMatch = url.pathname.match(/\/assess\/version-([a-f])$/i);
+    if (!routeMatch) return badRequest("Invalid route", corsHeaders);
+    const routeVersion = routeMatch[1].toUpperCase();
 
-    // Route A 之後，前端會傳 questionsAnswered（提早結束 = 較少題；走完 = 全題）。
-    // 舊版 client 不傳 → 寫 NULL（資料分析時視為「不知道」）。
-    // 防呆：負數 / 不合理大值都丟棄，避免髒資料污染 dashboard 統計。
-    const questionsAnswered = (typeof payload.questionsAnswered === "number"
-        && payload.questionsAnswered >= 0
-        && payload.questionsAnswered <= 200)
-        ? Math.round(payload.questionsAnswered)
-        : null;
+    let payload: { version?: string; rawScores?: unknown; timeSpentMs?: unknown; guestId?: unknown; questionsAnswered?: unknown };
+    try { payload = await request.json(); } catch { return badRequest("Invalid JSON", corsHeaders); }
+
+    // rawScores: 必須是長度 8 的有限數字陣列、且每項落在合理範圍
+    if (!Array.isArray(payload.rawScores) || payload.rawScores.length !== 8) {
+        return badRequest("Invalid rawScores", corsHeaders);
+    }
+    const rawScores: number[] = [];
+    for (const s of payload.rawScores) {
+        if (typeof s !== "number" || !Number.isFinite(s) || s < RAW_SCORE_MIN || s > RAW_SCORE_MAX) {
+            return badRequest("Invalid rawScores value", corsHeaders);
+        }
+        rawScores.push(s);
+    }
+
+    // timeSpentMs：負數 / NaN / 24h 以上都拒；舊 client 不傳則用 1000 fallback
+    let timeSpentMs = 1000;
+    if (payload.timeSpentMs !== undefined) {
+        if (typeof payload.timeSpentMs !== "number" || !Number.isFinite(payload.timeSpentMs)
+            || payload.timeSpentMs < TIME_SPENT_MS_MIN || payload.timeSpentMs > TIME_SPENT_MS_MAX) {
+            return badRequest("Invalid timeSpentMs", corsHeaders);
+        }
+        timeSpentMs = payload.timeSpentMs;
+    }
+
+    // version：白名單 + 必須與 route 一致（防止打 /version-a 但 body 寫 D 偽造模組來源）
+    const bodyVersion = typeof payload.version === "string" ? payload.version.toUpperCase() : routeVersion;
+    if (!ALLOWED_VERSIONS.has(bodyVersion) || bodyVersion !== routeVersion) {
+        return badRequest("Version mismatch", corsHeaders);
+    }
+
+    // guestId：選填，但若有要是合理字串
+    let guestId: string | null = null;
+    if (payload.guestId !== undefined && payload.guestId !== null) {
+        if (typeof payload.guestId !== "string" || payload.guestId.length === 0 || payload.guestId.length > 64) {
+            return badRequest("Invalid guestId", corsHeaders);
+        }
+        guestId = payload.guestId;
+    }
+
+    // questionsAnswered：選填，0-200 整數
+    let questionsAnswered: number | null = null;
+    if (payload.questionsAnswered !== undefined && payload.questionsAnswered !== null) {
+        if (typeof payload.questionsAnswered !== "number" || !Number.isFinite(payload.questionsAnswered)
+            || payload.questionsAnswered < 0 || payload.questionsAnswered > 200) {
+            return badRequest("Invalid questionsAnswered", corsHeaders);
+        }
+        questionsAnswered = Math.round(payload.questionsAnswered);
+    }
 
     let finalUserId: string | null = null;
     const authHeader = request.headers.get("Authorization");
@@ -276,31 +332,28 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
         finalUserId = identity.sub;
     }
 
-    const result = processAssessmentResult(payload.rawScores, payload.timeSpentMs || 1000);
-    const reportId = crypto.randomUUID();
-
-    // 防呆：前端沒傳的話預設為 B
-    const submitVersion = (payload.version || "B").toUpperCase();
-
     // 商業權限管控：A/B 開放訪客作答；C/D/E/F 必須登入
     // 前端 modal 是 UX 防護，這裡是硬牆，防止繞過 modal 直接打 API
-    if (!finalUserId && ["C", "D", "E", "F"].includes(submitVersion)) {
+    if (!finalUserId && !GUEST_ONLY_VERSIONS.has(routeVersion)) {
         return new Response(JSON.stringify({ error: "此模組需登入後方可作答" }), { status: 401, headers: corsHeaders });
     }
+
+    const result = processAssessmentResult(rawScores, timeSpentMs);
+    const reportId = crypto.randomUUID();
 
     await env.MM_DB_D1.prepare(
         `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, psychic_energy_index, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
         reportId,
         finalUserId,
-        payload.guestId || null,
-        submitVersion,
-        JSON.stringify(payload.rawScores),
+        guestId,
+        routeVersion,
+        JSON.stringify(rawScores),
         JSON.stringify(result.zScores),
         JSON.stringify(result.probabilities),
         result.primaryType,
         result.psychicEnergyIndex,
-        payload.timeSpentMs || 1000,
+        timeSpentMs,
         questionsAnswered
     ).run();
 
@@ -310,6 +363,6 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     return new Response(JSON.stringify({ status: "Calculated", reportId: reportId, data: resultData }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: any) {
     logError(env, "handleAssessmentSubmit", error, {}, ctx);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
   }
 }
