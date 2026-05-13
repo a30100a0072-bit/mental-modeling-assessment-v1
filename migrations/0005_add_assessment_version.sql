@@ -1,3 +1,11 @@
--- [認知幾何 V1 - 補齊 assessment_version 欄位]
--- 針對已部署的資料庫，補上 assessment_version 欄位
-ALTER TABLE assessments ADD COLUMN assessment_version TEXT DEFAULT 'B';
+-- [歷史 migration - 已無實質作用，保留 filename 維持 d1_migrations 序列]
+--
+-- 原內容：ALTER TABLE assessments ADD COLUMN assessment_version TEXT DEFAULT 'B';
+--
+-- 為什麼改成 no-op：
+--   0001_init.sql 已在 CREATE TABLE assessments 時包含 assessment_version 欄位，
+--   此 ALTER 僅針對「0001 之前部署、缺欄位的舊環境」做補丁。
+--   新建 D1 跑完 0001 後再跑此 migration 會 SQLITE_ERROR: duplicate column name。
+--   2026-05-13 mm_assessment_db 重建時踩到此坑（手動 mark applied 跳過）。
+--   為避免下次重建再踩，改為純註解 no-op。
+SELECT 1;
