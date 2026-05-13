@@ -22,7 +22,7 @@ id = "4f7f301984454c84b36e93a2f238b8e9"
 [[d1_databases]]
 binding = "MM_DB_D1"
 database_name = "mm_assessment_db"
-database_id = "30d70b30-11de-4496-a17b-03f5f3243bcc"
+database_id = "d462765e-1c16-473e-9b7b-ed6bf319d383"
 migrations_dir = "migrations"
 
 [[queues.producers]]
