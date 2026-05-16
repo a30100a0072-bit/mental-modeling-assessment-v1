@@ -179,11 +179,13 @@ function calculatePartialScores(answers, upToPhase, version) {
     // 局部 Z-Score 標準化：提取維度傾向，消除填答基準線偏差
     let likertArr = Object.values(rawLikert);
     let lMean = likertArr.reduce((a,b) => a + b, 0) / 8;
-    let lStd = Math.sqrt(likertArr.reduce((a,b) => a + Math.pow(b - lMean, 2), 0) / 8) || 1;
-
+    let lStd = Math.sqrt(likertArr.reduce((a,b) => a + Math.pow(b - lMean, 2), 0) / 8);
+    // lStd===0（尚未作答 / 全部選同一刻度）回 0，與 calculateLocalProbabilities 的 std===0 處理一致。
+    // 舊版用 `|| 1` fallback 雖然此處 numerator 同時為 0 不會數值漂移，但讓未來修改者誤以為這
+    // 是合法的 std=0 處理範式，已 health audit 列為對稱補完項。
     ENGINE.dimKeys.forEach(k => {
         // 將標準化的 Z 分數放大，作為後續疊加的基底權重 (約佔 40% 影響力)
-        finalScores[k] = ((rawLikert[k] - lMean) / lStd) * 2.5; 
+        finalScores[k] = lStd === 0 ? 0 : ((rawLikert[k] - lMean) / lStd) * 2.5;
     });
 
     if (upToPhase < 2) return finalScores;

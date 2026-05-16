@@ -151,11 +151,20 @@ describe("algorithm: engine.js z-score 公式與 TS 端對拍", () => {
   });
 
   it("engine.js calculateLocalProbabilities 內不得含 `|| 1` std fallback（2026-05-16 health audit 紅燈防迴歸）", () => {
-    // 純語法把關：限定在 calculateLocalProbabilities 函式範圍內 grep，避免誤抓
-    // calculatePartialScores 等其他函式的 fallback（語意不同，不在此次對齊範圍）。
+    // 純語法把關：限定在 calculateLocalProbabilities 函式範圍內 grep。
     const normalized = (engineSrc as string).replace(/\r\n/g, "\n");
     const m = normalized.match(/function calculateLocalProbabilities\(scores\)\s*\{[\s\S]*?\n\}\n/);
     expect(m, "找不到 calculateLocalProbabilities 函式範圍").toBeTruthy();
     expect(m![0], "calculateLocalProbabilities 內不該再出現 `|| 1` std fallback").not.toMatch(/\/\s*8\s*\)\s*\|\|\s*1\s*;/);
+  });
+
+  it("engine.js calculatePartialScores 內不得含 `|| 1` std fallback（2026-05-17 對稱補完）", () => {
+    // calculatePartialScores 是 D/E/F 卷中途路由分流用，與 calculateLocalProbabilities 不同函式。
+    // 此處 std===0 時 numerator 同步為 0 不會造成數值漂移，但 `|| 1` 範式會誤導未來修改者，
+    // 統一改成 `lStd === 0 ? 0 : ...` 顯式分支，並用此 test 防迴歸。
+    const normalized = (engineSrc as string).replace(/\r\n/g, "\n");
+    const m = normalized.match(/function calculatePartialScores\([^)]*\)\s*\{[\s\S]*?\n\}\n/);
+    expect(m, "找不到 calculatePartialScores 函式範圍").toBeTruthy();
+    expect(m![0], "calculatePartialScores 內不該再出現 `|| 1` std fallback").not.toMatch(/\/\s*8\s*\)\s*\|\|\s*1\s*;/);
   });
 });
