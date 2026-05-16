@@ -228,10 +228,11 @@ async function checkRateLimit(name: string, subject: string, max: number, ttlSec
     }
 }
 
-// 從 request 取 IP（cf-connecting-ip 是 Cloudflare 注入的真實 client IP）。
+// 從 request 取 IP（cf-connecting-ip 是 Cloudflare 注入的真實 client IP，production 一定有）。
 // 用於訪客 endpoint（沒 sub 可用）的 rate limit 主體；本地測試 / 缺 header 時回 'unknown' 兜底。
+// 不再 fallback 到 x-forwarded-for：該 header 是 client 可偽造的，做 rate limit 主體會被輕易繞過。
 function getClientIp(request: Request): string {
-    return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    return request.headers.get("cf-connecting-ip") || "unknown";
 }
 
 async function handleClaimGuestResults(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>) {
@@ -289,14 +290,19 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     if (!routeMatch) return badRequest("Invalid route", corsHeaders);
     const routeVersion = routeMatch[1].toUpperCase();
 
-    // assess 前置 rate limit：用 IP 為主體（登入態無關，反正都是請求方）。
-    // 正常使用者一卷 5–15 分鐘，一分鐘 10 次已經是異常 spam；6 卷 ×2 重試也只 12。
-    if (!(await checkRateLimit("assess", getClientIp(request), 10, 60, env, ctx))) {
-        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
-    }
-
     let payload: { version?: string; rawScores?: unknown; timeSpentMs?: unknown; guestId?: unknown; questionsAnswered?: unknown };
     try { payload = await request.json(); } catch { return badRequest("Invalid JSON", corsHeaders); }
+
+    // assess rate limit：subject 用 IP+guestId 複合 key，對 NAT 大戶（學校 / 公司網路）友善 ——
+    // 同 IP 不同瀏覽器各自記額度。guestId 可偽造但本 endpoint 是反 spam 不是反濫用，trade-off 可接受。
+    // 沒帶 guestId 的請求（極少數舊 client）退化成純 IP 計數，行為跟原本一致。
+    // 正常使用者一卷 5–15 分鐘，一分鐘 10 次已經是異常 spam；6 卷 ×2 重試也只 12。
+    const rlGuestKey = (typeof payload.guestId === "string" && payload.guestId.length > 0 && payload.guestId.length <= 64)
+        ? payload.guestId : "noguest";
+    const rlSubject = `${getClientIp(request)}:${rlGuestKey}`;
+    if (!(await checkRateLimit("assess", rlSubject, 10, 60, env, ctx))) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+    }
 
     // rawScores: 必須是長度 8 的有限數字陣列、且每項落在合理範圍
     if (!Array.isArray(payload.rawScores) || payload.rawScores.length !== 8) {
