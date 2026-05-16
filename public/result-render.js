@@ -49,14 +49,33 @@ function renderResult(isShared) {
     const listHtml = backendSorted.map(t => {
         let tag = (t===sMap[0]) ? `<span class="tag-ego">${tagEgo}</span>` : (t===sMap[1] ? `<span class="tag-sub">${tagSub}</span>` : (t===sMap[2] ? `<span class="tag-unc">${tagShadow}</span>` : ""));
         const p = Math.round(backendProbs[t]||0);
-        return `<div class="match-item" id="btn-${t}" onclick="updateDetail('${t}')"><div class="match-info"><b>${t}</b>${tag}<div class="match-bar-bg"><div class="match-bar-fill" style="width:${p}%"></div></div></div><span class="match-pct">${p<1?"<1":p}%</span></div>`;
+        return `<div class="match-item" id="btn-${t}" data-update-detail="${t}"><div class="match-info"><b>${t}</b>${tag}<div class="match-bar-bg"><div class="match-bar-fill" style="width:${p}%"></div></div></div><span class="match-pct">${p<1?"<1":p}%</span></div>`;
     }).join('');
 
     const matrixLabel = isSharedView
         ? _T('result.label.matrixLocal', null, "16人格判定概率矩陣 (本地還原)")
         : _T('result.label.matrixCloud', null, "16人格判定概率矩陣 (雲端運算)");
     const compatHtml = buildCompatSection(primary);
-    document.getElementById('analysis-text').innerHTML = `<div class="report-section" style="padding-bottom:10px;"><h3>◈ ${matrixLabel}</h3><div class="match-list">${listHtml}</div></div>${compatHtml}<div id="detail-box"></div>`;
+    const analysisEl = document.getElementById('analysis-text');
+    analysisEl.innerHTML = `<div class="report-section" style="padding-bottom:10px;"><h3>◈ ${matrixLabel}</h3><div class="match-list">${listHtml}</div></div>${compatHtml}<div id="detail-box"></div>`;
+
+    // CSP-friendly：原 inline onclick="updateDetail()" / onclick="window.track()" 都改用 delegation
+    // analysis-text 容器後續 updateDetail 也會 innerHTML，但 detail-box 才是被覆寫的內層，
+    // .match-item 在外層 .match-list 內，這層在 buildCompatSection 之外，不會被 updateDetail 覆寫。
+    if (!analysisEl.dataset.delegated) {
+        analysisEl.dataset.delegated = '1';
+        analysisEl.addEventListener('click', (e) => {
+            const matchEl = e.target.closest('[data-update-detail]');
+            if (matchEl) { updateDetail(matchEl.getAttribute('data-update-detail')); return; }
+            const compatEl = e.target.closest('[data-compat-track]');
+            if (compatEl && window.track) {
+                try {
+                    const payload = JSON.parse(compatEl.getAttribute('data-compat-track'));
+                    window.track('compat_card_click', payload);
+                } catch (_) {}
+            }
+        });
+    }
 
     updateDetail(primary);
 
@@ -91,9 +110,10 @@ function buildCompatSection(primary) {
 
     if (!cards.length) return '';
 
-    const cardsHtml = cards.map(c =>
-        `<a class="compat-card" href="type-detail.html?type=${c.type}" target="_blank" rel="noopener"
-            onclick="window.track && window.track('compat_card_click', { from_type: '${primary}', to_type: '${c.type}', relation: '${c.sub}' })">
+    const cardsHtml = cards.map(c => {
+        const trackPayload = JSON.stringify({ from_type: primary, to_type: c.type, relation: c.sub })
+            .replace(/"/g, '&quot;');
+        return `<a class="compat-card" href="type-detail.html?type=${c.type}" target="_blank" rel="noopener" data-compat-track="${trackPayload}">
             <div class="compat-row">
                 <span class="compat-label">${c.label}</span>
                 <span class="compat-sub">${c.sub}</span>
@@ -101,8 +121,8 @@ function buildCompatSection(primary) {
             <div class="compat-type">${c.type}</div>
             <div class="compat-desc">${c.desc}</div>
             <div class="compat-cta">${_T('result.label.compatCta', { type: c.type }, '查看 ' + c.type + ' 全解析 →')}</div>
-        </a>`
-    ).join('');
+        </a>`;
+    }).join('');
 
     const compatTitle = _T('result.label.compatTitle', null, '◈ 與你最互補的人格 (Compatibility)');
     const compatHint = _T('result.label.compatHint', null, '不是「誰跟誰絕配」這種星座式廢話，而是榮格 / Socionics 的軸線互補：你的盲點是 TA 的本能。');

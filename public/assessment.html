@@ -46,15 +46,16 @@
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
+    <script src="ui-handlers.js?v=1" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
-        <div class="logo" onclick="window.location.href='index.html'">🧠 認知幾何 V1</div>
+        <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
-            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
-            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
+            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
     </header>
 
@@ -72,7 +73,7 @@
     <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
             <span data-i18n="sidebar.title">導覽選單</span>
-            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()">✕</button>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">✕</button>
         </div>
         <div class="sidebar-content">
             <a href="index.html" data-i18n="sidebar.home">首頁 (Home)</a>
@@ -92,7 +93,7 @@
             <a href="dashboard.html" data-i18n="sidebar.dashboard">會員儀表板 (Dashboard)</a>
         </div>
     </div>
-    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar-overlay" class="overlay" data-action="toggle-sidebar"></div>
 
     <div class="container" id="capture-area">
         
@@ -103,10 +104,10 @@
             </h3>
             <p class="dev-console-desc">一鍵注入邊緣測試數據，強制跳過所有題目並直接呼叫 Cloudflare V1 大腦 API。</p>
             <div class="dev-console-row">
-                <button class="dev-btn" type="button" onclick="injectGodMode('INTJ')">極端 INTJ 測試</button>
-                <button class="dev-btn" type="button" onclick="injectGodMode('ESFP')">極端 ESFP 測試</button>
-                <button class="dev-btn dev-btn--danger" type="button" onclick="injectGodMode('ZERO')">全零異常測試 (Zero)</button>
-                <button class="dev-btn dev-btn--accent" type="button" onclick="injectGodMode('RANDOM')">🎲 隨機亂數盲測</button>
+                <button class="dev-btn" type="button" data-handler="injectGodMode" data-handler-arg="INTJ">極端 INTJ 測試</button>
+                <button class="dev-btn" type="button" data-handler="injectGodMode" data-handler-arg="ESFP">極端 ESFP 測試</button>
+                <button class="dev-btn dev-btn--danger" type="button" data-handler="injectGodMode" data-handler-arg="ZERO">全零異常測試 (Zero)</button>
+                <button class="dev-btn dev-btn--accent" type="button" data-handler="injectGodMode" data-handler-arg="RANDOM">🎲 隨機亂數盲測</button>
             </div>
         </div>
 
@@ -121,9 +122,9 @@
                     覺醒願景 (Phase C)、日常行為 (Phase D)、決策情境 (Phase E)、認知偏好 (Phase F) 屬於深度解析模組，需建立神經連結檔案後方可解鎖。基礎模組 Phase A 與高壓防禦 Phase B 訪客即可作答。
                 </p>
                 <div class="wall-actions">
-                    <button class="btn-primary" type="button" onclick="window.location.href='login.html'">前往註冊 / 登入</button>
-                    <button class="btn-outline" type="button" onclick="window.location.href='assessment.html?v=A&new=1'">先測量基礎版 (Phase A)</button>
-                    <button class="btn-outline" type="button" onclick="window.location.href='assessment.html?v=B&new=1'">先測量高壓防禦 (Phase B)</button>
+                    <button class="btn-primary" type="button" data-action="navigate" data-href="login.html">前往註冊 / 登入</button>
+                    <button class="btn-outline" type="button" data-action="navigate" data-href="assessment.html?v=A&new=1">先測量基礎版 (Phase A)</button>
+                    <button class="btn-outline" type="button" data-action="navigate" data-href="assessment.html?v=B&new=1">先測量高壓防禦 (Phase B)</button>
                 </div>
             </div>
         </div>
@@ -190,25 +191,25 @@
 
             <div class="result-actions">
                 <div class="action-buttons" id="action-btns">
-                    <button class="btn-primary is-success" onclick="window.location.href='dashboard.html'">📊 進入會員儀表板</button>
-                    <button class="btn-primary" onclick="copyShareLink()">🔗 複製防篡改連結</button>
-                    <button class="btn-primary" onclick="generateShareCard()">🃏 產生社群分享卡</button>
-                    <button class="btn-primary" onclick="generateImageForMobile()">📸 匯出鑑定報告</button>
-                    <button class="btn-primary is-talo" onclick="goToTalo()">🌟 前往塔羅占卜</button>
+                    <button class="btn-primary is-success" data-action="navigate" data-href="dashboard.html">📊 進入會員儀表板</button>
+                    <button class="btn-primary" data-handler="copyShareLink">🔗 複製防篡改連結</button>
+                    <button class="btn-primary" data-handler="generateShareCard">🃏 產生社群分享卡</button>
+                    <button class="btn-primary" data-handler="generateImageForMobile">📸 匯出鑑定報告</button>
+                    <button class="btn-primary is-talo" data-handler="goToTalo">🌟 前往塔羅占卜</button>
                 </div>
-                <button class="btn-secondary" id="restart-btn" onclick="restartQuiz()">重新建立大腦模型</button>
+                <button class="btn-secondary" id="restart-btn" data-handler="restartQuiz">重新建立大腦模型</button>
             </div>
         </div>
     </div>
 
-    <div id="image-modal" class="modal hidden" onclick="if(event.target === this) closeImageModal()">
+    <div id="image-modal" class="modal hidden">
         <div class="modal-content">
-            <div class="close-modal-x" onclick="closeImageModal()">✕</div>
+            <div class="close-modal-x" data-handler="closeImageModal" role="button" tabindex="0">✕</div>
             <p class="modal-hint">👇 請長按圖片儲存 👇</p>
             <img id="image-preview" src="" alt="診斷報告">
             <div class="modal-actions">
-                <button class="btn-primary" onclick="nativeShareImage()">📤 系統原生分享</button>
-                <button class="btn-secondary" onclick="closeImageModal()">✖ 關閉視窗</button>
+                <button class="btn-primary" data-handler="nativeShareImage">📤 系統原生分享</button>
+                <button class="btn-secondary" data-handler="closeImageModal">✖ 關閉視窗</button>
             </div>
         </div>
     </div>
@@ -226,17 +227,7 @@
     <script src="result-render.js?v=3"></script>
     <script src="quiz-ux.js?v=3" defer></script>
     <script src="pwa-register.js?v=1" defer></script>
-    
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('open');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            chiyigoSetupAuthUI('auth-nav-btn', 'dash-nav-btn');
-        });
-    </script>
+    <script src="assessment-init.js?v=1"></script>
     <script src="chiyigo-app-switcher.js?v=1"></script>
 </body>
 </html>

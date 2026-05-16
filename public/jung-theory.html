@@ -29,15 +29,16 @@
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
+    <script src="ui-handlers.js?v=1" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
-        <div class="logo" onclick="window.location.href='index.html'">🧠 認知幾何 V1</div>
+        <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
-            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
-            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
+            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
     </header>
 
@@ -55,7 +56,7 @@
     <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
             <span data-i18n="sidebar.title">導覽選單</span>
-            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()">✕</button>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">✕</button>
         </div>
         <div class="sidebar-content">
             <a href="index.html" data-i18n="sidebar.home">首頁 (Home)</a>
@@ -75,7 +76,7 @@
             <a href="dashboard.html" data-i18n="sidebar.dashboard">會員儀表板 (Dashboard)</a>
         </div>
     </div>
-    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar-overlay" class="overlay" data-action="toggle-sidebar"></div>
 
     <main class="theory-container">
         <div class="theory-header">
@@ -195,14 +196,7 @@
     </main>
 
     <script src="chiyigo-auth.js?v=2"></script>
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('open');
-        }
-
-        chiyigoSetupAuthUI('auth-nav-btn', 'dash-nav-btn');
-    </script>
+    <script src="page-init-common.js?v=1"></script>
     <script src="chiyigo-app-switcher.js?v=1"></script>
 </body>
 </html>

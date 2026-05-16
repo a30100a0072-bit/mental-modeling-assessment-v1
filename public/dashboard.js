@@ -142,7 +142,7 @@ function renderDashboard(records) {
                     <div class="history-type">${pType} <span style="font-size:0.8rem; color:#94a3b8; font-weight:normal;">(置信度: ${pProb}%)</span></div>
                 </div>
                 <div class="history-action">
-                    <button class="btn-primary" onclick="window.location.href='assessment.html?v=${version}&s=${encodeScoresStr}'">檢視拓撲圖</button>
+                    <a class="btn-primary" href="assessment.html?v=${version}&s=${encodeScoresStr}" role="button">檢視拓撲圖</a>
                 </div>
             </div>
         `;

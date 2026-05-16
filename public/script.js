@@ -5,6 +5,35 @@
 
 Chart.register(ChartDataLabels);
 
+// CSP Phase 2：取代 dynamic innerHTML 內的 inline onclick — 對 #questions-area 一次性綁 click
+// delegate，後續 ranking-item / reset / pause 按鈕透過 data-action + data-* 屬性觸發對應 handler。
+;(function bindQuizAreaDelegation() {
+    const qArea = document.getElementById('questions-area');
+    if (!qArea || qArea.dataset.delegated === '1') return;
+    qArea.dataset.delegated = '1';
+    qArea.addEventListener('click', (e) => {
+        const item = e.target.closest('.ranking-item[data-rank-q]');
+        if (item) {
+            window.handleRankingClick(
+                item.getAttribute('data-rank-q'),
+                parseInt(item.getAttribute('data-rank-i'), 10),
+                parseInt(item.getAttribute('data-rank-max'), 10)
+            );
+            return;
+        }
+        const resetBtn = e.target.closest('[data-action="rank-reset"][data-rank-q]');
+        if (resetBtn) {
+            window.resetRanking(resetBtn.getAttribute('data-rank-q'));
+            return;
+        }
+        const pauseBtn = e.target.closest('[data-action="quiz-pause"][data-quiz-phases]');
+        if (pauseBtn) {
+            handlePauseAndExit(parseInt(pauseBtn.getAttribute('data-quiz-phases'), 10));
+            return;
+        }
+    });
+})();
+
 // 全域狀態變數
 const urlParams = new URLSearchParams(window.location.search);
 // [雙軌制] 允許 D, E, F 卷進入全新狀態機
@@ -365,13 +394,13 @@ function renderPhaseDEF(p) {
                     const rankStr = isActive ? `<span class="rank-badge">[ ${rankIdx+1} ]</span>` : '';
                     const cls = `ranking-item${isActive ? ' is-ranked' : ''}`;
                     const dataRanked = isActive ? ' data-ranked="1"' : '';
-                    return `<div class="${cls}"${dataRanked} onclick="handleRankingClick('${qK}', ${optIdx}, ${item.items.length})">
+                    return `<div class="${cls}"${dataRanked} data-rank-q="${qK}" data-rank-i="${optIdx}" data-rank-max="${item.items.length}">
                         ${rankStr}<span class="rank-text">${opt.text}</span>
                     </div>`;
                 }).join('');
 
                 const _resetLabel = window.t ? window.t('quizDef.rankResetBtn') : '🔄 重設';
-                return `<div class="question" id="container_${qK}"><div class="rank-q-head"><strong>${i+1}. ${item.q}</strong> <button class="btn-outline rank-reset-btn" type="button" onclick="resetRanking('${qK}')">${_resetLabel}</button></div><div class="options" id="opts_${qK}">${itemsHtml}</div></div>`;
+                return `<div class="question" id="container_${qK}"><div class="rank-q-head"><strong>${i+1}. ${item.q}</strong> <button class="btn-outline rank-reset-btn" type="button" data-action="rank-reset" data-rank-q="${qK}">${_resetLabel}</button></div><div class="options" id="opts_${qK}">${itemsHtml}</div></div>`;
             }).join('');
 
             btn.innerText = window.t ? window.t('quizDef.btnStep3') : "提交並計算最終拓撲 (3/3)";
@@ -424,7 +453,7 @@ window.handleRankingClick = function(qK, optIdx, maxLen) {
         const rankStr = isActive ? `<span class="rank-badge">[ ${rankIdx+1} ]</span>` : '';
         const cls = `ranking-item${isActive ? ' is-ranked' : ''}`;
         const dataRanked = isActive ? ' data-ranked="1"' : '';
-        return `<div class="${cls}"${dataRanked} onclick="handleRankingClick('${qK}', ${i}, ${itemData.items.length})">
+        return `<div class="${cls}"${dataRanked} data-rank-q="${qK}" data-rank-i="${i}" data-rank-max="${itemData.items.length}">
             ${rankStr}<span class="rank-text">${opt.text}</span>
         </div>`;
     }).join('');
@@ -436,7 +465,7 @@ window.resetRanking = function(qK) {
     const container = document.getElementById(`opts_${qK}`);
     if (!container) return;
     container.innerHTML = itemData.items.map((opt, i) => {
-        return `<div class="ranking-item" onclick="handleRankingClick('${qK}', ${i}, ${itemData.items.length})">
+        return `<div class="ranking-item" data-rank-q="${qK}" data-rank-i="${i}" data-rank-max="${itemData.items.length}">
             <span class="rank-text">${opt.text}</span>
         </div>`;
     }).join('');
@@ -532,7 +561,7 @@ function maybeShowResumeBanner(currentPhase) {
                 <div class="rsb-headline">${_t('quiz.resumeHeadline', { n: phasesAnswered }, `進度已自動存檔（已完成 ${phasesAnswered} / 4 階段）`)}</div>
                 <div class="rsb-sub">${_t('quiz.resumeSub', null, '隨時可以關閉視窗，下次造訪會從這題自動接續。')}</div>
             </div>
-            <button type="button" class="btn-secondary rsb-btn-pause" onclick="handlePauseAndExit(${phasesAnswered})">${_t('action.pauseQuiz', null, '暫停測驗')}</button>
+            <button type="button" class="btn-secondary rsb-btn-pause" data-action="quiz-pause" data-quiz-phases="${phasesAnswered}">${_t('action.pauseQuiz', null, '暫停測驗')}</button>
         </div>
     `;
     qArea.insertAdjacentHTML('afterbegin', bannerHtml);

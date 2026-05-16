@@ -29,15 +29,16 @@
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
+    <script src="ui-handlers.js?v=1" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
-        <div class="logo" onclick="window.location.href='index.html'">🧠 認知幾何 V1</div>
+        <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
-            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
-            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
+            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
     </header>
 
@@ -55,7 +56,7 @@
     <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
             <span data-i18n="sidebar.title">導覽選單</span>
-            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()">✕</button>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">✕</button>
         </div>
         <div class="sidebar-content">
             <a href="index.html" data-i18n="sidebar.home">首頁 (Home)</a>
@@ -75,7 +76,7 @@
             <a href="dashboard.html" data-i18n="sidebar.dashboard">會員儀表板 (Dashboard)</a>
         </div>
     </div>
-    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar-overlay" class="overlay" data-action="toggle-sidebar"></div>
 
     <main class="theory-container">
         <div class="theory-header">
@@ -187,99 +188,10 @@
 
     </main>
 
-    <script>
-        // 內嵌 Beebe 8 功能堆疊資料（不依賴 engine.js，避免 404 / SW cache 衝突）
-        const BEEBE_STACKS = {
-            INTJ: ["Ni","Te","Fi","Se"], ENTJ: ["Te","Ni","Se","Fi"], INTP: ["Ti","Ne","Si","Fe"], ENTP: ["Ne","Ti","Fe","Si"],
-            INFJ: ["Ni","Fe","Ti","Se"], ENFJ: ["Fe","Ni","Se","Ti"], INFP: ["Fi","Ne","Si","Te"], ENFP: ["Ne","Fi","Te","Si"],
-            ISTJ: ["Si","Te","Fi","Ne"], ESTJ: ["Te","Si","Ne","Fi"], ISFJ: ["Si","Fe","Ti","Ne"], ESFJ: ["Fe","Si","Ne","Ti"],
-            ISTP: ["Ti","Se","Ni","Fe"], ESTP: ["Se","Ti","Fe","Ni"], ISFP: ["Fi","Se","Ni","Te"], ESFP: ["Se","Fi","Te","Ni"]
-        };
-        const ANTAGONIST = { Ti:"Fe", Fe:"Ti", Te:"Fi", Fi:"Te", Ni:"Se", Se:"Ni", Ne:"Si", Si:"Ne" };
-        const FN_TIPS = {
-            Ti: "底層邏輯 — 尋求完美自洽的內部模型",
-            Te: "客觀秩序 — 強硬的行政推進與資源調度",
-            Fi: "內在信仰 — 絕不妥協的個人價值",
-            Fe: "群體共振 — 掌控環境情緒與人際網絡",
-            Ni: "終局收斂 — 戰略推演與長遠趨勢預判",
-            Ne: "發散擴張 — 跨界連結與顛覆既有概念",
-            Si: "經驗守護 — 死守歷史參數與防禦機制",
-            Se: "物理動態 — 即時適應並掌控物理環境"
-        };
-        const POSITIONS = [
-            { idx: 1, key: "hero",      zh: "英雄 (Hero)",          side: "conscious", phrase: "「我最自然、最自信的能力。」", emoji: "🦸" },
-            { idx: 2, key: "parent",    zh: "父母 (Parent)",        side: "conscious", phrase: "「我用這個工具照顧、教育別人。」", emoji: "🧑‍🍼" },
-            { idx: 3, key: "child",     zh: "永恆兒童 (Child)",     side: "conscious", phrase: "「放鬆時我會用這個玩，但被批評會委屈。」", emoji: "🧒" },
-            { idx: 4, key: "inferior",  zh: "劣勢 (Inferior)",      side: "conscious", phrase: "「我恐懼的、卻又渴望擁抱的特質。」", emoji: "🧚" },
-            { idx: 5, key: "opposing",  zh: "對立 (Opposing)",      side: "shadow",    phrase: "「主導被擋住時，我會被動攻擊、固執反抗。」", emoji: "🛡️" },
-            { idx: 6, key: "senex",     zh: "嚴厲老人 (Senex)",     side: "shadow",    phrase: "「壓力下，我變成尖酸的審判官。」", emoji: "🧙" },
-            { idx: 7, key: "trickster", zh: "欺詐者 (Trickster)",   side: "shadow",    phrase: "「我的盲點、雙重標準、惡搞混亂。」", emoji: "🃏" },
-            { idx: 8, key: "demon",     zh: "惡魔 (Demon)",         side: "shadow",    phrase: "「全面崩潰時，玉石俱焚的毀滅力。」", emoji: "👹" }
-        ];
-
-        function renderExplorer(type) {
-            const stack = BEEBE_STACKS[type];
-            if (!stack) return;
-            const order = [
-                stack[0], stack[1], stack[2], stack[3],
-                ANTAGONIST[stack[0]], ANTAGONIST[stack[1]], ANTAGONIST[stack[2]], ANTAGONIST[stack[3]]
-            ];
-            const grid = document.getElementById("explorer-grid");
-            grid.innerHTML = POSITIONS.map((pos, i) => {
-                const fn = order[i];
-                const pairIdx = i < 4 ? i + 4 : i - 4;
-                return `
-                    <div class="exp-card exp-card--${pos.side}" data-idx="${i}" data-pair="${pairIdx}" tabindex="0" role="button" aria-label="${pos.zh} ${fn}">
-                        <div class="exp-num">${pos.idx}</div>
-                        <div class="exp-side-tag">${pos.side === 'conscious' ? '☀️ 意識' : '🌑 陰影'}</div>
-                        <div class="exp-pos">${pos.emoji} ${pos.zh}</div>
-                        <div class="exp-fn">${fn}</div>
-                        <div class="exp-tip">${FN_TIPS[fn] || ''}</div>
-                        <div class="exp-phrase">${pos.phrase}</div>
-                    </div>
-                `;
-            }).join("");
-
-            // 點擊 / hover：highlight 軸線伴侶
-            grid.querySelectorAll(".exp-card").forEach(card => {
-                const activate = () => {
-                    grid.querySelectorAll(".exp-card").forEach(c => c.classList.remove("is-pair", "is-self"));
-                    card.classList.add("is-self");
-                    const pairIdx = card.dataset.pair;
-                    const pair = grid.querySelector(`.exp-card[data-idx="${pairIdx}"]`);
-                    if (pair) pair.classList.add("is-pair");
-                    const a = card.querySelector(".exp-fn").textContent;
-                    const b = pair ? pair.querySelector(".exp-fn").textContent : "";
-                    document.getElementById("explorer-axis-hint").textContent = `軸線：${a} ↔ ${b}（同一條神經迴路的正反面）`;
-                };
-                card.addEventListener("click", activate);
-                card.addEventListener("mouseenter", activate);
-                card.addEventListener("focus", activate);
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const sel = document.getElementById("explorer-type");
-            if (sel) {
-                sel.addEventListener("change", (e) => {
-                    renderExplorer(e.target.value);
-                    if (window.track) window.track('beebe_explorer_select', { type: e.target.value });
-                });
-                renderExplorer(sel.value);
-            }
-        });
-    </script>
-
+    <script src="beebe-model.js?v=1"></script>
     <script src="chiyigo-auth.js?v=2"></script>
     <script src="analytics.js?v=1"></script>
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('open');
-        }
-
-        chiyigoSetupAuthUI('auth-nav-btn', 'dash-nav-btn');
-    </script>
+    <script src="page-init-common.js?v=1"></script>
     <script src="chiyigo-app-switcher.js?v=1"></script>
 </body>
 </html>

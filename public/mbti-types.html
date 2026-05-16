@@ -29,15 +29,16 @@
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
+    <script src="ui-handlers.js?v=1" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
-        <div class="logo" onclick="window.location.href='index.html'">🧠 認知幾何 V1</div>
+        <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
-            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
-            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
+            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
     </header>
 
@@ -55,7 +56,7 @@
     <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
             <span data-i18n="sidebar.title">導覽選單</span>
-            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()">✕</button>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">✕</button>
         </div>
         <div class="sidebar-content">
             <a href="index.html" data-i18n="sidebar.home">首頁 (Home)</a>
@@ -75,7 +76,7 @@
             <a href="dashboard.html" data-i18n="sidebar.dashboard">會員儀表板 (Dashboard)</a>
         </div>
     </div>
-    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar-overlay" class="overlay" data-action="toggle-sidebar"></div>
 
     <main class="theory-container">
         <div class="theory-header">
@@ -95,7 +96,7 @@
             <div class="temp-title">🟣 分析家 (Analysts) - NT 氣質</div>
             <div class="temp-desc">直覺 (N) 與思考 (T) 的結合。這群人是天生的系統構建者與解構者，他們依靠冰冷的邏輯與長遠的戰略眼光來理解並征服世界。</div>
             <div class="type-grid">
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=INTJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=INTJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">INTJ</div><div class="t-name">建築師</div></div>
                     <div class="t-stack">
                         <span data-tip="Ni (內傾直覺)：戰略推演與長遠趨勢的必然收斂">Ni</span>
@@ -106,7 +107,7 @@
                     <div class="t-desc">孤獨的戰略推演者。習慣在腦內建立多維度模型，看透歷史表象，用冷酷的執行力將長遠的宿命願景強硬地降維打擊到現實之中。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=INTP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=INTP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">INTP</div><div class="t-name">邏輯學家</div></div>
                     <div class="t-stack">
                         <span data-tip="Ti (內傾思考)：尋求完美自洽的底層邏輯模型">Ti</span>
@@ -117,7 +118,7 @@
                     <div class="t-desc">純粹的真理探求者。大腦如同精密的手術刀，質疑所有既定體系。致力於在混亂的資訊中萃取出毫無破綻、絕對自洽的底層客觀邏輯。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ENTJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ENTJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ENTJ</div><div class="t-name">指揮官</div></div>
                     <div class="t-stack">
                         <span data-tip="Te (外傾思考)：推動高壓行政與客觀資源調配">Te</span>
@@ -128,7 +129,7 @@
                     <div class="t-desc">無情的現實推進引擎。視達標與效率為絕對真理，擅長強制調度全球資源與建立系統架構。面對阻礙能啟動焦土政策，以權力輾壓一切。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ENTP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ENTP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ENTP</div><div class="t-name">辯論家</div></div>
                     <div class="t-stack">
                         <span data-tip="Ne (外傾直覺)：跨界連結與顛覆既有概念的發散">Ne</span>
@@ -146,7 +147,7 @@
             <div class="temp-title">🟢 外交家 (Diplomats) - NF 氣質</div>
             <div class="temp-desc">直覺 (N) 與情感 (F) 的結合。他們是靈魂的探索者與意義的賦予者，追求深層的人際共振、道德純粹性以及人類整體的精神進化。</div>
             <div class="type-grid">
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=INFJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=INFJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">INFJ</div><div class="t-name">提倡者</div></div>
                     <div class="t-stack">
                         <span data-tip="Ni (內傾直覺)：戰略推演與長遠趨勢的必然收斂">Ni</span>
@@ -157,7 +158,7 @@
                     <div class="t-desc">神秘的精神引導者。具備高隱蔽性的心理分析能力與終局預判，能吸收群體潛意識。默默引導群體走向他們心中理想的和諧烏托邦。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=INFP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=INFP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">INFP</div><div class="t-name">調停者</div></div>
                     <div class="t-stack">
                         <span data-tip="Fi (內傾情感)：絕對不妥協的深層靈魂與道德信仰">Fi</span>
@@ -168,7 +169,7 @@
                     <div class="t-desc">不妥協的靈魂守護者。以極其敏銳的情感刻度丈量世界，堅守絕對純粹的內在信仰。底線遭踐踏時，會化身寧為玉碎的道德判官。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ENFJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ENFJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ENFJ</div><div class="t-name">主人翁</div></div>
                     <div class="t-stack">
                         <span data-tip="Fe (外傾情感)：掌控環境情緒與人際共振網絡">Fe</span>
@@ -179,7 +180,7 @@
                     <div class="t-desc">狂熱的價值觀輸出者。精準掌控群體情緒波段，極具渲染力。擅長化身為精神導師，將溫暖的關懷轉化為推動群體成長的強大信仰網絡。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ENFP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ENFP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ENFP</div><div class="t-name">競選者</div></div>
                     <div class="t-stack">
                         <span data-tip="Ne (外傾直覺)：跨界連結與顛覆既有概念的發散">Ne</span>
@@ -197,7 +198,7 @@
             <div class="temp-title">🔵 守護者 (Sentinels) - SJ 氣質</div>
             <div class="temp-desc">感覺 (S) 與判斷 (J) 的結合。他們是社會運轉的基石，極度重視傳統、秩序、歷史經驗與責任感，是抵禦系統崩潰的最後防線。</div>
             <div class="type-grid">
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ISTJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ISTJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ISTJ</div><div class="t-name">物流師</div></div>
                     <div class="t-stack">
                         <span data-tip="Si (內傾感覺)：死守歷史參數與建立防禦機制">Si</span>
@@ -208,7 +209,7 @@
                     <div class="t-desc">絕對防禦的鐵壁。高度依賴歷史實證，擅長將模糊指令轉化為精確可被檢驗的參數。建立萬無一失的標準化流程，是組織最穩定的基石。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ISFJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ISFJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ISFJ</div><div class="t-name">守衛者</div></div>
                     <div class="t-stack">
                         <span data-tip="Si (內傾感覺)：死守歷史參數與建立防禦機制">Si</span>
@@ -219,7 +220,7 @@
                     <div class="t-desc">無聲的溫柔護盾。精準記憶每一個微小細節，默默承擔維護秩序與照顧他人的責任。將忠誠具象化為無微不至的物理付出，穩定群體情緒。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ESTJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ESTJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ESTJ</div><div class="t-name">總經理</div></div>
                     <div class="t-stack">
                         <span data-tip="Te (外傾思考)：推動高壓行政與客觀資源調配">Te</span>
@@ -230,7 +231,7 @@
                     <div class="t-desc">鐵腕的秩序監工。將無序的環境強制結構化，信奉結果定義一切。透過賞罰分明的鋼鐵鐵律，無情排除低效變數，維持社會機器的運轉。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ESFJ'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ESFJ" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ESFJ</div><div class="t-name">執政官</div></div>
                     <div class="t-stack">
                         <span data-tip="Fe (外傾情感)：掌控環境情緒與人際共振網絡">Fe</span>
@@ -248,7 +249,7 @@
             <div class="temp-title">🟡 探險家 (Explorers) - SP 氣質</div>
             <div class="temp-desc">感覺 (S) 與感知 (P) 的結合。他們活在絕對的當下，是物理世界的大師，憑藉極致的反應力、適應性與美感直覺來應對瞬息萬變的現實。</div>
             <div class="type-grid">
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ISTP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ISTP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ISTP</div><div class="t-name">鑑賞家</div></div>
                     <div class="t-stack">
                         <span data-tip="Ti (內傾思考)：尋求完美自洽的底層邏輯模型">Ti</span>
@@ -259,7 +260,7 @@
                     <div class="t-desc">冷靜的物理除錯者。日常極度節能，但在致命瞬間能憑直覺邏輯破局。不依賴空泛理論，用最具破壞力的動作解決現實環境中的實體危機。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ISFP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ISFP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ISFP</div><div class="t-name">探險家</div></div>
                     <div class="t-stack">
                         <span data-tip="Fi (內傾情感)：絕對不妥協的深層靈魂與道德信仰">Fi</span>
@@ -270,7 +271,7 @@
                     <div class="t-desc">純粹的實體藝術家。具備無與倫比的美學直覺，排斥冰冷的抽象邏輯。將內心最深沉的情感，轉化為無聲但極具視覺衝擊力的物理體驗。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ESTP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ESTP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ESTP</div><div class="t-name">企業家</div></div>
                     <div class="t-stack">
                         <span data-tip="Se (外傾感覺)：物理動態環境的適應與掌控">Se</span>
@@ -281,7 +282,7 @@
                     <div class="t-desc">極限的現實挑戰者。擁有野獸般的環境掃描力與即戰力。不講武德，能瞬間看穿現實弱點，用最野蠻直接的近身搏擊手段奪取資源與刺激。</div>
                     <div class="btn-readmore">深度解析 ➔</div>
                 </div>
-                <div class="type-card" onclick="window.location.href='type-detail.html?type=ESFP'">
+                <div class="type-card" data-action="navigate" data-href="type-detail.html?type=ESFP" role="link" tabindex="0">
                     <div class="t-header"><div class="t-code">ESFP</div><div class="t-name">表演者</div></div>
                     <div class="t-stack">
                         <span data-tip="Se (外傾感覺)：物理動態環境的適應與掌控">Se</span>
@@ -298,33 +299,8 @@
     </main>
 
     <script src="chiyigo-auth.js?v=2"></script>
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('open');
-        }
-
-        window.onload = () => {
-            chiyigoSetupAuthUI('auth-nav-btn', 'dash-nav-btn');
-
-            // 氣質 sticky nav 隨捲動高亮
-            const items = document.querySelectorAll('.tj-item');
-            const map = {};
-            items.forEach(it => map[it.dataset.target] = it);
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (e.isIntersecting && map[e.target.id]) {
-                        items.forEach(i => i.classList.remove('active'));
-                        map[e.target.id].classList.add('active');
-                    }
-                });
-            }, { rootMargin: '-40% 0px -55% 0px' });
-            ['sec-nt','sec-nf','sec-sj','sec-sp'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) observer.observe(el);
-            });
-        };
-    </script>
+    <script src="page-init-common.js?v=1"></script>
+    <script src="mbti-types.js?v=1"></script>
     <script src="chiyigo-app-switcher.js?v=1"></script>
 </body>
 </html>

@@ -1,14 +1,26 @@
 # Cloudflare Pages security headers
 # 2026-05-09 Phase 1：codex 安全審查 #6 — 新增 CSP / 安全 headers
+# 2026-05-16 Phase 2：完成拔除 script-src 'unsafe-inline'
+#   - Batch 1-5: 清 HTML 內全部 inline onclick / 抽多餘 inline <script>，新增 ui-handlers.js
+#     (data-action delegation) + per-page init.js
+#   - Batch 7: 修 8 處 JS 內透過 innerHTML / insertAdjacentHTML render 的 dynamic onclick
+#     (script.js ranking / pause、result-render match/compat、dashboard history) → delegation
+#   - 本版 (Batch 6 v2): 拔 'unsafe-inline'、加 4 段 IAM inline 的 sha256 hash
+#     * index.html / login.html / dashboard.html chiyigo token 接收 + JWKS 驗證
+#     * frontchannel-logout.html OIDC front-channel single sign-out
+#     任一段內容變動（含空白）必須在 _headers 同步重算 hash，否則該頁 inline 會被 CSP block。
 #
 # 設計取捨：
-#   - script-src 保留 'unsafe-inline'：站內多處 onclick="..." 與 token 接收 inline script，
-#     轉成 nonce 是大重構，本次先上 CSP 守住其他向量。下個 phase 再把 inline 抽出。
-#   - style-src 同樣留 'unsafe-inline'（許多 inline style 在動態 render 內）
+#   - script-src 已無 'unsafe-inline'，剩 4 個 sha256 hash + CDN whitelist
+#   - style-src 仍留 'unsafe-inline'：dashboard chart / result render / share-card 大量
+#     element.style.xxx = ...，下批工程才動
 #   - frame-ancestors 允許 chiyigo.com：frontchannel-logout.html 被 chiyigo iframe 嵌入用
 #   - connect-src 列 chiyigo.com：JWKS / OIDC discovery / token endpoint / refresh / claim
 #   - GA / GTM 走 googletagmanager.com / google-analytics.com
 #   - chart.js / chartjs-plugin-datalabels / html2canvas 走 cdn.jsdelivr.net + cdnjs.cloudflare.com
+#     （connect-src 也要列，否則 DevTools 開著時 source map 抓取會被 CSP 擋）
+#   - Cloudflare Web Analytics (Pages 平台自動注入 beacon.min.js)：
+#     script-src + static.cloudflareinsights.com；connect-src + cloudflareinsights.com
 
 /*
   X-Content-Type-Options: nosniff
@@ -16,7 +28,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://chiyigo.com https://www.googletagmanager.com https://www.google-analytics.com; frame-src 'self' https://chiyigo.com; frame-ancestors 'self' https://chiyigo.com; base-uri 'self'; form-action 'self' https://chiyigo.com
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-c8RKv/YB4reW+punVzHSIvJPFBWHE78Xvw14/fSWXgo=' 'sha256-OETcpSaEqGt5P1tkNQt8tPMKFzWBM/uXcTs6r0hjPOA=' 'sha256-jYXoCOFNegZQozmVqhHHpvDKm4SMh3QzbYXqAWTG2J8=' 'sha256-7j7d0TPGxZUuK/M2xLLMs9AMY3FsybSFuxEiW1jk8aI=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://chiyigo.com https://www.googletagmanager.com https://www.google-analytics.com https://cloudflareinsights.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; frame-src 'self' https://chiyigo.com; frame-ancestors 'self' https://chiyigo.com; base-uri 'self'; form-action 'self' https://chiyigo.com
 
 # frontchannel-logout.html 必須允許被 chiyigo 主站 iframe 嵌入（OIDC front-channel logout）
 # CSP 已含 frame-ancestors 'self' https://chiyigo.com，這裡 X-Frame-Options 覆蓋為 ALLOW-FROM 等價

@@ -70,15 +70,16 @@
     <script src="toast.js?v=1" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
+    <script src="ui-handlers.js?v=1" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
         <div class="logo">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" onclick="window.location.href='dashboard.html'" data-i18n="nav.dashboard">進入儀表板</button>
-            <button class="btn-outline" id="auth-nav-btn" onclick="window.location.href='login.html'" data-i18n="nav.login">登入 / 註冊</button>
-            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar();}">☰</div>
+            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
+            <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
     </header>
 
@@ -96,7 +97,7 @@
     <div id="sidebar" class="sidebar" role="navigation" aria-label="網站導覽">
         <div class="sidebar-header">
             <span data-i18n="sidebar.title">導覽選單</span>
-            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" onclick="toggleSidebar()">✕</button>
+            <button class="close-btn" type="button" aria-label="關閉導覽選單" data-i18n="nav.closeMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">✕</button>
         </div>
         <div class="sidebar-content">
             <a href="index.html" class="active" data-i18n="sidebar.home">首頁 (Home)</a>
@@ -120,18 +121,18 @@
             <a href="dashboard.html" data-i18n="sidebar.dashboard">會員儀表板 (Dashboard)</a>
         </div>
     </div>
-    <div id="sidebar-overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar-overlay" class="overlay" data-action="toggle-sidebar"></div>
 
     <main class="hero-section">
         <h1 data-i18n="hero.title">發現你的<span class="highlight">深層心智</span>模型</h1>
         <p data-i18n="hero.subtitle">基於榮格八維與畢比模型 (John Beebe) 構建的專業測評工具。<br>不只測量你的表層人格，更深究你在高壓、崩潰與成長時的動態轉換軌跡，為您提供專屬的心智拓撲圖。</p>
 
         <div class="hero-buttons">
-            <button class="btn-primary large" onclick="window.location.href='assessment.html?v=B&new=1'" data-i18n="hero.ctaPrimary">開始測驗 (高壓解析模組)</button>
+            <button class="btn-primary large" data-action="navigate" data-href="assessment.html?v=B&new=1" data-i18n="hero.ctaPrimary">開始測驗 (高壓解析模組)</button>
         </div>
 
         <div class="version-cards">
-            <div class="v-card active" data-version="A" onclick="window.location.href='assessment.html?v=A&new=1'">
+            <div class="v-card active" data-version="A" data-action="navigate" data-href="assessment.html?v=A&new=1" role="link" tabindex="0">
                 <div class="badge" data-i18n="home.cardA.badge">已上線</div>
                 <div class="v-icon" aria-hidden="true">🌿</div>
                 <h3 data-i18n="home.cardA.title">Phase A (日常版)</h3>
@@ -140,7 +141,7 @@
                 <div class="v-status" data-version-status="A"></div>
             </div>
 
-            <div class="v-card active" data-version="B" onclick="window.location.href='assessment.html?v=B&new=1'">
+            <div class="v-card active" data-version="B" data-action="navigate" data-href="assessment.html?v=B&new=1" role="link" tabindex="0">
                 <div class="badge" data-i18n="home.cardB.badge">已上線</div>
                 <div class="v-icon" aria-hidden="true">⚡</div>
                 <h3 data-i18n="home.cardB.title">Phase B (高壓版)</h3>
@@ -149,7 +150,7 @@
                 <div class="v-status" data-version-status="B"></div>
             </div>
 
-            <div class="v-card active" data-version="C" onclick="window.location.href='assessment.html?v=C&new=1'">
+            <div class="v-card active" data-version="C" data-action="navigate" data-href="assessment.html?v=C&new=1" role="link" tabindex="0">
                 <div class="badge" data-i18n="home.cardC.badge">已上線</div>
                 <div class="v-icon" aria-hidden="true">🌌</div>
                 <h3 data-i18n="home.cardC.title">Phase C (願景版)</h3>
@@ -158,7 +159,7 @@
                 <div class="v-status" data-version-status="C"></div>
             </div>
 
-            <div class="v-card active is-new" data-version="D" onclick="window.location.href='assessment.html?v=D&new=1'">
+            <div class="v-card active is-new" data-version="D" data-action="navigate" data-href="assessment.html?v=D&new=1" role="link" tabindex="0">
                 <div class="badge" data-i18n="home.cardD.badge">全新動態架構</div>
                 <div class="v-icon" aria-hidden="true">🧭</div>
                 <h3 data-i18n="home.cardD.title">Phase D (日常行為量表)</h3>
@@ -167,7 +168,7 @@
                 <div class="v-status" data-version-status="D"></div>
             </div>
 
-            <div class="v-card active is-new" data-version="E" onclick="window.location.href='assessment.html?v=E&new=1'">
+            <div class="v-card active is-new" data-version="E" data-action="navigate" data-href="assessment.html?v=E&new=1" role="link" tabindex="0">
                 <div class="badge" data-i18n="home.cardE.badge">全新動態架構</div>
                 <div class="v-icon" aria-hidden="true">🎯</div>
                 <h3 data-i18n="home.cardE.title">Phase E (決策情境量表)</h3>
@@ -176,7 +177,7 @@
                 <div class="v-status" data-version-status="E"></div>
             </div>
 
-            <div class="v-card active is-new" data-version="F" onclick="window.location.href='assessment.html?v=F&new=1'">
+            <div class="v-card active is-new" data-version="F" data-action="navigate" data-href="assessment.html?v=F&new=1" role="link" tabindex="0">
                 <div class="badge" data-i18n="home.cardF.badge">全新動態架構</div>
                 <div class="v-icon" aria-hidden="true">🧬</div>
                 <h3 data-i18n="home.cardF.title">Phase F (認知偏好量表)</h3>
@@ -188,15 +189,7 @@
     </main>
 
     <script src="chiyigo-auth.js?v=2"></script>
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('open');
-        }
-
-        // 登入/登出 UI 由 chiyigo-auth.js 共用 helper 處理（含 silent login）
-        chiyigoSetupAuthUI('auth-nav-btn', 'dash-nav-btn', null);
-    </script>
+    <script src="page-init-common.js?v=1"></script>
     <script src="chiyigo-app-switcher.js?v=1"></script>
     <script src="landing-progress.js?v=1" defer></script>
     <script src="onboarding.js?v=1" defer></script>
