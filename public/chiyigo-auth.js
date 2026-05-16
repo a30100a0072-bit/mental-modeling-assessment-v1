@@ -106,9 +106,9 @@
         if (!sessionStorage.getItem(TOKEN_KEY)) return;
         if (dashBtn) dashBtn.style.display = 'inline-block';
         if (!authBtn) return;
-        authBtn.innerText = '登出系統';
-        authBtn.style.color = '#ef4444';
-        authBtn.style.borderColor = '#ef4444';
+        // i18n：優先讀 actions.logout（共用 key），i18n.js 未載入則 fallback 中文
+        authBtn.innerText = (typeof window.t === 'function') ? window.t('actions.logout', null, '登出') : '登出';
+        // 視覺由 .logout-mode CSS class 控制（見 global.css），不再 inline style
         authBtn.classList.add('logout-mode');
         authBtn.onclick = function () { chiyigoLogout(redirectUrl || 'index.html'); };
     }

@@ -16,7 +16,8 @@
 3. 點「進入會員儀表板」→ 跳到 chiyigo.com 登入頁
 4. 完成 SSO 註冊新帳號 → 跳回 dashboard
 5. **驗證**：dashboard 應看到剛才訪客身分的那一筆測驗紀錄（已被 claim 合併到新帳號）
-6. 開 DevTools → Network → 找 `/user/claim-guest-results` 回應應為 200，body 含 `merged_count >= 1`
+6. 開 DevTools → Network → 找 `/user/claim-guest-results` 回應應為 200，body 含 `claimed >= 1`
+   - 舊版 client 期望 `merged_count`，已於 2026-05-16 改讀 `claimed` 對齊 worker 實際欄位
 
 **邊界檢查**：
 - 訪客做完 A、B 兩卷再註冊：兩筆都應 merge 過來
@@ -110,6 +111,30 @@ Light mode / PWA service worker / 自訂 404 / i18n 基礎建設 / IAM bridge �
    `Access-Control-Allow-Origin` 不應 echo 回 `talo-web.pages.dev`
 3. **單站登出 single sign-out**：在 mbti 點登出 → chiyigo / talo 開著的分頁應在 1 秒內也清 token
    （storage event `oidc_logout_at` 觸發）
+
+---
+
+## 3.8 GA 欄位語意備忘（2026-05-16）
+
+`login_success` 事件 payload 欄名仍叫 `merged_count`（保留向後相容 GA 報表），但實際值取自 worker 回傳的 `claimed`（SQL `UPDATE ... WHERE user_id IS NULL AND guest_id IN (...)` 的 `meta.changes`）。
+
+- `claimed` 計的是「**剛剛這次 UPDATE 真實寫入的列數**」
+- 未匹配的 guestId（已被 claim 過 / 從未寫入）**不**算進去 — 定義上仍合理算「合併進來的筆數」
+- 解讀 GA 數據時注意：`merged_count` ≠ payload 內 `guestIds.length`
+
+如果未來想做「重複 claim 嘗試」分析，需要 worker 回多一個欄位（如 `attempted: guestIds.length`），然後 client 也分開埋。
+
+---
+
+## 3.9 History API pagination 契約（2026-05-16 加 LIMIT 200 後遺留）
+
+`GET /user/history` 已加 `LIMIT 200` 防慢查詢，但**沒回 `hasMore` / `total` / cursor**。Client 不知資料被截。
+
+- 目前所有用法（dashboard 雷達 / 趨勢 / 對比）都不需要老資料，可接受
+- 若未來要做「完整歷史列頁」或「按月份分組統計」，需先：
+  1. Worker 改回 `LIMIT 201` 並 detect 是否 truncate，response 加 `hasMore: boolean`
+  2. 或改 cursor pagination：`?before=<created_at>&limit=100`，response 加 `nextCursor`
+- 看到 `data.length === 200` 時不要假設「使用者只有 200 筆」
 
 ---
 

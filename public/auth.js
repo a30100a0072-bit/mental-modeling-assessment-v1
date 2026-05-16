@@ -64,7 +64,9 @@ async function verifyIdToken(idToken, expectedNonce) {
     if (payload.iss !== ISSUER) return null
     const audOk = Array.isArray(payload.aud) ? payload.aud.includes(AUD) : payload.aud === AUD
     if (!audOk) return null
-    if (payload.exp && payload.exp * 1000 < Date.now()) return null
+    // 與 src/index.ts:143、chiyigo-token-verify.js:59 對齊：強制 exp 為 number。
+    // chiyigo 端 100% 簽 exp（functions/utils/jwt.js:127），缺 exp 視為偽造。
+    if (typeof payload.exp !== 'number' || payload.exp * 1000 < Date.now()) return null
     if (expectedNonce && payload.nonce !== expectedNonce) return null
     return payload
   } catch { return null }
@@ -184,7 +186,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     const claim = await claimGuestResults(data.access_token).catch(err => { console.warn('claim guest failed:', err); return null })
 
     // [埋碼] 登入 / 註冊完成（OIDC PKCE 回跳成功）— 後驗證 token + claim guest 結果之後
-    if (window.track) window.track('login_success', { merged_count: (claim && claim.merged_count) || 0 })
+    // worker /user/claim-guest-results 回 { status, claimed }，保留 merged_count 別名供舊 GA 報表
+    if (window.track) window.track('login_success', { merged_count: (claim && claim.claimed) || 0 })
 
     window.history.replaceState({}, '', 'login.html')
     window.location.href = 'dashboard.html'

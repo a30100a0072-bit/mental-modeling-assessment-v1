@@ -11,7 +11,6 @@ export interface Env {
   ERROR_WEBHOOK_URL?: string;
   MM_CACHE_KV: KVNamespace;
   MM_DB_D1: D1Database;
-  MM_EVENT_QUEUE: Queue;
 }
 
 // CORS 白名單：本站 + SSO 跨站合作站。SSO_ALLOWED_ORIGINS 由 wrangler.toml 提供，
@@ -64,12 +63,6 @@ export default {
       return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500, headers: corsHeaders });
     }
   },
-
-  async queue(batch: MessageBatch<any>, env: Env): Promise<void> {
-    for (const message of batch.messages) {
-      console.log("Processed event:", message.body.id);
-    }
-  }
 };
 
 // ==========================================
@@ -163,8 +156,15 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
         const identity = await verifyChiyigoToken(token, env);
         if (!identity) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
 
+        // dashboard 正常使用每分鐘最多會打幾次 history（多次切 tab / 強制重整）：30 次寬鬆夠用。
+        if (!(await checkRateLimit("history", identity.sub, 30, 60, env, ctx))) {
+            return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+        }
+
+        // 加 LIMIT 200：dashboard 雷達/趨勢圖實際只用最近 N 筆，無上限會讓重度使用者 / 攻擊者讓 D1 慢查詢。
+        // 200 估算：一年每天測 1 卷仍綽綽有餘；真要更多再走 cursor pagination。
         const historyReq = await env.MM_DB_D1.prepare(
-            "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, questions_answered, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC"
+            "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, questions_answered, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC LIMIT 200"
         ).bind(identity.sub).all();
 
         return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -181,6 +181,11 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
     const token = authHeader.split(" ")[1];
     const identity = await verifyChiyigoToken(token, env);
     if (!identity) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+
+    // 帳號刪除是高破壞性操作，每小時最多 3 次足夠正常使用 + 防 spam 觸發大量 DELETE。
+    if (!(await checkRateLimit("delete", identity.sub, 3, 3600, env, ctx))) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+    }
 
     const batchStmts = [
         env.MM_DB_D1.prepare("DELETE FROM assessments WHERE user_id = ?").bind(identity.sub)
@@ -203,18 +208,30 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
 // 只更新 user_id IS NULL 的列，避免別的使用者誤領；guest_id 清空避免重複認領。
 // Rate limit：每個 SSO sub 每 60 秒最多 5 次合併呼叫。
 // 並非加密保護，只是降低惡意 / bug 的反覆認領噪音；KV 計數有竸爭視窗但此端點低頻寫入可接受。
-async function checkClaimRateLimit(sub: string, env: Env, ctx: ExecutionContext): Promise<boolean> {
-    const key = `rl:claim:${sub}`;
+// KV-based rate limit。
+// 設計：read-then-write 有 race window，但用於降噪非加密保護，可接受。
+// KV 異常時 fail-open，避免外部依賴抖動把正常使用流程擋掉，但要上報。
+//   name:    label，會編進 key 並用於 log（不同 endpoint 不互相消耗額度）
+//   subject: 計數主體（登入 sub / guestId / IP），同一 subject 共用計數
+//   max:     窗口內最多 N 次
+//   ttlSec:  窗口長度
+async function checkRateLimit(name: string, subject: string, max: number, ttlSec: number, env: Env, ctx: ExecutionContext): Promise<boolean> {
+    const key = `rl:${name}:${subject}`;
     try {
         const cur = parseInt((await env.MM_CACHE_KV.get(key)) || "0", 10);
-        if (cur >= 5) return false;
-        await env.MM_CACHE_KV.put(key, String(cur + 1), { expirationTtl: 60 });
+        if (cur >= max) return false;
+        await env.MM_CACHE_KV.put(key, String(cur + 1), { expirationTtl: ttlSec });
         return true;
     } catch (err) {
-        // KV 異常時放行，避免外部依賴抖動把正常登入流程擋掉；但要上報以便發現 KV 健康狀況
-        logError(env, "checkClaimRateLimit:kv", err, { sub }, ctx);
+        logError(env, "checkRateLimit:kv", err, { name, subject }, ctx);
         return true;
     }
+}
+
+// 從 request 取 IP（cf-connecting-ip 是 Cloudflare 注入的真實 client IP）。
+// 用於訪客 endpoint（沒 sub 可用）的 rate limit 主體；本地測試 / 缺 header 時回 'unknown' 兜底。
+function getClientIp(request: Request): string {
+    return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 
 async function handleClaimGuestResults(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>) {
@@ -225,7 +242,7 @@ async function handleClaimGuestResults(request: Request, env: Env, ctx: Executio
     const identity = await verifyChiyigoToken(token, env);
     if (!identity) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
 
-    if (!(await checkClaimRateLimit(identity.sub, env, ctx))) {
+    if (!(await checkRateLimit("claim", identity.sub, 5, 60, env, ctx))) {
         return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
     }
 
@@ -271,6 +288,12 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     const routeMatch = url.pathname.match(/\/assess\/version-([a-f])$/i);
     if (!routeMatch) return badRequest("Invalid route", corsHeaders);
     const routeVersion = routeMatch[1].toUpperCase();
+
+    // assess 前置 rate limit：用 IP 為主體（登入態無關，反正都是請求方）。
+    // 正常使用者一卷 5–15 分鐘，一分鐘 10 次已經是異常 spam；6 卷 ×2 重試也只 12。
+    if (!(await checkRateLimit("assess", getClientIp(request), 10, 60, env, ctx))) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+    }
 
     let payload: { version?: string; rawScores?: unknown; timeSpentMs?: unknown; guestId?: unknown; questionsAnswered?: unknown };
     try { payload = await request.json(); } catch { return badRequest("Invalid JSON", corsHeaders); }

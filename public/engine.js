@@ -97,8 +97,10 @@ function calculateLocalProbabilities(scores) {
 
     const orderedScores = [scores.Ni, scores.Ne, scores.Si, scores.Se, scores.Ti, scores.Te, scores.Fi, scores.Fe];
     const mean = orderedScores.reduce((a, b) => a + b, 0) / 8;
-    const std = Math.sqrt(orderedScores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / 8) || 1;
-    const zScores = orderedScores.map(s => (s - mean) / std);
+    const std = Math.sqrt(orderedScores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / 8);
+    // std===0（全部選同分）回全 0 zScores，與 server assessment.ts:41 對齊；
+    // 早期版本用 `|| 1` fallback 會讓 client/server 在 degenerate input 下分歧。
+    const zScores = std === 0 ? orderedScores.map(() => 0) : orderedScores.map(s => (s - mean) / std);
 
     let similarities = {};
     for (const [mbti, ideal] of Object.entries(IDEAL_PROFILES)) {

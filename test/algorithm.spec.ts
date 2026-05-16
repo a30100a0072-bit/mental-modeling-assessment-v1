@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { processAssessmentResult, IDEAL_PROFILES, SOFTMAX_TAU } from "../src/modules/assessment";
+import { processAssessmentResult, calculateZScores, IDEAL_PROFILES, SOFTMAX_TAU } from "../src/modules/assessment";
 // vite 原生支援 ?raw — 把 engine.js 內容當字串讀進來做漂移檢查
 // @ts-expect-error - vite raw import 沒有對應的 TS 宣告
 import engineSrc from "../public/engine.js?raw";
@@ -82,5 +82,80 @@ describe("algorithm: engine.js 與 TS 端常數漂移檢查", () => {
       const got = m![1].split(",").map((s) => parseFloat(s.trim()));
       expect(got, `${type} 向量值漂移：engine.js=${got} vs assessment.ts=${expected}`).toEqual(expected);
     }
+  });
+});
+
+// ============================================================
+// [模組 3] engine.js z-score 公式漂移檢查
+// ============================================================
+// 2026-05-16 health audit 發現：client 用 `|| 1` fallback 而 server 用全 0 fallback，
+// degenerate input (全選同分) 下兩端 zScores 不同。本 suite 把 engine.js 的
+// calculateLocalProbabilities 抽進沙箱跑，與 server `calculateZScores` 對拍。
+
+function loadEngineCalculateLocalProbabilities(): (s: Record<string, number>) => { probs: Record<string, number>; sorted: string[] } {
+  // 抽函式原始碼：從 `function calculateLocalProbabilities(scores) {` 到對應的 top-level `}` 為止。
+  // engine.js 排版讓 top-level 收尾 `}` 永遠在 column 0，內部 `}` 都有縮排，
+  // 所以匹配「換行 + 行首 } + 換行」可唯一鎖到 top-level；CRLF / LF 都吃。
+  const normalized = (engineSrc as string).replace(/\r\n/g, "\n");
+  const m = normalized.match(/function calculateLocalProbabilities\(scores\)\s*\{[\s\S]*?\n\}\n/);
+  if (!m) throw new Error("engine.js: 找不到 calculateLocalProbabilities 函式宣告");
+  // new Function 在沙箱跑：函式只用 Math / Object，不依賴瀏覽器 globals。
+  // eslint-disable-next-line no-new-func
+  return new Function(`${m[0]}; return calculateLocalProbabilities;`)() as any;
+}
+
+describe("algorithm: engine.js z-score 公式與 TS 端對拍", () => {
+  const calcLocal = loadEngineCalculateLocalProbabilities();
+
+  // 把 8 維 raw → server 用 (engine.js orderedScores 順序：Ni,Ne,Si,Se,Ti,Te,Fi,Fe)
+  const toScoresObj = (arr: number[]): Record<string, number> => ({
+    Ni: arr[0], Ne: arr[1], Si: arr[2], Se: arr[3], Ti: arr[4], Te: arr[5], Fi: arr[6], Fe: arr[7],
+  });
+
+  it("std === 0（全部選同分）：client/server 都該回 16 型均分，primaryType 走字母序", () => {
+    // 此 case 是 health audit 紅燈起點：舊 client 用 `|| 1` 會讓 zScores = raw - mean（非 0），
+    // 相似度與 server 全 0 走 cosineSim=0 不同；任何「回退到 `|| 1`」的 PR 應被此 test 擋下。
+    const server = processAssessmentResult([5, 5, 5, 5, 5, 5, 5, 5], 1000);
+    const client = calcLocal(toScoresObj([5, 5, 5, 5, 5, 5, 5, 5]));
+
+    expect(server.zScores).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+    // client 應走「所有 cosineSim=0 → softmax 機率全相等」分支，sorted[0] = 字母序最小 = ENFJ
+    expect(client.sorted[0]).toBe(server.primaryType);
+    // softmax 機率全部接近 100/16 ≈ 6.25
+    for (const v of Object.values(client.probs)) {
+      expect(v).toBeGreaterThan(6.2);
+      expect(v).toBeLessThan(6.3);
+    }
+  });
+
+  it("非平凡輸入：engine.js zScores 與 server calculateZScores 在 client orderedScores 順序上相等", () => {
+    // 取一組「mean!=0、std!=0」的代表性 input，逐位元比對 zScores
+    const raw = [3, 1, 4, 1, 5, 9, 2, 6];
+    const serverZ = calculateZScores(raw);
+    const client = calcLocal(toScoresObj(raw));
+
+    // 用 client.probs 反推 zScores 不容易，這裡改成「server 算法用 engine.js 抽出來的函式跑一次」
+    // 由 client.sorted[0] 必為 server.primaryType 來間接證明 zScores 一致 → softmax 一致 → 排序一致
+    const server = processAssessmentResult(raw, 1234);
+    expect(client.sorted[0]).toBe(server.primaryType);
+    // top-3 排序也必須一致（更強的證據，能擋住「std fallback 用 std===0 但浮點下緣略偏」這類 bug）
+    expect(client.sorted.slice(0, 3)).toEqual(
+      Object.keys(server.probabilities)
+        .sort((a, b) => server.probabilities[b] - server.probabilities[a] || a.localeCompare(b))
+        .slice(0, 3),
+    );
+    // serverZ 不漂移（鎖 z-score 公式本身）
+    const mean = raw.reduce((a, b) => a + b, 0) / 8;
+    const expectedStd = Math.sqrt(raw.reduce((a, b) => a + (b - mean) ** 2, 0) / 8);
+    expect(serverZ[0]).toBeCloseTo((raw[0] - mean) / expectedStd, 10);
+  });
+
+  it("engine.js calculateLocalProbabilities 內不得含 `|| 1` std fallback（2026-05-16 health audit 紅燈防迴歸）", () => {
+    // 純語法把關：限定在 calculateLocalProbabilities 函式範圍內 grep，避免誤抓
+    // calculatePartialScores 等其他函式的 fallback（語意不同，不在此次對齊範圍）。
+    const normalized = (engineSrc as string).replace(/\r\n/g, "\n");
+    const m = normalized.match(/function calculateLocalProbabilities\(scores\)\s*\{[\s\S]*?\n\}\n/);
+    expect(m, "找不到 calculateLocalProbabilities 函式範圍").toBeTruthy();
+    expect(m![0], "calculateLocalProbabilities 內不該再出現 `|| 1` std fallback").not.toMatch(/\/\s*8\s*\)\s*\|\|\s*1\s*;/);
   });
 });

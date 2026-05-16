@@ -25,9 +25,8 @@ database_name = "mm_assessment_db"
 database_id = "d462765e-1c16-473e-9b7b-ed6bf319d383"
 migrations_dir = "migrations"
 
-[[queues.producers]]
-queue = "mm-assessment-events"
-binding = "MM_EVENT_QUEUE"
+# MM_EVENT_QUEUE 自始未實際發送任何 message（producer 未綁、consumer handler 只 console.log），
+# 2026-05-16 health audit 砍除。若未來需要事件 pipeline 再從 wrangler.toml + src/index.ts 同時加回。
 
 # AssessmentSession Durable Object 從未實際使用，v2 migration 將其刪除。
 # 保留 v1 tag 作為歷史紀錄，wrangler 會比對 tag 差異判斷需執行哪些 DO migration。

@@ -455,6 +455,8 @@ button { width: 100%; padding: var(--sp-4); border: none; border-radius: var(--r
 .sidebar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .sidebar-content { padding-bottom: 80px; }
 .sidebar-content a { padding: 12px 25px; }
+/* 登出模式按鈕視覺（原本在 chiyigo-auth.js 用 inline style 設定，2026-05-16 移過來統一 CSS 管理） */
+#auth-nav-btn.logout-mode { color: #ef4444; border-color: #ef4444; }
 #auth-nav-btn.logout-mode:hover { background: var(--c-red); color: white; border-color: var(--c-red); }
 
 /* =========================================
