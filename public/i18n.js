@@ -2,7 +2,8 @@
 // 極簡 i18n 基礎建設。預設語言依瀏覽器；目前支援 zh-Hant / en。
 //
 // 用法：
-//   <h1 data-i18n="hero.title">發現你的深層心智模型</h1>
+//   <h1 data-i18n="hero.titleHtml">發現你的<span class="highlight">深層心智</span>模型</h1>  // key 結尾為 Html → innerHTML 注入
+//   <h1 data-i18n="nav.home">首頁</h1>                                                       // 預設 → textContent
 //   <button data-i18n="action.startQuiz" data-i18n-attr="aria-label">…</button>
 //   const s = window.t('result.label.cognitiveType');
 //
@@ -19,8 +20,8 @@
     const LOCALES = {
         'zh-Hant': {
             hero: {
-                title: '發現你的<span class="highlight">深層心智</span>模型',
-                subtitle: '基於榮格八維與畢比模型 (John Beebe) 構建的專業測評工具。<br>不只測量你的表層人格，更深究你在高壓、崩潰與成長時的動態轉換軌跡，為您提供專屬的心智拓撲圖。',
+                titleHtml: '發現你的<span class="highlight">深層心智</span>模型',
+                subtitleHtml: '基於榮格八維與畢比模型 (John Beebe) 構建的專業測評工具。<br>不只測量你的表層人格，更深究你在高壓、崩潰與成長時的動態轉換軌跡，為您提供專屬的心智拓撲圖。',
                 ctaPrimary: '開始測驗 (高壓解析模組)'
             },
             nav: {
@@ -218,8 +219,8 @@
         },
         'en': {
             hero: {
-                title: 'Discover Your <span class="highlight">Deep Mind</span> Model',
-                subtitle: 'A professional assessment built on Jung\'s 8 cognitive functions and the Beebe model.<br>Beyond surface personality — we map how your mind shifts under stress, collapse, and growth.',
+                titleHtml: 'Discover Your <span class="highlight">Deep Mind</span> Model',
+                subtitleHtml: 'A professional assessment built on Jung\'s 8 cognitive functions and the Beebe model.<br>Beyond surface personality — we map how your mind shifts under stress, collapse, and growth.',
                 ctaPrimary: 'Start Assessment (Stress Module)'
             },
             nav: {
@@ -449,14 +450,18 @@
         return fallback != null ? fallback : key;
     };
 
+    // XSS 防禦深度：預設 textContent。需要 HTML 的 key 必須以 `Html` 結尾（opt-in），
+    // 對應的 LOCALES value 才會被當 HTML 注入。新增 HTML key 時務必同步看 i18n.test.ts
+    // 的 anti-regression assertion（非 *Html key 不得含 `<`）。
     function applyDom(root) {
         (root || document).querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
             if (!key) return;
             const attr = el.getAttribute('data-i18n-attr');
             const txt = window.t(key, null, el.textContent);
-            if (attr) el.setAttribute(attr, txt);
-            else el.innerHTML = txt;
+            if (attr) { el.setAttribute(attr, txt); return; }
+            if (/Html$/.test(key)) el.innerHTML = txt;
+            else el.textContent = txt;
         });
     }
 
