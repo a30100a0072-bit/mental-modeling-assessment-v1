@@ -106,8 +106,10 @@
         if (!sessionStorage.getItem(TOKEN_KEY)) return;
         if (dashBtn) dashBtn.style.display = 'inline-block';
         if (!authBtn) return;
-        // i18n：優先讀 actions.logout（共用 key），i18n.js 未載入則 fallback 中文
-        authBtn.innerText = (typeof window.t === 'function') ? window.t('actions.logout', null, '登出') : '登出';
+        // i18n：改寫 data-i18n key，讓 i18n.js applyDom 成為 source of truth（locale 切換時自動更新）。
+        // 立即同步 textContent：window.t 已載入用真值；尚未載入則先放中文，i18n.js init() 跑 applyDom 時會覆蓋。
+        authBtn.setAttribute('data-i18n', 'actions.logout');
+        authBtn.textContent = (typeof window.t === 'function') ? window.t('actions.logout', null, '登出') : '登出';
         // 視覺由 .logout-mode CSS class 控制（見 global.css），不再 inline style
         authBtn.classList.add('logout-mode');
         authBtn.onclick = function () { chiyigoLogout(redirectUrl || 'index.html'); };

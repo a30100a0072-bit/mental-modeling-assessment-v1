@@ -201,13 +201,8 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
 }
 
 // ==========================================
-// [模組 2.5] Guest 結果合併
+// [模組 0] 共用工具
 // ==========================================
-// 訪客作答時 assessments.user_id 為 NULL、guest_id 為瀏覽器產生的隨機字串。
-// 註冊/登入完成後呼叫此 endpoint，把同一瀏覽器留下的訪客紀錄綁回 SSO sub。
-// 只更新 user_id IS NULL 的列，避免別的使用者誤領；guest_id 清空避免重複認領。
-// Rate limit：每個 SSO sub 每 60 秒最多 5 次合併呼叫。
-// 並非加密保護，只是降低惡意 / bug 的反覆認領噪音；KV 計數有竸爭視窗但此端點低頻寫入可接受。
 // KV-based rate limit。
 // 設計：read-then-write 有 race window，但用於降噪非加密保護，可接受。
 // KV 異常時 fail-open，避免外部依賴抖動把正常使用流程擋掉，但要上報。
@@ -235,6 +230,13 @@ function getClientIp(request: Request): string {
     return request.headers.get("cf-connecting-ip") || "unknown";
 }
 
+// ==========================================
+// [模組 2.5] Guest 結果合併
+// ==========================================
+// 訪客作答時 assessments.user_id 為 NULL、guest_id 為瀏覽器產生的隨機字串。
+// 註冊/登入完成後呼叫此 endpoint，把同一瀏覽器留下的訪客紀錄綁回 SSO sub。
+// 只更新 user_id IS NULL 的列，避免別的使用者誤領；guest_id 清空避免重複認領。
+// Rate limit：每個 SSO sub 每 60 秒最多 5 次合併呼叫，降低惡意 / bug 的反覆認領噪音。
 async function handleClaimGuestResults(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>) {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
