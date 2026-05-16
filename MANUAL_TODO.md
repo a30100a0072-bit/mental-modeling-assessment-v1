@@ -114,6 +114,58 @@ Light mode / PWA service worker / 自訂 404 / i18n 基礎建設 / IAM bridge �
 
 ---
 
+## 3.7 Audit batch 部署驗收（2026-05-16，紅 4 + 黃 5）
+
+對 `mbti.chiyigo.com` 跑下列 4 項，任一失敗回報：
+
+1. **HSTS header 已生效**
+   - DevTools → Network → 任一資源 → Response Headers
+   - 應看到 `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+   - 注意：HSTS 一旦被瀏覽器接收，未來一年內該網域強制 HTTPS，**不可亂下下移除**
+
+2. **i18n 登出按鈕翻譯**
+   - 登入狀態進首頁 → 右上應為「登出」（zh）
+   - 點右上 🌐 切 EN → 同按鈕應變「Sign out」
+   - 切前/切後**都不該**再看到舊版「登出系統」字樣
+
+3. **Service Worker 版號**
+   - DevTools → Application → Service Workers → 應看到 active worker 含 `mbti-v1-2026-05-16-02`
+   - 若仍卡舊版號：點 Update / Skip waiting，或關掉所有 mbti tab 重開
+
+4. **Rate limit 觸發 429**
+   - 登入後在 console 跑（**必須序列化 `await`**，並行 fetch 會碰 KV eventual-consistency race，全部讀到 cur=0 全部過）：
+     ```js
+     const t = sessionStorage.getItem('chiyigo_access_token');
+     (async () => {
+       for (let i = 0; i < 35; i++) {
+         const r = await fetch('/api/v1/user/history', { headers: { Authorization: 'Bearer ' + t } });
+         console.log(i + 1, r.status);
+       }
+     })();
+     ```
+   - 預期：前 30 次 `200`，第 31 次起 `429`（一分鐘窗口）
+   - 1 分鐘後再跑應恢復 200
+   - **異常情形**：
+     - 全部 200 → KV fail-open 觸發（檢查 worker log `checkRateLimit:kv`）或忘了 `await`
+     - 全部 429 → 上次計數沒清（等 60 秒）
+     - 30 之後仍有零星 200 → KV put 還沒收斂正常現象，可忽略
+
+5. **D1 composite index 套用**
+   ```powershell
+   npx wrangler d1 execute mm_assessment_db --remote --command "SELECT name FROM sqlite_master WHERE type='index' AND name='idx_assessments_user_created'"
+   ```
+   - 應回 1 row（index name = `idx_assessments_user_created`）
+   - 沒回 row → migration 0010 沒套到，去 chiyigo dashboard D1 → Migrations 看狀態
+
+6. **MM_EVENT_QUEUE 已從 bindings 移除**
+   ```powershell
+   npx wrangler deployments list
+   ```
+   - 最新 deployment（`e6b955ee`）的 bindings 不該有 `MM_EVENT_QUEUE`
+   - 或 dashboard → Workers → mental-modeling-assessment-v1 → Settings → Variables and Secrets 確認
+
+---
+
 ## 3.8 GA 欄位語意備忘（2026-05-16）
 
 `login_success` 事件 payload 欄名仍叫 `merged_count`（保留向後相容 GA 報表），但實際值取自 worker 回傳的 `claimed`（SQL `UPDATE ... WHERE user_id IS NULL AND guest_id IN (...)` 的 `meta.changes`）。
