@@ -7,17 +7,14 @@ import i18nSrc from "../public/i18n.js?raw";
 // 防止後續新增 HTML 字串時忘記加後綴，悄悄走回 innerHTML 路徑。
 describe("i18n LOCALES — *Html opt-in convention", () => {
   it("任何含 `<` 的 string value 必須對應 *Html 結尾的 key", () => {
-    const lines = i18nSrc.split(/\r?\n/);
-    // 比對形如  `keyName: '....<....'`  或  `keyName: "...<..."` 的 entry。
-    // group 1: key, group 2: value（取對應的引號內容）
-    const single = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*'((?:\\.|[^'\\])*)'/;
-    const double = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*"((?:\\.|[^"\\])*)"/;
+    // 行內全掃：LOCALES 大量 inline object（`cardA: { badge: '...', title: '...', ... }`），
+    // 必須掃出該行所有 `key: 'value'` / `key: "value"` pair，不能只比對行首第一個。
+    const pair = /([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?:'((?:\\.|[^'\\])*)'|"((?:\\.|[^"\\])*)")/g;
     const offenders: string[] = [];
-    for (const line of lines) {
-      const m = single.exec(line) || double.exec(line);
-      if (!m) continue;
+    let m: RegExpExecArray | null;
+    while ((m = pair.exec(i18nSrc)) !== null) {
       const key = m[1];
-      const value = m[2];
+      const value = m[2] !== undefined ? m[2] : m[3];
       if (!value.includes("<")) continue;
       if (!/Html$/.test(key)) offenders.push(`${key}: ${value}`);
     }
