@@ -38,9 +38,10 @@ new_sqlite_classes = ["AssessmentSession"]
 tag = "v2"
 deleted_classes = ["AssessmentSession"]
 
-[observability]
-enabled = true
-
 # Pages 部署輸出目錄。雖然本 repo 的 wrangler.toml 主要是 Worker config，
 # `wrangler pages deploy` 仍會讀這個欄位，沒設會在每次 deploy log 噴 warning。
+# 必須放頂層（不能放 [observability] 內，TOML 會誤判成該 table 的欄位）。
 pages_build_output_dir = "public"
+
+[observability]
+enabled = true
