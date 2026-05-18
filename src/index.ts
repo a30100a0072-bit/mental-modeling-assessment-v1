@@ -30,6 +30,10 @@ function buildCorsHeaders(request: Request, env: Env): Record<string, string> {
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Expose-Headers": "X-Token-Refresh, X-Trace-Id",
+    // 本 worker 所有 response body 都是 JSON（成功 / 錯誤都是），
+    // Content-Type 統一在 CORS header bundle 內帶，避免 ~25 個 new Response 站點各自重複設定。
+    // OPTIONS preflight 因為沒 body，瀏覽器會忽略此欄位，無副作用。
+    "Content-Type": "application/json",
   };
 }
 
