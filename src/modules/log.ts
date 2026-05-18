@@ -49,3 +49,20 @@ export function logError(
     if (ctx) ctx.waitUntil(send);
   }
 }
+
+// 結構化 info / warn 事件，預設用於 request lifecycle 紀錄（一行一 request）。
+// 與 logError 區別：本函式不會推 webhook，避免正常流量打爆外部 sink。
+// 下游靠 wrangler tail / Logpush 拉走，level 欄位用於過濾 error vs request log。
+export function logEvent(
+  event: string,
+  context: LogContext = {},
+  level: "info" | "warn" = "info"
+): void {
+  const payload = {
+    level,
+    ts: new Date().toISOString(),
+    event,
+    ...context,
+  };
+  console.log(JSON.stringify(payload));
+}

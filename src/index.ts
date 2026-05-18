@@ -1,5 +1,5 @@
 import { processAssessmentResult } from "./modules/assessment";
-import { logError } from "./modules/log";
+import { logError, logEvent } from "./modules/log";
 
 // 認證走 chiyigo.com OIDC（PKCE + ES256 access_token + JWKS 本地驗）
 // 本 Worker 只負責：測驗提交、歷史查詢、帳號刪除（皆透過 chiyigo token 驗身分）
@@ -29,38 +29,61 @@ function buildCorsHeaders(request: Request, env: Env): Record<string, string> {
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Expose-Headers": "X-Token-Refresh",
+    "Access-Control-Expose-Headers": "X-Token-Refresh, X-Trace-Id",
   };
 }
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const corsHeaders = buildCorsHeaders(request, env);
+    // traceId 在 fetch 入口生成一次，貫穿整個 request lifecycle：
+    // 1) 注入 X-Trace-Id response header（已加入 Expose-Headers，前端 JS 可讀並回報）
+    // 2) 傳給每個 handler，所有 logError context 都帶上
+    // 3) request 結束時統一寫一行 structured log（success + error 都走同一條）
+    const traceId = crypto.randomUUID();
+    const startedAt = Date.now();
+    const baseCors = buildCorsHeaders(request, env);
+    const corsHeaders = { ...baseCors, "X-Trace-Id": traceId };
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
     const url = new URL(request.url);
+    let response: Response;
 
     // 頂層 try/catch 是最後一道網：任何路由 handler 漏接的例外都會被擋下並上報，
     // 確保使用者拿到 5xx JSON 而不是 Workers 預設的 1101，且錯誤一定有紀錄。
     try {
       // --- 路由分發器 ---
       if (request.method === "POST") {
-        if (url.pathname.match(/\/assess\/version-[a-f]$/i)) return await handleAssessmentSubmit(request, env, ctx, corsHeaders);
-        if (url.pathname.endsWith("/user/claim-guest-results")) return await handleClaimGuestResults(request, env, ctx, corsHeaders);
-      }
-
-      if (request.method === "GET" && url.pathname.endsWith("/auth/allowed-redirects")) {
+        if (url.pathname.match(/\/assess\/version-[a-f]$/i)) {
+          response = await handleAssessmentSubmit(request, env, ctx, corsHeaders, traceId);
+        } else if (url.pathname.endsWith("/user/claim-guest-results")) {
+          response = await handleClaimGuestResults(request, env, ctx, corsHeaders, traceId);
+        } else {
+          response = new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
+        }
+      } else if (request.method === "GET" && url.pathname.endsWith("/auth/allowed-redirects")) {
         const origins = (env.SSO_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-        return new Response(JSON.stringify({ origins }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        response = new Response(JSON.stringify({ origins }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } else if (request.method === "GET" && url.pathname.endsWith("/user/history")) {
+        response = await handleGetHistory(request, env, ctx, corsHeaders, traceId);
+      } else if (request.method === "DELETE" && url.pathname.endsWith("/user/account")) {
+        response = await handleDeleteAccount(request, env, ctx, corsHeaders, traceId);
+      } else {
+        response = new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
       }
-      if (request.method === "GET" && url.pathname.endsWith("/user/history")) return await handleGetHistory(request, env, ctx, corsHeaders);
-      if (request.method === "DELETE" && url.pathname.endsWith("/user/account")) return await handleDeleteAccount(request, env, ctx, corsHeaders);
-
-      return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
     } catch (err) {
-      logError(env, "fetch:uncaught", err, { method: request.method, path: url.pathname }, ctx);
-      return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500, headers: corsHeaders });
+      logError(env, "fetch:uncaught", err, { traceId, method: request.method, path: url.pathname }, ctx);
+      response = new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500, headers: corsHeaders });
     }
+
+    logEvent("request", {
+      traceId,
+      method: request.method,
+      path: url.pathname,
+      status: response.status,
+      durMs: Date.now() - startedAt,
+    });
+
+    return response;
   },
 };
 
@@ -146,7 +169,7 @@ async function verifyChiyigoToken(token: string, _env: Env): Promise<ChiyigoIden
 // ==========================================
 // [模組 2] 歷史紀錄查詢
 // ==========================================
-async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>) {
+async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string) {
     try {
         const authHeader = request.headers.get("Authorization");
         if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
@@ -168,12 +191,12 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
 
         return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (error: any) {
-        logError(env, "handleGetHistory", error, {}, ctx);
+        logError(env, "handleGetHistory", error, { traceId }, ctx);
         return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
     }
 }
 
-async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>) {
+async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string) {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
 
@@ -194,7 +217,7 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
         await env.MM_DB_D1.batch(batchStmts);
         return new Response(JSON.stringify({ status: "Deleted" }), { headers: corsHeaders });
     } catch (err: any) {
-        logError(env, "handleDeleteAccount", err, { sub: identity.sub }, ctx);
+        logError(env, "handleDeleteAccount", err, { traceId, sub: identity.sub }, ctx);
         return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
     }
 }
@@ -236,7 +259,7 @@ function getClientIp(request: Request): string {
 // 註冊/登入完成後呼叫此 endpoint，把同一瀏覽器留下的訪客紀錄綁回 SSO sub。
 // 只更新 user_id IS NULL 的列，避免別的使用者誤領；guest_id 清空避免重複認領。
 // Rate limit：每個 SSO sub 每 60 秒最多 5 次合併呼叫，降低惡意 / bug 的反覆認領噪音。
-async function handleClaimGuestResults(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>) {
+async function handleClaimGuestResults(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string) {
     const authHeader = request.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
 
@@ -263,7 +286,7 @@ async function handleClaimGuestResults(request: Request, env: Env, ctx: Executio
         const claimed = (res as any)?.meta?.changes ?? 0;
         return new Response(JSON.stringify({ status: "Claimed", claimed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (err: any) {
-        logError(env, "handleClaimGuestResults:db", err, { sub: identity.sub, guestIdCount: guestIds.length }, ctx);
+        logError(env, "handleClaimGuestResults:db", err, { traceId, sub: identity.sub, guestIdCount: guestIds.length }, ctx);
         return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
     }
 }
@@ -284,7 +307,7 @@ function badRequest(msg: string, corsHeaders: Record<string, string>): Response 
     return new Response(JSON.stringify({ error: msg }), { status: 400, headers: corsHeaders });
 }
 
-async function handleAssessmentSubmit(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>): Promise<Response> {
+async function handleAssessmentSubmit(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string): Promise<Response> {
   try {
     const url = new URL(request.url);
     const routeMatch = url.pathname.match(/\/assess\/version-([a-f])$/i);
@@ -393,7 +416,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
 
     return new Response(JSON.stringify({ status: "Calculated", reportId: reportId, data: resultData }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: any) {
-    logError(env, "handleAssessmentSubmit", error, {}, ctx);
+    logError(env, "handleAssessmentSubmit", error, { traceId }, ctx);
     return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
   }
 }
