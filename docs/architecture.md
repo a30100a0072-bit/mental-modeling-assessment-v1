@@ -138,8 +138,9 @@ Talo 的 `setAccessToken()` 同步寫入 `sessionStorage.chiyigo_access_token`�
 
 `wrangler.toml [vars]`：
 - `ENGINE_VERSION = "V1"`
-- `SOFTMAX_TAU = "0.3"`
 - `SSO_ALLOWED_ORIGINS`：跨站合作白名單（逗號分隔）
+
+（`SOFTMAX_TAU` 是演算法常數，定義在 `src/modules/assessment.ts`；env binding 自始未被讀，2026-05-18 移除以消除 magic config。）
 
 **Secrets（不在 repo）**：目前 Worker 已不需要 secret — 認證委託 chiyigo.com、無自家 JWT 簽名、無 Resend、無 Turnstile。
 

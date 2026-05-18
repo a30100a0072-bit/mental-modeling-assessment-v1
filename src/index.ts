@@ -5,7 +5,6 @@ import { logError } from "./modules/log";
 // 本 Worker 只負責：測驗提交、歷史查詢、帳號刪除（皆透過 chiyigo token 驗身分）
 export interface Env {
   ENGINE_VERSION: string;
-  SOFTMAX_TAU: string;
   SSO_ALLOWED_ORIGINS: string;
   // 觀測 sink（選填，設了就把 error 推 webhook；空值只走 console / Logpush）
   ERROR_WEBHOOK_URL?: string;
