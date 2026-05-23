@@ -15,7 +15,7 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 表格：測驗紀錄 (儲存原始分數、演算法結果、精神能量與時間變數)
+-- 表格：測驗紀錄 (儲存原始分數、演算法結果與時間變數)
 CREATE TABLE assessments (
     id TEXT PRIMARY KEY,
     user_id TEXT, -- 登入者 ID。若為 NULL 則是訪客
@@ -25,7 +25,6 @@ CREATE TABLE assessments (
     z_scores TEXT NOT NULL, -- JSON 陣列: 標準化分數
     result_distribution TEXT NOT NULL, -- JSON 物件: 16型 Softmax 機率分佈
     primary_type TEXT NOT NULL, -- 最高機率人格 (ex: INTJ)
-    psychic_energy_index REAL DEFAULT 0.0, -- 精神能量指標
     time_spent_ms INTEGER NOT NULL, -- 總答題時間變數 (毫秒)
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

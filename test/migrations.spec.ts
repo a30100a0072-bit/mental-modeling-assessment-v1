@@ -110,12 +110,14 @@ describe("migration smoke", () => {
         const required = [
             "id", "user_id", "guest_id", "assessment_version",
             "raw_scores", "z_scores", "result_distribution",
-            "primary_type", "psychic_energy_index", "time_spent_ms",
+            "primary_type", "time_spent_ms",
             "questions_answered", "created_at",
         ];
         for (const c of required) {
             expect(cols.has(c), `assessments missing column: ${c}`).toBe(true);
         }
+        // 0012 drop：psychic_energy_index 從未上 UI，2026-05-23 全砍
+        expect(cols.has("psychic_energy_index")).toBe(false);
     });
 
     it("performance-critical indices exist; dead indices are dropped", async () => {
@@ -140,7 +142,7 @@ describe("migration smoke", () => {
     it("worker's assessment INSERT runs against migrated schema", async () => {
         const id = `smoke-${crypto.randomUUID()}`;
         const r = await MM_DB_D1.prepare(
-            `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, psychic_energy_index, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
             id,
             null,
@@ -150,7 +152,6 @@ describe("migration smoke", () => {
             JSON.stringify([0, 0, 0, 0, 0, 0, 0, 0]),
             JSON.stringify({}),
             "XXXX",
-            0,
             1000,
             65,
         ).run();
