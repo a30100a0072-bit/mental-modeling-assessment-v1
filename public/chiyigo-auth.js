@@ -22,19 +22,27 @@
     var ID_TOKEN_KEY    = 'chiyigo_id_token';
     var AUD             = 'mbti';
 
+    // 共享 in-flight refresh promise：N 個並發 401 retry 共用同一個 refresh，
+    // 避免 thundering herd（每個 fetch 各自打 chiyigo /api/auth/refresh）。
+    // 邊界：成功 / 失敗 / throw 都會在 finally 清 _refreshPromise，下次 401 可再發起。
+    var _refreshPromise = null;
     async function chiyigoRefresh() {
-        try {
-            var r = await fetch(CHIYIGO_REFRESH, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ aud: AUD }),
-            });
-            if (!r.ok) return null;
-            var data = await r.json();
-            if (data.access_token) sessionStorage.setItem(TOKEN_KEY, data.access_token);
-            return data.access_token || null;
-        } catch (e) { return null; }
+        if (_refreshPromise) return _refreshPromise;
+        _refreshPromise = (async function () {
+            try {
+                var r = await fetch(CHIYIGO_REFRESH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ aud: AUD }),
+                });
+                if (!r.ok) return null;
+                var data = await r.json();
+                if (data.access_token) sessionStorage.setItem(TOKEN_KEY, data.access_token);
+                return data.access_token || null;
+            } catch (e) { return null; }
+        })().finally(function () { _refreshPromise = null; });
+        return _refreshPromise;
     }
 
     // 自動帶 token + 401 retry。Auth-optional caller（訪客也能用的 endpoint）

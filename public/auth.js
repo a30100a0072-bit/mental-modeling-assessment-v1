@@ -143,6 +143,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   setStatus('正在完成登入...')
 
+  // 取出 code 後立刻清 URL（不論後續 state mismatch / token endpoint 5xx / id_token 驗失敗）。
+  // code 已單次使用無法 replay，但留在地址列會進 browser history / 書籤 / 後續資源 referer header。
+  window.history.replaceState({}, '', 'login.html')
+
   const savedState = sessionStorage.getItem('pkce_state')
   const savedNonce = sessionStorage.getItem('pkce_nonce')
   const verifier   = sessionStorage.getItem('pkce_verifier')
@@ -189,7 +193,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     // worker /user/claim-guest-results 回 { status, claimed }，保留 merged_count 別名供舊 GA 報表
     if (window.track) window.track('login_success', { merged_count: (claim && claim.claimed) || 0 })
 
-    window.history.replaceState({}, '', 'login.html')
     window.location.href = 'dashboard.html'
   } catch (err) {
     setStatus('登入失敗：' + err.message, true)
