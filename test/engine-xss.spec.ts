@@ -35,6 +35,8 @@ describe("ENGINE content dicts — no raw HTML", () => {
         expect(resultRenderSrc).toMatch(/escapeHtml\(gripExit\[/);
         expect(resultRenderSrc).toMatch(/escapeHtml\(blind\)/);
         expect(resultRenderSrc).toMatch(/escapeHtml\(r\.b\)/);
+        expect(resultRenderSrc).toMatch(/escapeHtml\(r\.c\)/);
+        expect(resultRenderSrc).toMatch(/escapeHtml\(r\.g\)/);
         expect(resultRenderSrc).toMatch(/escapeHtml\(r\.p\)/);
     });
 });
