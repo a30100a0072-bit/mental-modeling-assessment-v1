@@ -3,14 +3,16 @@
 // [模組] 結果頁渲染：人格主表 / radar+pie / Beebe / 互補配對 / 詳細解析
 //
 // 從 script.js 抽出來（原 432-578 行）以降低 script.js 體積並讓結果頁渲染獨立可審。
-// 載入順序：必須在 script.js 之後（依賴 ENGINE / appScores / appState / backendProbs /
-//   backendSorted / backendPrimaryType / isSharedView / currentVersion / TrifurcationWarning）。
+// 載入順序：必須在 state.js / script.js 之後（依賴 ENGINE / window.MM.scores / .state /
+//   .backend.probs / .backend.sorted / .backend.primaryType / .flags.sharedView / .version /
+//   .flags.trifurcationWarning / .charts）。
 // 暴露的 global function（被 script.js / inline onclick 呼叫）：
 //   - renderResult(isShared)
 //   - updateCharts(p, norm, probs, sorted)
 //   - updateDetail(type)
 //   - buildCompatSection(primary)
 // ==========================================
+const MM = window.MM;
 
 // 對齊 i18n.js *Html 後綴 opt-in 約定（見 CLAUDE.md / feedback_i18n_html_suffix）：
 // ENGINE.tips / .gripExit / .blindspots / .reports 透過 innerHTML 注入結果頁，
@@ -25,7 +27,7 @@ function escapeHtml(s) {
 
 function renderResult(isShared) {
     let gripHTML = "";
-    if(!isShared && !isSharedView && !['D','E','F'].includes(currentVersion)) {
+    if(!isShared && !MM.flags.sharedView && !['D','E','F'].includes(MM.version)) {
         const p1S = getPhaseScores(0); const p4S = getPhaseScores(3);
         const p1Top = Object.keys(p1S).reduce((a,b)=>p1S[a]>p1S[b]?a:b); const p4Top = Object.keys(p4S).reduce((a,b)=>p4S[a]>p4S[b]?a:b);
         if (ENGINE.antagonist[p1Top] === p4Top) {
@@ -35,19 +37,19 @@ function renderResult(isShared) {
     }
     document.getElementById('grip-warning').innerHTML = gripHTML;
 
-    const primary = (!isShared && !isSharedView && window.backendPrimaryType) ? window.backendPrimaryType : (backendSorted[0] || "ISFJ");
+    const primary = (!isShared && !MM.flags.sharedView && MM.backend.primaryType) ? MM.backend.primaryType : (MM.backend.sorted[0] || "ISFJ");
     document.getElementById('mbti-type').innerText = primary;
 
-    const topProb = backendProbs[primary] || 0.0;
-    const probLabel = isSharedView ? "本地解碼概率" : "雲端判定概率";
+    const topProb = MM.backend.probs[primary] || 0.0;
+    const probLabel = MM.flags.sharedView ? "本地解碼概率" : "雲端判定概率";
     document.getElementById('spectrum-subtitle').innerHTML = `<span style="color:#e0f2fe">${probLabel}: ${Math.round(topProb)}%</span>`;
 
-    const mag = Math.sqrt(ENGINE.dimKeys.reduce((s,k)=>s+appScores[k]**2, 0))||1;
-    document.getElementById('topology-diagnosis').innerHTML = (mag < 10) ? `<div class="diag-danger">🔴 系統塌陷警告：能量互相抵銷，效度偏移。</div>` : (window.TrifurcationWarning ? `<div class="diag-warning">🟡 三向分岔畸變：前三維度糾纏過渡期。</div>` : `<div class="diag-safe">🟢 動態平衡拓撲 (Dynamic Symmetry)：健康非對稱幾何張力。</div>`);
+    const mag = Math.sqrt(ENGINE.dimKeys.reduce((s,k)=>s+MM.scores[k]**2, 0))||1;
+    document.getElementById('topology-diagnosis').innerHTML = (mag < 10) ? `<div class="diag-danger">🔴 系統塌陷警告：能量互相抵銷，效度偏移。</div>` : (MM.flags.trifurcationWarning ? `<div class="diag-warning">🟡 三向分岔畸變：前三維度糾纏過渡期。</div>` : `<div class="diag-safe">🟢 動態平衡拓撲 (Dynamic Symmetry)：健康非對稱幾何張力。</div>`);
 
-    const norm = {}; ENGINE.dimKeys.forEach(k => norm[k] = Math.max(0, Math.min(100, Math.round(((appScores[k]+15)/45)*100))));
+    const norm = {}; ENGINE.dimKeys.forEach(k => norm[k] = Math.max(0, Math.min(100, Math.round(((MM.scores[k]+15)/45)*100))));
 
-    updateCharts(primary, norm, backendProbs, backendSorted);
+    updateCharts(primary, norm, MM.backend.probs, MM.backend.sorted);
     if (typeof window.renderBeebeStack === 'function') window.renderBeebeStack(primary, norm);
     const tipsLoc = window.ENGloc ? window.ENGloc('tips') : ENGINE.tips;
     document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>{const tip = escapeHtml(tipsLoc[k]); return `<th data-tip="${tip}" title="${tip}">${k}</th>`;}).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
@@ -57,13 +59,13 @@ function renderResult(isShared) {
     const tagSub = _T('result.tag.subconscious', null, '潛意識');
     const tagShadow = _T('result.tag.shadow', null, '陰影');
     const sMap = ENGINE.sides[primary] || ENGINE.sides["ISFJ"];
-    const listHtml = backendSorted.map(t => {
+    const listHtml = MM.backend.sorted.map(t => {
         let tag = (t===sMap[0]) ? `<span class="tag-ego">${tagEgo}</span>` : (t===sMap[1] ? `<span class="tag-sub">${tagSub}</span>` : (t===sMap[2] ? `<span class="tag-unc">${tagShadow}</span>` : ""));
-        const p = Math.round(backendProbs[t]||0);
+        const p = Math.round(MM.backend.probs[t]||0);
         return `<div class="match-item" id="btn-${t}" data-update-detail="${t}"><div class="match-info"><b>${t}</b>${tag}<div class="match-bar-bg"><div class="match-bar-fill" style="width:${p}%"></div></div></div><span class="match-pct">${p<1?"<1":p}%</span></div>`;
     }).join('');
 
-    const matrixLabel = isSharedView
+    const matrixLabel = MM.flags.sharedView
         ? _T('result.label.matrixLocal', null, "16人格判定概率矩陣 (本地還原)")
         : _T('result.label.matrixCloud', null, "16人格判定概率矩陣 (雲端運算)");
     const compatHtml = buildCompatSection(primary);
@@ -91,11 +93,11 @@ function renderResult(isShared) {
     updateDetail(primary);
 
     // [埋碼] 測驗完成 — 帶 questions_answered 讓 GA 能分群「提早結束 vs 完整答」
-    if (!isShared && !isSharedView) {
+    if (!isShared && !MM.flags.sharedView) {
         if (window.track) window.track('quiz_complete', {
-            version: currentVersion,
+            version: MM.version,
             primary_type: primary,
-            questions_answered: window.__lastQuestionsAnswered || null
+            questions_answered: MM.lastQuestionsAnswered || null
         });
     }
 }
@@ -147,8 +149,8 @@ function buildCompatSection(primary) {
 
 function updateCharts(p, norm, probs, sorted) {
     const stack = ENGINE.stacks[p] || ENGINE.stacks["ISFJ"], ideal = { [stack[0]]:95, [stack[1]]:75, [stack[2]]:55, [stack[3]]:35 };
-    if(window.radarChartObj) window.radarChartObj.destroy();
-    window.radarChartObj = new Chart(document.getElementById('functionChart'), {
+    if(MM.charts.radar) MM.charts.radar.destroy();
+    MM.charts.radar = new Chart(document.getElementById('functionChart'), {
         type:'radar',
         data:{
             labels:ENGINE.dimKeys,
@@ -162,8 +164,8 @@ function updateCharts(p, norm, probs, sorted) {
     });
 
     const top5 = sorted.slice(0,5); const otherP = sorted.slice(5).reduce((s,k)=>s+(probs[k]||0),0);
-    if(window.pieChartObj) window.pieChartObj.destroy();
-    window.pieChartObj = new Chart(document.getElementById('probabilityChart'), {
+    if(MM.charts.pie) MM.charts.pie.destroy();
+    MM.charts.pie = new Chart(document.getElementById('probabilityChart'), {
         type:'pie',
         data:{ labels:[...top5, '其他'], datasets:[{ data:[...top5.map(k=>probs[k]||0), otherP], backgroundColor:['#38bdf8','#0284c7','#2563eb','#1e40af','#1e3a8a','#162032'], borderColor:'#111827', borderWidth:2 }] },
         options:{ maintainAspectRatio:false, layout:{padding:{top:20, bottom:45, left:20, right:20}}, plugins:{ legend:{display:false}, datalabels:{ display:true, color:'#fff', font:{weight:'bold', size:11}, align:'end', anchor:'end', offset:10, formatter:(v,ctx)=> Math.round(v)>2 ? `${ctx.chart.data.labels[ctx.dataIndex]}\n${Math.round(v)}%` : null, textAlign:'center' } } }
@@ -182,10 +184,10 @@ function updateDetail(type) {
     const stack = ENGINE.stacks[type] || ENGINE.stacks["ISFJ"];
     const blind = blindspots[ENGINE.antagonist[stack[2]]];
 
-    if(window.radarChartObj) {
+    if(MM.charts.radar) {
         const ideal = { [stack[0]]:95, [stack[1]]:75, [stack[2]]:55, [stack[3]]:35 };
-        window.radarChartObj.data.datasets[1].data = ENGINE.dimKeys.map(k => ideal[k] || 15);
-        window.radarChartObj.update();
+        MM.charts.radar.data.datasets[1].data = ENGINE.dimKeys.map(k => ideal[k] || 15);
+        MM.charts.radar.update();
     }
 
     document.getElementById('detail-box').innerHTML = `
@@ -211,7 +213,7 @@ document.addEventListener('localechange', () => {
     const resultArea = document.getElementById('result-area');
     if (!resultArea || resultArea.classList.contains('hidden')) return;
     try {
-        // renderResult 重新渲染整頁；isShared 視 isSharedView 而定
-        renderResult(typeof isSharedView !== 'undefined' && isSharedView);
+        // renderResult 重新渲染整頁；isShared 視 MM.flags.sharedView 而定
+        renderResult(typeof MM.flags.sharedView !== 'undefined' && MM.flags.sharedView);
     } catch (_) { /* 失敗就保留原內容；下次 setLocale 再試 */ }
 });

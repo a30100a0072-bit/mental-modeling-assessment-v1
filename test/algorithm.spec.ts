@@ -22,10 +22,9 @@ describe("algorithm: processAssessmentResult — 16 型理想向量自分類", (
 });
 
 describe("algorithm: processAssessmentResult — 邊界與不變量", () => {
-  it("零變異輸入：zScores 全 0，psychicEnergyIndex = 0，primaryType 仍為合法 16 型", () => {
+  it("零變異輸入：zScores 全 0，primaryType 仍為合法 16 型", () => {
     const r = processAssessmentResult([5, 5, 5, 5, 5, 5, 5, 5], 1000);
     expect(r.zScores).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
-    expect(r.psychicEnergyIndex).toBe(0);
     expect(Object.keys(IDEAL_PROFILES)).toContain(r.primaryType);
   });
 
@@ -48,9 +47,10 @@ describe("algorithm: processAssessmentResult — 邊界與不變量", () => {
     expect(() => processAssessmentResult([1, 2, 3, 4, 5, 6, 7, 8, 9], 1000)).toThrow();
   });
 
-  it("timeSpentMs = 0 不會除以 0", () => {
+  it("timeSpentMs 不再參與計算：傳 0 仍回傳合法結果", () => {
     const r = processAssessmentResult([1, 2, 3, 4, 5, 6, 7, 8], 0);
-    expect(Number.isFinite(r.psychicEnergyIndex)).toBe(true);
+    expect(Object.keys(IDEAL_PROFILES)).toContain(r.primaryType);
+    expect(r.zScores).toHaveLength(8);
   });
 });
 
@@ -93,15 +93,17 @@ describe("algorithm: engine.js 與 TS 端常數漂移檢查", () => {
 // calculateLocalProbabilities 抽進沙箱跑，與 server `calculateZScores` 對拍。
 
 function loadEngineCalculateLocalProbabilities(): (s: Record<string, number>) => { probs: Record<string, number>; sorted: string[] } {
-  // 抽函式原始碼：從 `function calculateLocalProbabilities(scores) {` 到對應的 top-level `}` 為止。
-  // engine.js 排版讓 top-level 收尾 `}` 永遠在 column 0，內部 `}` 都有縮排，
-  // 所以匹配「換行 + 行首 } + 換行」可唯一鎖到 top-level；CRLF / LF 都吃。
+  // 抽 module-level IDEAL_PROFILES const + calculateLocalProbabilities 函式：
+  // engine.js 排版讓 top-level 收尾 `};` / `}` 永遠在 column 0、內部都有縮排，
+  // 「換行 + 行首 }」可唯一鎖到 top-level；CRLF / LF 都吃。
   const normalized = (engineSrc as string).replace(/\r\n/g, "\n");
-  const m = normalized.match(/function calculateLocalProbabilities\(scores\)\s*\{[\s\S]*?\n\}\n/);
-  if (!m) throw new Error("engine.js: 找不到 calculateLocalProbabilities 函式宣告");
+  const ideal = normalized.match(/const\s+IDEAL_PROFILES\s*=\s*\{[\s\S]*?\n\};/);
+  if (!ideal) throw new Error("engine.js: 找不到 module-level IDEAL_PROFILES const 宣告");
+  const fn = normalized.match(/function calculateLocalProbabilities\(scores\)\s*\{[\s\S]*?\n\}\n/);
+  if (!fn) throw new Error("engine.js: 找不到 calculateLocalProbabilities 函式宣告");
   // new Function 在沙箱跑：函式只用 Math / Object，不依賴瀏覽器 globals。
   // eslint-disable-next-line no-new-func
-  return new Function(`${m[0]}; return calculateLocalProbabilities;`)() as any;
+  return new Function(`${ideal[0]}; ${fn[0]}; return calculateLocalProbabilities;`)() as any;
 }
 
 describe("algorithm: engine.js z-score 公式與 TS 端對拍", () => {

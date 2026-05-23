@@ -2,7 +2,7 @@
 // =====================================================
 // 測驗流程 UX 強化：題級進度 / 鍵盤操作 / 自動存檔指示 / 過場動畫
 // 不動主流程：透過事件代理 + 公開全域狀態旁路注入。
-// 載入順序：必須在 script.js 之後 (依賴 appState / saveState / currentVersion)。
+// 載入順序：必須在 state.js / script.js 之後 (依賴 window.MM.state / saveState / MM.version)。
 // =====================================================
 (function () {
     'use strict';
@@ -18,7 +18,7 @@
     let lastAnsweredAt = 0;
     const uxStartTimeFallback = Date.now();
     function startTime() {
-        return (typeof window.quizStartTime === 'number') ? window.quizStartTime : uxStartTimeFallback;
+        return (window.MM && typeof window.MM.startTime === 'number') ? window.MM.startTime : uxStartTimeFallback;
     }
 
     // -------- 題級進度條（掛在 progress-text 後面） --------
@@ -46,8 +46,8 @@
         if (typeof window.track === 'function') {
             const total = area.querySelectorAll('.question').length;
             window.track('quiz_halfway', {
-                version: window.currentVersion || (new URLSearchParams(location.search).get('v') || ''),
-                phase: window.appState && window.appState.phase,
+                version: (window.MM && window.MM.version) || (new URLSearchParams(location.search).get('v') || ''),
+                phase: window.MM && window.MM.state && window.MM.state.phase,
                 total_in_phase: total
             });
         }
@@ -117,17 +117,17 @@
         el.classList.add('is-show');
     }
 
-    // -------- 旁路存檔：寫 window.appState（script.js 改 var 後可見）+ localStorage 雙保險 --------
+    // -------- 旁路存檔：寫 window.MM.state（state.js 宣告）+ localStorage 雙保險 --------
     const STATE_KEY = 'mbti_v1_final';
     function persistAnswerFromInput(input) {
         if (!input || !input.name) return;
-        // 優先寫 window.appState，這樣 next-btn 提交時不會被 DOM 同步覆蓋
-        if (typeof window.appState === 'object' && window.appState) {
-            if (!window.appState.answers) window.appState.answers = {};
-            window.appState.answers[input.name] = input.value;
+        // 優先寫 window.MM.state，這樣 next-btn 提交時不會被 DOM 同步覆蓋
+        if (window.MM && window.MM.state) {
+            if (!window.MM.state.answers) window.MM.state.answers = {};
+            window.MM.state.answers[input.name] = input.value;
             if (typeof window.saveState === 'function') window.saveState();
         } else {
-            // fallback：直接 patch localStorage（script.js 還沒載入完成的邊界）
+            // fallback：直接 patch localStorage（state.js 還沒載入完成的邊界）
             try {
                 const raw = localStorage.getItem(STATE_KEY);
                 const obj = raw ? JSON.parse(raw) : { phase: 1, answers: {}, dynamicRoute: null };

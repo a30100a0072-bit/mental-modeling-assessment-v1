@@ -82,19 +82,23 @@ window.ENGloc = function (prop) {
 function encodeScores(s) { return ENGINE.dimKeys.map(k => Math.max(0, Math.round(s[k] + 100)).toString(36)).join('-'); }
 function decodeScores(str) { const arr = str.split('-'); const res = {}; if(arr.length===8) ENGINE.dimKeys.forEach((k,i)=>res[k]=parseInt(arr[i],36)-100); return res; }
 
+// 16 型理想八維向量（順序：Ni, Ne, Si, Se, Ti, Te, Fi, Fe）。
+// SOURCE OF TRUTH：src/modules/assessment.ts IDEAL_PROFILES（server 端權威算法）。
+// 本檔為 client mirror，提供 D/E/F 卷中途路由分流的 partial 算分；改動必須兩端同步，
+// 由 test/algorithm.spec.ts 的漂移 regex 比對擋下單邊變動。
+const IDEAL_PROFILES = {
+    "INTJ": [1.0, 0.4, -0.8, -0.6, 0.2, 0.8, 0.4, -0.4], "ENTJ": [0.8, 0.2, -0.4, 0.4, 0.4, 1.0, -0.6, -0.8],
+    "INTP": [0.2, 0.8, 0.4, -0.4, 1.0, 0.4, -0.8, -0.6], "ENTP": [0.4, 1.0, -0.6, -0.8, 0.8, 0.2, -0.4, 0.4],
+    "INFJ": [1.0, 0.4, -0.8, -0.6, 0.4, -0.4, 0.2, 0.8], "ENFJ": [0.8, 0.2, -0.4, 0.4, -0.6, -0.8, 0.4, 1.0],
+    "INFP": [0.2, 0.8, 0.4, -0.4, -0.8, -0.6, 1.0, 0.4], "ENFP": [0.4, 1.0, -0.6, -0.8, -0.4, 0.4, 0.8, 0.2],
+    "ISTJ": [-0.8, -0.6, 1.0, 0.4, 0.2, 0.8, 0.4, -0.4], "ESTJ": [-0.4, 0.4, 0.8, 0.2, 0.4, 1.0, -0.6, -0.8],
+    "ISFJ": [-0.8, -0.6, 1.0, 0.4, 0.4, -0.4, 0.2, 0.8], "ESFJ": [-0.4, 0.4, 0.8, 0.2, -0.6, -0.8, 0.4, 1.0],
+    "ISTP": [0.4, -0.4, 0.2, 0.8, 1.0, 0.4, -0.8, -0.6], "ESTP": [-0.6, -0.8, 0.4, 1.0, 0.8, 0.2, -0.4, 0.4],
+    "ISFP": [0.4, -0.4, 0.2, 0.8, -0.8, -0.6, 1.0, 0.4], "ESFP": [-0.6, -0.8, 0.4, 1.0, -0.4, 0.4, 0.8, 0.2]
+};
+
 // 本地端邊緣運算 (舊版 Softmax 轉換)
 function calculateLocalProbabilities(scores) {
-    const IDEAL_PROFILES = {
-        "INTJ": [1.0, 0.4, -0.8, -0.6, 0.2, 0.8, 0.4, -0.4], "ENTJ": [0.8, 0.2, -0.4, 0.4, 0.4, 1.0, -0.6, -0.8],
-        "INTP": [0.2, 0.8, 0.4, -0.4, 1.0, 0.4, -0.8, -0.6], "ENTP": [0.4, 1.0, -0.6, -0.8, 0.8, 0.2, -0.4, 0.4],
-        "INFJ": [1.0, 0.4, -0.8, -0.6, 0.4, -0.4, 0.2, 0.8], "ENFJ": [0.8, 0.2, -0.4, 0.4, -0.6, -0.8, 0.4, 1.0],
-        "INFP": [0.2, 0.8, 0.4, -0.4, -0.8, -0.6, 1.0, 0.4], "ENFP": [0.4, 1.0, -0.6, -0.8, -0.4, 0.4, 0.8, 0.2],
-        "ISTJ": [-0.8, -0.6, 1.0, 0.4, 0.2, 0.8, 0.4, -0.4], "ESTJ": [-0.4, 0.4, 0.8, 0.2, 0.4, 1.0, -0.6, -0.8],
-        "ISFJ": [-0.8, -0.6, 1.0, 0.4, 0.4, -0.4, 0.2, 0.8], "ESFJ": [-0.4, 0.4, 0.8, 0.2, -0.6, -0.8, 0.4, 1.0],
-        "ISTP": [0.4, -0.4, 0.2, 0.8, 1.0, 0.4, -0.8, -0.6], "ESTP": [-0.6, -0.8, 0.4, 1.0, 0.8, 0.2, -0.4, 0.4],
-        "ISFP": [0.4, -0.4, 0.2, 0.8, -0.8, -0.6, 1.0, 0.4], "ESFP": [-0.6, -0.8, 0.4, 1.0, -0.4, 0.4, 0.8, 0.2]
-    };
-
     const orderedScores = [scores.Ni, scores.Ne, scores.Si, scores.Se, scores.Ti, scores.Te, scores.Fi, scores.Fe];
     const mean = orderedScores.reduce((a, b) => a + b, 0) / 8;
     const std = Math.sqrt(orderedScores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / 8);

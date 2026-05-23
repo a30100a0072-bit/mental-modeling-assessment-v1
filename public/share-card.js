@@ -97,13 +97,13 @@
                 return;
             }
 
-            // 八維百分比：優先讀 window.appScores（script.js 改 var 後可見），
+            // 八維百分比：優先讀 window.MM.scores（state.js 宣告），
             // fallback 抓結果頁分數表格的 td
             const norm = {};
             const dimKeys = ENGINE.dimKeys;
-            if (typeof window.appScores === 'object' && window.appScores) {
+            if (window.MM && window.MM.scores) {
                 dimKeys.forEach(k => {
-                    const v = window.appScores[k];
+                    const v = window.MM.scores[k];
                     norm[k] = Math.max(0, Math.min(100, Math.round(((v + 15) / 45) * 100)));
                 });
             } else {

@@ -1,30 +1,36 @@
 // ==========================================
 // [模組 2] API 通訊與本地端狀態管理
+// 跨檔 state 統一走 window.MM（見 state.js）；本檔對 MM.state.answers / MM.scores / MM.version
+// 等的存取都假設 state.js 在更早載入。
 // ==========================================
 
-function initStorage() { 
-    try { 
-        const s = localStorage.getItem('mbti_v1_final'); 
-        if(s) { 
-            const p = JSON.parse(s); 
-            if(p && p.answers) appState = p; 
-        } 
-    } catch(e) {} 
+function initStorage() {
+    try {
+        const s = localStorage.getItem('mbti_v1_final');
+        if(s) {
+            const p = JSON.parse(s);
+            // mutate 而非 reassign：保留 window.MM.state 的 reference 讓其他檔同步看到
+            if(p && p.answers) {
+                Object.keys(window.MM.state).forEach(k => { delete window.MM.state[k]; });
+                Object.assign(window.MM.state, p);
+            }
+        }
+    } catch(e) {}
 }
 
-function saveState() { 
-    try { 
-        localStorage.setItem('mbti_v1_final', JSON.stringify(appState)); 
-    } catch(e) {} 
+function saveState() {
+    try {
+        localStorage.setItem('mbti_v1_final', JSON.stringify(window.MM.state));
+    } catch(e) {}
 }
 
 async function proceedToResultAPI() {
-    document.getElementById('quiz-flow').classList.add('hidden'); 
+    document.getElementById('quiz-flow').classList.add('hidden');
     document.getElementById('loading-screen').classList.remove('hidden');
     window.scrollTo(0,0);
 
     // 如果不是 God Mode，執行正常的算分邏輯 (在 script.js 中)
-    if (!window.isGodMode) {
+    if (!window.MM.flags.godMode) {
         calculateFinalRawScores();
     }
 
@@ -37,21 +43,21 @@ async function proceedToResultAPI() {
             localStorage.setItem('mbti_guest_id', guestId);
         }
 
-        const apiUrl = `/api/v1/assess/version-${currentVersion.toLowerCase()}`;
+        const apiUrl = `/api/v1/assess/version-${window.MM.version.toLowerCase()}`;
 
         const orderedScores = [
-            appScores.Ni, appScores.Ne, appScores.Si, appScores.Se,
-            appScores.Ti, appScores.Te, appScores.Fi, appScores.Fe
+            window.MM.scores.Ni, window.MM.scores.Ne, window.MM.scores.Si, window.MM.scores.Se,
+            window.MM.scores.Ti, window.MM.scores.Te, window.MM.scores.Fi, window.MM.scores.Fe
         ];
 
-        const timeSpentMs = Date.now() - quizStartTime;
+        const timeSpentMs = Date.now() - window.MM.startTime;
 
-        // Route A: 計算實際答了多少題（appState.answers 內 q_*_* 開頭的 key 數，
+        // Route A: 計算實際答了多少題（MM.state.answers 內 q_*_* 開頭的 key 數，
         // 排除 phase5 ranking 等非題型 key），讓 worker 寫 D1 時能存進 questions_answered 欄位。
         // 訪客 / Route A 提早結束 / Route A 走完都用同個算法，後端純被動接收。
         const questionsAnswered = (function () {
             try {
-                const ans = (typeof appState === 'object' && appState && appState.answers) ? appState.answers : {};
+                const ans = (window.MM.state && window.MM.state.answers) ? window.MM.state.answers : {};
                 let n = 0;
                 for (const k in ans) {
                     if (!Object.prototype.hasOwnProperty.call(ans, k)) continue;
@@ -68,7 +74,7 @@ async function proceedToResultAPI() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                version: currentVersion,
+                version: window.MM.version,
                 rawScores: orderedScores,
                 timeSpentMs: timeSpentMs,
                 guestId: guestId,
@@ -76,7 +82,7 @@ async function proceedToResultAPI() {
             })
         };
         // [埋碼] quiz_complete payload 帶 questions_answered 進 GA，讓「提早 vs 完整」可分群
-        window.__lastQuestionsAnswered = questionsAnswered;
+        window.MM.lastQuestionsAnswered = questionsAnswered;
         const response = token
             ? await chiyigoFetch(apiUrl, init)
             : await fetch(apiUrl, init);
@@ -84,29 +90,32 @@ async function proceedToResultAPI() {
         if (!response.ok) throw new Error("HTTP Status: " + response.status);
 
         const result = await response.json();
-        
+
         if (result.status === "Calculated" && result.data && result.data.probabilities) {
             if (!token && result.reportId) {
                 localStorage.setItem('mbti_guest_report_id', result.reportId);
             }
 
             // [修復核心 1]：紀錄後端強制傳來的最終判斷，不再給前端猜測空間
-            window.backendPrimaryType = result.data.primaryType;
+            window.MM.backend.primaryType = result.data.primaryType;
 
-            backendProbs = result.data.probabilities;
-            
+            // mutate 既有物件保留 reference：reassign 會切斷其他檔 (result-render) 拿到的舊指標
+            Object.keys(window.MM.backend.probs).forEach(k => { delete window.MM.backend.probs[k]; });
+            Object.assign(window.MM.backend.probs, result.data.probabilities);
+
             // [修復核心 2]：後端陣列本地重排時，補上平手防呆排序 (localeCompare)
-            backendSorted = Object.keys(backendProbs).sort((a, b) => {
-                if (backendProbs[b] !== backendProbs[a]) return backendProbs[b] - backendProbs[a];
+            window.MM.backend.sorted.length = 0;
+            Object.keys(window.MM.backend.probs).sort((a, b) => {
+                if (window.MM.backend.probs[b] !== window.MM.backend.probs[a]) return window.MM.backend.probs[b] - window.MM.backend.probs[a];
                 return a.localeCompare(b);
-            });
+            }).forEach(t => window.MM.backend.sorted.push(t));
 
-            document.getElementById('loading-screen').classList.add('hidden'); 
-            document.getElementById('result-area').classList.remove('hidden'); 
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('result-area').classList.remove('hidden');
             renderResult(false);
 
             localStorage.removeItem('mbti_v1_final');
-            window.history.replaceState(null, "", window.location.pathname + "?v=" + currentVersion);
+            window.history.replaceState(null, "", window.location.pathname + "?v=" + window.MM.version);
 
         } else {
             throw new Error("API 回傳結構異常");
@@ -114,7 +123,7 @@ async function proceedToResultAPI() {
     } catch (error) {
         console.error(error);
         (window.toast || alert)((typeof window.t === 'function' ? window.t('error.engineFail') : "演算法引擎連接失敗。請確認 Cloudflare Worker 已發布最新代碼。"), { type: 'error', duration: 5000 });
-        document.getElementById('loading-screen').classList.add('hidden'); 
+        document.getElementById('loading-screen').classList.add('hidden');
         document.getElementById('quiz-flow').classList.remove('hidden');
     }
 }

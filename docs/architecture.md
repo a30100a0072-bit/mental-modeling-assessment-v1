@@ -122,7 +122,6 @@ Talo 的 `setAccessToken()` 同步寫入 `sessionStorage.chiyigo_access_token`�
 | z_scores | TEXT (JSON) | Z-score 標準化結果 |
 | result_distribution | TEXT (JSON) | 16 型機率 |
 | primary_type | TEXT | 後端權威判定 |
-| psychic_energy_index | REAL | 行為訊號 |
 | time_spent_ms | INTEGER | 答題耗時 |
 | created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP |
 

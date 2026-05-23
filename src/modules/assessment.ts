@@ -89,16 +89,18 @@ export function calculateSoftmaxProbabilities(similarities: Record<string, numbe
 
 /**
  * 4. 主控引擎：處理測驗結果計算與封裝
+ *
+ * 注意：timeSpentMs 仍接收但目前不參與計算（保留 signature 讓 caller 不必同步改）；
+ *  - 舊版產出 psychicEnergyIndex (variance × 100000 / timeSpentMs) 是噱頭指標
+ *    從未在 UI 暴露，2026-05-23 backlog 確認可全砍。
+ *  - DB column psychic_energy_index 同批兩階段移除：先 deploy 本 commit 讓 INSERT 不寫入，
+ *    確認 prod 寫入走 column DEFAULT 0.0 沒事後，再 apply migration 0012 DROP column。
  */
-export function processAssessmentResult(rawScores: number[], timeSpentMs: number) {
+export function processAssessmentResult(rawScores: number[], _timeSpentMs: number) {
     if (rawScores.length !== 8) throw new Error("必須提供完整的八維分數");
 
     // 取得 Z-Score
     const zScores = calculateZScores(rawScores);
-
-    // 計算精神能量指標 (答題時間越短且變異數越大，推論其精神能量釋放越集中)
-    const scoreVariance = rawScores.reduce((a, b) => a + Math.pow(b - (rawScores.reduce((x, y) => x + y, 0) / 8), 2), 0) / 8;
-    const psychicEnergyIndex = Number(((scoreVariance * 100000) / (timeSpentMs || 1)).toFixed(4));
 
     // 計算與 16 型的相似度
     const similarities: Record<string, number> = {};
@@ -114,13 +116,12 @@ export function processAssessmentResult(rawScores: number[], timeSpentMs: number
         if (probabilities[b] !== probabilities[a]) return probabilities[b] - probabilities[a];
         return a.localeCompare(b);
     });
-    
+
     const primaryType = sortedTypes[0];
 
     return {
         primaryType,
         probabilities,
-        zScores,
-        psychicEnergyIndex
+        zScores
     };
 }

@@ -399,8 +399,10 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     const result = processAssessmentResult(rawScores, timeSpentMs);
     const reportId = crypto.randomUUID();
 
+    // psychic_energy_index 欄位將於 migration 0012 移除（2026-05-23 backlog）；
+    // INSERT 此處停寫，prod column 暫保留並走 DEFAULT 0.0，等 migration apply 後完全消失。
     await env.MM_DB_D1.prepare(
-        `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, psychic_energy_index, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
         reportId,
         finalUserId,
@@ -410,7 +412,6 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
         JSON.stringify(result.zScores),
         JSON.stringify(result.probabilities),
         result.primaryType,
-        result.psychicEnergyIndex,
         timeSpentMs,
         questionsAnswered
     ).run();
