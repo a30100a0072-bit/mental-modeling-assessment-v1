@@ -12,6 +12,17 @@
 //   - buildCompatSection(primary)
 // ==========================================
 
+// 對齊 i18n.js *Html 後綴 opt-in 約定（見 CLAUDE.md / feedback_i18n_html_suffix）：
+// ENGINE.tips / .gripExit / .blindspots / .reports 透過 innerHTML 注入結果頁，
+// 雖然內容由 engine.js + engine-i18n-en.js 作者控制，仍走 escapeHtml 防 defense-in-depth
+// 漏洞（未來翻譯者塞 `<` 會破渲染 / 開 XSS 載體）。
+// 反迴歸由 test/engine-xss.spec.ts 守住。
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[ch]));
+}
+
 function renderResult(isShared) {
     let gripHTML = "";
     if(!isShared && !isSharedView && !['D','E','F'].includes(currentVersion)) {
@@ -19,7 +30,7 @@ function renderResult(isShared) {
         const p1Top = Object.keys(p1S).reduce((a,b)=>p1S[a]>p1S[b]?a:b); const p4Top = Object.keys(p4S).reduce((a,b)=>p4S[a]>p4S[b]?a:b);
         if (ENGINE.antagonist[p1Top] === p4Top) {
             const gripExit = window.ENGloc ? window.ENGloc('gripExit') : ENGINE.gripExit;
-            gripHTML = `<div class="diag-grip"><b>⚠️ 深層 Grip 狀態警告</b><br>核心(${p1Top})在高壓完全翻轉為對立面(${p4Top})。<div class="grip-exit"><b>💡 退出戰略：</b><br>${gripExit[p1Top]||'請減少極端消耗。'}</div></div>`;
+            gripHTML = `<div class="diag-grip"><b>⚠️ 深層 Grip 狀態警告</b><br>核心(${p1Top})在高壓完全翻轉為對立面(${p4Top})。<div class="grip-exit"><b>💡 退出戰略：</b><br>${escapeHtml(gripExit[p1Top]||'請減少極端消耗。')}</div></div>`;
         }
     }
     document.getElementById('grip-warning').innerHTML = gripHTML;
@@ -39,7 +50,7 @@ function renderResult(isShared) {
     updateCharts(primary, norm, backendProbs, backendSorted);
     if (typeof window.renderBeebeStack === 'function') window.renderBeebeStack(primary, norm);
     const tipsLoc = window.ENGloc ? window.ENGloc('tips') : ENGINE.tips;
-    document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>`<th data-tip="${tipsLoc[k]}" title="${tipsLoc[k]}">${k}</th>`).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
+    document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>{const tip = escapeHtml(tipsLoc[k]); return `<th data-tip="${tip}" title="${tip}">${k}</th>`;}).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
 
     const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     const tagEgo = _T('result.tag.ego', null, 'EGO');
@@ -187,11 +198,11 @@ function updateDetail(type) {
         </div>
         <div class="report-section">
             <h3>◈ 實測塌陷盲區 (The Real Trickster)</h3>
-            <p style="color:#fca5a5;"><b>${ENGINE.antagonist[stack[2]]} (${(tipsLoc[ENGINE.antagonist[stack[2]]] || '').split(/[：:]/)[0]})</b><br>${blind}</p>
+            <p style="color:#fca5a5;"><b>${ENGINE.antagonist[stack[2]]} (${escapeHtml((tipsLoc[ENGINE.antagonist[stack[2]]] || '').split(/[：:]/)[0])})</b><br>${escapeHtml(blind)}</p>
         </div>
         <div class="report-section" style="border-bottom:none;margin-bottom:0;">
-            <h3>◈ 結構化解析</h3><p><b>■ 日常運作:</b><br>${r.b}</p><p><b>■ 極端衝突:</b><br>${r.c}</p><p><b>■ 覺醒進化:</b><br>${r.g}</p>
-            <h4 style="margin-top: 20px;">◈ 動態處方籤</h4><p style="color:#6ee7b7; font-weight: bold;">${r.p}</p>
+            <h3>◈ 結構化解析</h3><p><b>■ 日常運作:</b><br>${escapeHtml(r.b)}</p><p><b>■ 極端衝突:</b><br>${escapeHtml(r.c)}</p><p><b>■ 覺醒進化:</b><br>${escapeHtml(r.g)}</p>
+            <h4 style="margin-top: 20px;">◈ 動態處方籤</h4><p style="color:#6ee7b7; font-weight: bold;">${escapeHtml(r.p)}</p>
         </div>`;
 }
 

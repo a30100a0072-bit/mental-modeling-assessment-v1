@@ -7,7 +7,7 @@
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#0b1120",
-    "theme_color": "#38bdf8",
+    "theme_color": "#0b1120",
     "lang": "zh-Hant",
     "dir": "ltr",
     "categories": ["education", "lifestyle", "personalization"],

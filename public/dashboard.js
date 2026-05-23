@@ -121,19 +121,26 @@ function renderDashboard(records) {
         try {
             const probs = JSON.parse(r.result_distribution);
             pProb = Math.round((probs[pType] || 0));
-        } catch (e) {}
-        
-        let encodeScoresStr = "";
+        } catch (e) { console.warn('history result_distribution parse failed:', e); }
+
+        // encodeScoresStr 為 null 時代表 raw_scores 損毀 / 缺失，share link 改顯示
+        // 「資料無法解析」placeholder；保留卡片本身（型別與信心仍可看），不誤導用戶
+        // 點進去一個 ?s= 空字串的壞連結。
+        let encodeScoresStr = null;
         try {
             const dbArr = JSON.parse(r.raw_scores);
             const scoreObj = { Ni: dbArr[0], Ne: dbArr[1], Si: dbArr[2], Se: dbArr[3], Ti: dbArr[4], Te: dbArr[5], Fi: dbArr[6], Fe: dbArr[7] };
             const dimKeys = ['Ti', 'Te', 'Fi', 'Fe', 'Ni', 'Ne', 'Si', 'Se'];
             encodeScoresStr = dimKeys.map(k => Math.max(0, Math.round((scoreObj[k]||0) + 100)).toString(36)).join('-');
-        } catch (e) {}
+        } catch (e) { console.warn('history raw_scores parse failed:', e); }
 
         // [修復]: 處理資料庫缺失 version 的防呆，預設給予 B
         const version = r.assessment_version || r.version || 'B';
         const versionName = versionMap[version] || `高壓防禦 (Phase B)`;
+
+        const actionHtml = encodeScoresStr
+            ? `<a class="btn-primary" href="assessment.html?v=${version}&s=${encodeScoresStr}" role="button">檢視拓撲圖</a>`
+            : `<span style="color:#94a3b8; font-size:0.9rem;" role="note">資料無法解析</span>`;
 
         return `
             <div class="history-item">
@@ -142,7 +149,7 @@ function renderDashboard(records) {
                     <div class="history-type">${pType} <span style="font-size:0.8rem; color:#94a3b8; font-weight:normal;">(置信度: ${pProb}%)</span></div>
                 </div>
                 <div class="history-action">
-                    <a class="btn-primary" href="assessment.html?v=${version}&s=${encodeScoresStr}" role="button">檢視拓撲圖</a>
+                    ${actionHtml}
                 </div>
             </div>
         `;
