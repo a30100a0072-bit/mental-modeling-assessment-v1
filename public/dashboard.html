@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -66,11 +66,11 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
-    <link rel="stylesheet" href="feature-enhancements.css?v=1">
-    <script src="toast.js?v=1" defer></script>
+    <link rel="stylesheet" href="feature-enhancements.css?v=2">
+    <script src="toast.js?v=2" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
-    <script src="ui-handlers.js?v=1" defer></script>
+    <script src="ui-handlers.js?v=2" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 
     <!-- chart.js 未鎖版號（業務端依 latest 修 bug），暫無 SRI；下次升級時改 @x.y 並補 integrity -->
@@ -83,7 +83,7 @@
     <header class="landing-header">
         <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline is-cta is-init-hidden" id="dash-nav-btn" data-i18n="nav.dashboard">進入儀表板</button>
             <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
             <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
@@ -156,7 +156,7 @@
         </div>
 
         <div id="dashboard-content" class="hidden">
-            <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-bottom: 15px; margin-top:10px;" data-i18n="dashboard.stabilityHeader">◈ 核心拓撲指標 (Stability Metrics)</h2>
+            <h2 class="dash-section-h2" data-i18n="dashboard.stabilityHeader">◈ 核心拓撲指標 (Stability Metrics)</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="stat-total">0</div>
@@ -170,14 +170,14 @@
                     <div class="stat-value" id="stat-stability">--%</div>
                     <div class="stat-label" data-i18n="dashboard.statStability">心智穩定度</div>
                 </div>
-                <div class="stat-card" id="stat-card-avgq" style="display:none;">
+                <div class="stat-card is-init-hidden" id="stat-card-avgq">
                     <div class="stat-value" id="stat-avgq">--</div>
                     <div class="stat-label" data-i18n="dashboard.statAvgQ">平均答題數</div>
                 </div>
             </div>
 
             <div id="aggregated-charts-section" class="hidden">
-                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-top: 25px; margin-bottom: 15px;" data-i18n="dashboard.aggregatedHeader">🧠 綜合心智拓撲分析 (Aggregated Overview)</h2>
+                <h2 class="dash-section-h2 dash-section-h2--top-spaced" data-i18n="dashboard.aggregatedHeader">🧠 綜合心智拓撲分析 (Aggregated Overview)</h2>
                 <div class="charts-flex-container">
                     <div class="chart-box">
                         <div class="chart-label">◈ 歷史平均功能能量</div>
@@ -208,8 +208,8 @@
                 </div>
             </div>
 
-            <div id="timeline-section" class="hidden" style="margin-top: 25px;">
-                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin-bottom: 12px;" data-i18n="dashboard.timelineHeader">📈 心智演化軌跡 (Type Evolution)</h2>
+            <div id="timeline-section" class="hidden u-mt-25">
+                <h2 class="dash-section-h2 dash-section-h2--snug" data-i18n="dashboard.timelineHeader">📈 心智演化軌跡 (Type Evolution)</h2>
                 <div class="timeline-legend">
                     <span><span class="tl-dot tl-nt"></span>NT 分析家</span>
                     <span><span class="tl-dot tl-nf"></span>NF 外交家</span>
@@ -219,15 +219,15 @@
                 <div class="timeline-track" id="timeline-track"></div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 25px; margin-bottom: 15px;">
-                <h2 style="color:#e0f2fe; font-size: 1.1rem; margin:0;" data-i18n="dashboard.historyHeader">◈ 歷史軌跡 (History & Versions)</h2>
-                <button class="btn-primary" style="width:auto; padding: 8px 15px; font-size: 0.85rem;" data-action="navigate" data-href="assessment.html?v=B&new=1" data-i18n="dashboard.btnNewQuiz">➕ 啟動新測驗</button>
+            <div class="dash-history-head">
+                <h2 class="dash-section-h2 dash-section-h2--inline" data-i18n="dashboard.historyHeader">◈ 歷史軌跡 (History & Versions)</h2>
+                <button class="btn-primary" data-action="navigate" data-href="assessment.html?v=B&new=1" data-i18n="dashboard.btnNewQuiz">➕ 啟動新測驗</button>
             </div>
 
             <div class="history-list" id="history-container">
             </div>
 
-            <div class="danger-zone" style="margin-top: 40px;">
+            <div class="danger-zone u-mt-40">
                 <h3 data-i18n="dashboard.dangerHeader">⚠️ GDPR 遺忘權限 (Data Deletion)</h3>
                 <p data-i18n="dashboard.dangerDesc">執行此操作將觸發硬刪除 (Hard Delete)，永久清除您的帳號、密碼雜湊與所有大腦建模紀錄，無法復原。</p>
                 <button class="btn-danger" data-action="delete-account" data-i18n="dashboard.btnDelete">永久銷毀檔案</button>
@@ -237,7 +237,7 @@
     
     <script src="chiyigo-auth.js?v=1"></script>
     <script src="analytics.js?v=1"></script>
-    <script src="dashboard.js?v=10"></script>
+    <script src="dashboard.js?v=11"></script>
     <script src="dashboard-init.js?v=1"></script>
     <script src="chiyigo-app-switcher.js?v=1"></script>
     <script src="pwa-register.js?v=1" defer></script>

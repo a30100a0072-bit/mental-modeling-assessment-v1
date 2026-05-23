@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -25,18 +25,18 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
-    <link rel="stylesheet" href="feature-enhancements.css?v=1">
-    <script src="toast.js?v=1" defer></script>
+    <link rel="stylesheet" href="feature-enhancements.css?v=2">
+    <script src="toast.js?v=2" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
-    <script src="ui-handlers.js?v=1" defer></script>
+    <script src="ui-handlers.js?v=2" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
         <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline is-cta is-init-hidden" id="dash-nav-btn" data-i18n="nav.dashboard">進入儀表板</button>
             <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
             <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
@@ -109,24 +109,24 @@
             <div class="flex-charts">
                 <div class="stat-panel">
                     <h4>📊 全球 16 型人格稀有度分佈</h4>
-                    <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px;">數據依據粗略全球平均估值排列 (藍色為最常見，紫色為最稀有)</p>
+                    <p class="stats-hint">數據依據粗略全球平均估值排列 (藍色為最常見，紫色為最稀有)</p>
                     
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>1. ISFJ (守衛者)</span><span class="tier-1">13.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" style="width: 85%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>2. ESFJ (執政官)</span><span class="tier-1">12.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" style="width: 75%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>3. ISTJ (物流師)</span><span class="tier-1">11.6%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" style="width: 70%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>4. ISFP (探險家)</span><span class="tier-2">8.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 53%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>5. ESTJ (總經理)</span><span class="tier-2">8.7%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 52%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>6. ESFP (表演者)</span><span class="tier-2">8.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 51%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>7. ENFP (競選者)</span><span class="tier-2">8.1%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 48%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>8. ISTP (鑑賞家)</span><span class="tier-3">5.4%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" style="width: 32%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>9. INFP (調停者)</span><span class="tier-3">4.4%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" style="width: 26%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>10. ESTP (企業家)</span><span class="tier-3">4.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" style="width: 25%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>11. INTP (邏輯學家)</span><span class="tier-4">3.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" style="width: 19%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>12. ENTP (辯論家)</span><span class="tier-4">3.2%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" style="width: 18%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>13. ENFJ (主人翁)</span><span class="tier-4">2.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" style="width: 14%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>14. INTJ (建築師)</span><span class="tier-5">2.1%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" style="width: 11%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>15. ENTJ (指揮官)</span><span class="tier-5">1.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" style="width: 9%;"></div></div></div>
-                    <div class="compact-bar-group"><div class="compact-bar-label"><span>16. INFJ (提倡者)</span><span class="tier-5">1.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" style="width: 7%;"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>1. ISFJ (守衛者)</span><span class="tier-1">13.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" data-fill="85"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>2. ESFJ (執政官)</span><span class="tier-1">12.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" data-fill="75"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>3. ISTJ (物流師)</span><span class="tier-1">11.6%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-1" data-fill="70"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>4. ISFP (探險家)</span><span class="tier-2">8.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" data-fill="53"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>5. ESTJ (總經理)</span><span class="tier-2">8.7%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" data-fill="52"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>6. ESFP (表演者)</span><span class="tier-2">8.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" data-fill="51"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>7. ENFP (競選者)</span><span class="tier-2">8.1%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-2" data-fill="48"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>8. ISTP (鑑賞家)</span><span class="tier-3">5.4%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" data-fill="32"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>9. INFP (調停者)</span><span class="tier-3">4.4%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" data-fill="26"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>10. ESTP (企業家)</span><span class="tier-3">4.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-3" data-fill="25"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>11. INTP (邏輯學家)</span><span class="tier-4">3.3%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" data-fill="19"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>12. ENTP (辯論家)</span><span class="tier-4">3.2%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" data-fill="18"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>13. ENFJ (主人翁)</span><span class="tier-4">2.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-4" data-fill="14"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>14. INTJ (建築師)</span><span class="tier-5">2.1%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" data-fill="11"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>15. ENTJ (指揮官)</span><span class="tier-5">1.8%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" data-fill="9"></div></div></div>
+                    <div class="compact-bar-group"><div class="compact-bar-label"><span>16. INFJ (提倡者)</span><span class="tier-5">1.5%</span></div><div class="compact-bar-bg"><div class="bar-fill tier-5" data-fill="7"></div></div></div>
                 </div>
             </div>
         </div>
@@ -183,22 +183,22 @@
             <h2 class="color-5">伍、 社會功能與經濟生涯軌跡</h2>
             <div class="flex-charts">
                 <div class="stat-panel">
-                    <h4 style="margin-bottom: 15px;">💰 職涯與收入指標</h4>
+                    <h4 class="u-mb-15">💰 職涯與收入指標</h4>
                     <div class="compact-bar-group">
                         <div class="compact-bar-label"><span>1. ENTJ (指揮官)</span><span class="tier-2-strong">最高</span></div>
-                        <div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 95%;"></div></div>
+                        <div class="compact-bar-bg"><div class="bar-fill tier-2" data-fill="95"></div></div>
                     </div>
                     <div class="compact-bar-group">
                         <div class="compact-bar-label"><span>2. ESTJ (總經理)</span><span class="tier-2-strong">次高</span></div>
-                        <div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 85%;"></div></div>
+                        <div class="compact-bar-bg"><div class="bar-fill tier-2" data-fill="85"></div></div>
                     </div>
                     <div class="compact-bar-group">
                         <div class="compact-bar-label"><span>3. ENTP (辯論家)</span><span class="tier-2-strong">第三</span></div>
-                        <div class="compact-bar-bg"><div class="bar-fill tier-2" style="width: 75%;"></div></div>
+                        <div class="compact-bar-bg"><div class="bar-fill tier-2" data-fill="75"></div></div>
                     </div>
                 </div>
             </div>
-            <h3 style="margin-top: 20px;">1. 經濟軌跡與創業模型</h3>
+            <h3 class="u-mt-20">1. 經濟軌跡與創業模型</h3>
             <ul>
                 <li><strong>薪資模型：</strong> Te 主導呈「線性陡升」(完美契合企業標準)；Fi 主導呈「非線性波動」(寧願放棄溢價以換取價值觀對齊)。</li>
                 <li><strong>學術分佈：</strong> INTP、ENTP 霸佔了最高輟學率與最高博士學位取得率 (排斥線性教育，極度適應高自由度研究)。</li>
@@ -210,7 +210,7 @@
             </ul>
         </div>
 
-        <div class="data-card" style="margin-bottom: 50px;">
+        <div class="data-card u-mb-50">
             <h2 class="color-6">陸、 資訊通訊與分散式網路隱喻</h2>
             <h3>1. 通訊頻寬與語義編碼</h3>
             <ul>

@@ -45,8 +45,8 @@
             if (slot && !slot.dataset.filled) {
                 slot.innerHTML =
                     `<div class="v-status-row">
-                        <span class="skeleton skel-line skel-line--sm" style="width:55%; height:10px;"></span>
-                        <span class="skeleton skel-line skel-line--sm" style="width:25%; height:10px;"></span>
+                        <span class="skeleton skel-line skel-line--sm skel-line--lg-w"></span>
+                        <span class="skeleton skel-line skel-line--sm skel-line--sm-w"></span>
                     </div>`;
             }
         });

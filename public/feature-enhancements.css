@@ -142,3 +142,147 @@
     font-size: 0.82rem;
     line-height: 1.5;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+ * Inline-style refactor (CSP unsafe-inline removal — 2026-05-23)
+ * 為了拔掉 _headers 的 style-src 'unsafe-inline'，把全站 HTML / JS
+ * template literal 內的 inline style="..." 全部搬到這裡用 class 表達。
+ *
+ * 動態值（width:${pct}%、background:${color}、left:${x}%、animation-duration:
+ * ${ms}ms）改走 CSSOM (element.style.foo = bar)，不算 inline style attribute
+ * (CSP 不擋 CSSOM)。caller 端 render 完 innerHTML 後再 setProperty。
+ * ───────────────────────────────────────────────────────────────── */
+
+/* Init-hidden：取代 #dash-nav-btn style="display:none" x8 */
+.is-init-hidden { display: none; }
+
+/* Margin utilities — 用於少數一次性 inline margin */
+.u-mt-15 { margin-top: 15px; }
+.u-mt-20 { margin-top: 20px; }
+.u-mt-25 { margin-top: 25px; }
+.u-mt-40 { margin-top: 40px; }
+.u-mb-15 { margin-bottom: 15px; }
+.u-mb-50 { margin-bottom: 50px; }
+
+/* Text color utilities — 對齊現有 design token 但補幾個 inline-only 用過的色 */
+.tx-cyan { color: var(--c-cyan); }
+.tx-cyan-light { color: #7dd3fc; }
+.tx-soft-cyan { color: #e0f2fe; }
+.tx-slate-light { color: #94a3b8; }
+.tx-yellow { color: #fde047; }
+.tx-emerald-bold { color: #6ee7b7; font-weight: bold; }
+.tx-rose { color: #fca5a5; }
+.tx-rose-strong { color: #ef4444; }
+
+/* Dashboard 區塊標題：原 4 處 inline color/size 統一抽出 */
+.dash-section-h2 {
+    color: #e0f2fe;
+    font-size: 1.1rem;
+    margin: 0 0 15px;
+}
+.dash-section-h2--top-spaced { margin-top: 25px; }
+.dash-section-h2--inline { margin: 0; }
+.dash-section-h2--snug { margin-bottom: 12px; }
+
+/* Dashboard history header row（h2 + 啟動新測驗 button 並排） */
+.dash-history-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+.dash-history-head .btn-primary {
+    width: auto;
+    padding: 8px 15px;
+    font-size: 0.85rem;
+}
+
+/* jung-theory.html 區塊標題（border-left 藍/紫，文字維持 #f8fafc 白） */
+.jung-section-h2 {
+    margin-bottom: 20px;
+    color: #f8fafc;
+    border-left: 4px solid #94a3b8;
+    padding-left: 10px;
+}
+.jung-section-h2--blue { border-left-color: #38bdf8; }
+.jung-section-h2--purple { border-left-color: #a855f7; }
+
+/* jung-theory.html f-card 4 種主題色（border-color 對應 J/P/感知/判斷分組） */
+.f-card--blue   { border-color: rgba(56, 189, 248, 0.3); }
+.f-card--green  { border-color: rgba(16, 185, 129, 0.3); }
+.f-card--purple { border-color: rgba(168, 85, 247, 0.3); }
+.f-card--yellow { border-color: rgba(234, 179, 8, 0.3); }
+
+/* beebe-model.html 簡介段落樣式（3 處） */
+.beebe-intro-p {
+    color: #94a3b8;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+.beebe-intro-p--snug { margin-bottom: 18px; }
+
+/* type-detail.html / .js 容器與 loading / not-found */
+.detail-container {
+    max-width: 800px;
+    margin-top: 40px;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+}
+.detail-loading {
+    text-align: center;
+    color: #38bdf8;
+    padding: 50px;
+}
+.detail-not-found {
+    color: #ef4444;
+    text-align: center;
+}
+.stack-box--inferior { border-color: #ef4444; }
+.stack-role--inferior, .stack-func--inferior { color: #fca5a5; }
+
+/* mbti-stats.html 提示與 tip-yellow */
+.stats-hint {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 15px;
+}
+.stats-tip-yellow {
+    color: #fde047;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+/* result-render.js compatibility / report-section 變體 */
+.report-section--tight { padding-bottom: 10px; }
+.report-section--no-border { border-bottom: none; margin-bottom: 0; }
+.compat-hint {
+    color: #94a3b8;
+    font-size: 0.92rem;
+    margin-bottom: 14px;
+}
+
+/* landing-progress.js skeleton：原本 hardcode width/height inline */
+.skel-line--lg-w { width: 55%; height: 10px; }
+.skel-line--sm-w { width: 25%; height: 10px; }
+
+/* dashboard.js history 內 fallback note 與置信度小字 */
+.dash-fallback-note {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+.history-confidence {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: normal;
+}
+
+/* Dynamic width / left / color：CSSOM 設定，這裡只給「容器需要 position
+ * 或定位 anchor」的 baseline。caller (result-render.js / dashboard.js / toast.js)
+ * 在 innerHTML 後跑 querySelectorAll([data-*]) 設定 .style.x。
+ *
+ * 注意：.match-bar-fill / .timeline-dot / .cmp-dot / .toast-progress-fill
+ * 既有的 CSS（component.css）已經包好布局，只缺動態值；本批不重複定義靜態屬性。
+ */

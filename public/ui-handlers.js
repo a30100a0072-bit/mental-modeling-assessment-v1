@@ -82,9 +82,21 @@
     }
     window.setupHeaderAuthNav = setupHeaderAuthNav;
 
+    // 2026-05-23 CSP unsafe-inline 拔除：取代原本 HTML 內 `style="width: NN%;"` 等
+    // 靜態 inline 樣式。讀 data-fill 屬性 → 透過 CSSOM 設 width（CSP 不擋 .style.x = ...）。
+    // 適用任何頁面的進度條 / bar fill 等場景，目前 mbti-stats.html 19 處使用。
+    function applyDataFillWidths() {
+        var els = document.querySelectorAll('[data-fill]');
+        for (var i = 0; i < els.length; i++) {
+            var v = els[i].getAttribute('data-fill');
+            if (v != null && v !== '') els[i].style.width = v + '%';
+        }
+    }
+
     function init() {
         bindSidebarToggleAll();
         bindNavigateAll();
+        applyDataFillWidths();
     }
 
     if (document.readyState === 'loading') {

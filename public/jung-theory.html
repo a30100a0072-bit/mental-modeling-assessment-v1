@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -25,18 +25,18 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
-    <link rel="stylesheet" href="feature-enhancements.css?v=1">
-    <script src="toast.js?v=1" defer></script>
+    <link rel="stylesheet" href="feature-enhancements.css?v=2">
+    <script src="toast.js?v=2" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
-    <script src="ui-handlers.js?v=1" defer></script>
+    <script src="ui-handlers.js?v=2" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
         <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline is-cta is-init-hidden" id="dash-nav-btn" data-i18n="nav.dashboard">進入儀表板</button>
             <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
             <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
@@ -92,9 +92,9 @@
             這四種基礎功能，又分別具有 <strong>外傾 (Extraverted, 指向客觀與外部世界)</strong> 或 <strong>內傾 (Introverted, 指向主觀與內部世界)</strong> 的能量方向，最終交織出了 8 種獨特的「認知幾何」模塊。</p>
         </div>
 
-        <h2 style="margin-bottom:20px; color:#f8fafc; border-left: 4px solid #38bdf8; padding-left: 10px;">決策與判斷 (Judging Functions)</h2>
+        <h2 class="jung-section-h2 jung-section-h2--blue">決策與判斷 (Judging Functions)</h2>
         <div class="function-grid">
-            <div class="f-card" style="border-color: rgba(56, 189, 248, 0.3);">
+            <div class="f-card f-card--blue">
                 <div class="f-header">
                     <div class="f-icon color-t">Te</div>
                     <div class="f-title">外傾思考 (Extroverted Thinking)</div>
@@ -106,7 +106,7 @@
                 <span class="f-tag">執行力</span> <span class="f-tag">系統化</span> <span class="f-tag">結果導向</span>
             </div>
             
-            <div class="f-card" style="border-color: rgba(56, 189, 248, 0.3);">
+            <div class="f-card f-card--blue">
                 <div class="f-header">
                     <div class="f-icon color-t">Ti</div>
                     <div class="f-title">內傾思考 (Introverted Thinking)</div>
@@ -118,7 +118,7 @@
                 <span class="f-tag">邏輯解構</span> <span class="f-tag">原理探究</span> <span class="f-tag">極致客觀</span>
             </div>
 
-            <div class="f-card" style="border-color: rgba(16, 185, 129, 0.3);">
+            <div class="f-card f-card--green">
                 <div class="f-header">
                     <div class="f-icon color-f">Fe</div>
                     <div class="f-title">外傾情感 (Extroverted Feeling)</div>
@@ -130,7 +130,7 @@
                 <span class="f-tag">共情能力</span> <span class="f-tag">社會契約</span> <span class="f-tag">氛圍掌控</span>
             </div>
 
-            <div class="f-card" style="border-color: rgba(16, 185, 129, 0.3);">
+            <div class="f-card f-card--green">
                 <div class="f-header">
                     <div class="f-icon color-f">Fi</div>
                     <div class="f-title">內傾情感 (Introverted Feeling)</div>
@@ -143,9 +143,9 @@
             </div>
         </div>
 
-        <h2 style="margin-bottom:20px; color:#f8fafc; border-left: 4px solid #a855f7; padding-left: 10px;">資訊與感知 (Perceiving Functions)</h2>
+        <h2 class="jung-section-h2 jung-section-h2--purple">資訊與感知 (Perceiving Functions)</h2>
         <div class="function-grid">
-            <div class="f-card" style="border-color: rgba(168, 85, 247, 0.3);">
+            <div class="f-card f-card--purple">
                 <div class="f-header">
                     <div class="f-icon color-nt">Ne</div>
                     <div class="f-title">外傾直覺 (Extroverted Intuition)</div>
@@ -157,7 +157,7 @@
                 <span class="f-tag">頭腦風暴</span> <span class="f-tag">未來可能</span> <span class="f-tag">跳躍思維</span>
             </div>
 
-            <div class="f-card" style="border-color: rgba(168, 85, 247, 0.3);">
+            <div class="f-card f-card--purple">
                 <div class="f-header">
                     <div class="f-icon color-nt">Ni</div>
                     <div class="f-title">內傾直覺 (Introverted Intuition)</div>
@@ -169,7 +169,7 @@
                 <span class="f-tag">洞察本質</span> <span class="f-tag">戰略預判</span> <span class="f-tag">宿命收斂</span>
             </div>
 
-            <div class="f-card" style="border-color: rgba(234, 179, 8, 0.3);">
+            <div class="f-card f-card--yellow">
                 <div class="f-header">
                     <div class="f-icon color-st">Se</div>
                     <div class="f-title">外傾感覺 (Extroverted Sensing)</div>
@@ -181,7 +181,7 @@
                 <span class="f-tag">活在當下</span> <span class="f-tag">感官體驗</span> <span class="f-tag">即時反應</span>
             </div>
 
-            <div class="f-card" style="border-color: rgba(234, 179, 8, 0.3);">
+            <div class="f-card f-card--yellow">
                 <div class="f-header">
                     <div class="f-icon color-st">Si</div>
                     <div class="f-title">內傾感覺 (Introverted Sensing)</div>

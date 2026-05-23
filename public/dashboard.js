@@ -140,13 +140,13 @@ function renderDashboard(records) {
 
         const actionHtml = encodeScoresStr
             ? `<a class="btn-primary" href="assessment.html?v=${version}&s=${encodeScoresStr}" role="button">檢視拓撲圖</a>`
-            : `<span style="color:#94a3b8; font-size:0.9rem;" role="note">資料無法解析</span>`;
+            : `<span class="dash-fallback-note" role="note">資料無法解析</span>`;
 
         return `
             <div class="history-item">
                 <div class="history-info">
                     <div class="history-date">${dateStr} | 引擎模組: ${versionName}</div>
-                    <div class="history-type">${pType} <span style="font-size:0.8rem; color:#94a3b8; font-weight:normal;">(置信度: ${pProb}%)</span></div>
+                    <div class="history-type">${pType} <span class="history-confidence">(置信度: ${pProb}%)</span></div>
                 </div>
                 <div class="history-action">
                     ${actionHtml}
@@ -260,11 +260,18 @@ function renderVersionCompare(records) {
         };
     });
 
-    document.getElementById('compare-legend').innerHTML = versions.map(v => {
+    const legendEl = document.getElementById('compare-legend');
+    legendEl.innerHTML = versions.map(v => {
         const meta = VERSION_META[v];
         const t = latest[v].primary_type || '?';
-        return `<span class="cmp-item"><i class="cmp-dot" style="background:${meta.color};box-shadow:0 0 8px ${meta.color}"></i>${meta.name} · <b>${t}</b></span>`;
+        // dynamic color 走 data-color → 後續 CSSOM 設背景與光暈，不在 innerHTML 內塞 style=""
+        return `<span class="cmp-item"><i class="cmp-dot" data-color="${meta.color}"></i>${meta.name} · <b>${t}</b></span>`;
     }).join('');
+    legendEl.querySelectorAll('.cmp-dot[data-color]').forEach(el => {
+        const c = el.getAttribute('data-color');
+        el.style.background = c;
+        el.style.boxShadow = `0 0 8px ${c}`;
+    });
 
     const ctx = document.getElementById('compareRadarChart').getContext('2d');
     if (window._compareChartObj) window._compareChartObj.destroy();
@@ -424,8 +431,12 @@ function renderTimeline(records) {
         const temp = temperament(type);
         const date = new Date(r.timestamp).toLocaleDateString('zh-TW');
         const left = n === 1 ? 50 : (i / (n - 1)) * 100;
-        return `<div class="timeline-dot tl-${temp}" style="left:${left}%" data-tip="${date} · ${type}"></div>`;
+        // dynamic left 走 data-left → 後續 CSSOM 設位置，不在 innerHTML 內塞 style=""
+        return `<div class="timeline-dot tl-${temp}" data-left="${left}" data-tip="${date} · ${type}"></div>`;
     }).join('');
+    track.querySelectorAll('.timeline-dot[data-left]').forEach(el => {
+        el.style.left = el.getAttribute('data-left') + '%';
+    });
 
     section.classList.remove('hidden');
 }

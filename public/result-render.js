@@ -42,7 +42,7 @@ function renderResult(isShared) {
 
     const topProb = MM.backend.probs[primary] || 0.0;
     const probLabel = MM.flags.sharedView ? "本地解碼概率" : "雲端判定概率";
-    document.getElementById('spectrum-subtitle').innerHTML = `<span style="color:#e0f2fe">${probLabel}: ${Math.round(topProb)}%</span>`;
+    document.getElementById('spectrum-subtitle').innerHTML = `<span class="tx-soft-cyan">${probLabel}: ${Math.round(topProb)}%</span>`;
 
     const mag = Math.sqrt(ENGINE.dimKeys.reduce((s,k)=>s+MM.scores[k]**2, 0))||1;
     document.getElementById('topology-diagnosis').innerHTML = (mag < 10) ? `<div class="diag-danger">🔴 系統塌陷警告：能量互相抵銷，效度偏移。</div>` : (MM.flags.trifurcationWarning ? `<div class="diag-warning">🟡 三向分岔畸變：前三維度糾纏過渡期。</div>` : `<div class="diag-safe">🟢 動態平衡拓撲 (Dynamic Symmetry)：健康非對稱幾何張力。</div>`);
@@ -62,7 +62,8 @@ function renderResult(isShared) {
     const listHtml = MM.backend.sorted.map(t => {
         let tag = (t===sMap[0]) ? `<span class="tag-ego">${tagEgo}</span>` : (t===sMap[1] ? `<span class="tag-sub">${tagSub}</span>` : (t===sMap[2] ? `<span class="tag-unc">${tagShadow}</span>` : ""));
         const p = Math.round(MM.backend.probs[t]||0);
-        return `<div class="match-item" id="btn-${t}" data-update-detail="${t}"><div class="match-info"><b>${t}</b>${tag}<div class="match-bar-bg"><div class="match-bar-fill" style="width:${p}%"></div></div></div><span class="match-pct">${p<1?"<1":p}%</span></div>`;
+        // dynamic width 走 data-w → 後續 CSSOM 設寬，不在 innerHTML 內塞 style=""
+        return `<div class="match-item" id="btn-${t}" data-update-detail="${t}"><div class="match-info"><b>${t}</b>${tag}<div class="match-bar-bg"><div class="match-bar-fill" data-w="${p}"></div></div></div><span class="match-pct">${p<1?"<1":p}%</span></div>`;
     }).join('');
 
     const matrixLabel = MM.flags.sharedView
@@ -70,7 +71,10 @@ function renderResult(isShared) {
         : _T('result.label.matrixCloud', null, "16人格判定概率矩陣 (雲端運算)");
     const compatHtml = buildCompatSection(primary);
     const analysisEl = document.getElementById('analysis-text');
-    analysisEl.innerHTML = `<div class="report-section" style="padding-bottom:10px;"><h3>◈ ${matrixLabel}</h3><div class="match-list">${listHtml}</div></div>${compatHtml}<div id="detail-box"></div>`;
+    analysisEl.innerHTML = `<div class="report-section report-section--tight"><h3>◈ ${matrixLabel}</h3><div class="match-list">${listHtml}</div></div>${compatHtml}<div id="detail-box"></div>`;
+    analysisEl.querySelectorAll('.match-bar-fill[data-w]').forEach(el => {
+        el.style.width = el.getAttribute('data-w') + '%';
+    });
 
     // CSP-friendly：原 inline onclick="updateDetail()" / onclick="window.track()" 都改用 delegation
     // analysis-text 容器後續 updateDetail 也會 innerHTML，但 detail-box 才是被覆寫的內層，
@@ -142,7 +146,7 @@ function buildCompatSection(primary) {
     return `
         <div class="report-section compat-section">
             <h3>${compatTitle}</h3>
-            <p style="color:#94a3b8; font-size:0.92rem; margin-bottom:14px;">${compatHint}</p>
+            <p class="compat-hint">${compatHint}</p>
             <div class="compat-grid">${cardsHtml}</div>
         </div>`;
 }
@@ -200,11 +204,11 @@ function updateDetail(type) {
         </div>
         <div class="report-section">
             <h3>◈ 實測塌陷盲區 (The Real Trickster)</h3>
-            <p style="color:#fca5a5;"><b>${ENGINE.antagonist[stack[2]]} (${escapeHtml((tipsLoc[ENGINE.antagonist[stack[2]]] || '').split(/[：:]/)[0])})</b><br>${escapeHtml(blind)}</p>
+            <p class="tx-rose"><b>${ENGINE.antagonist[stack[2]]} (${escapeHtml((tipsLoc[ENGINE.antagonist[stack[2]]] || '').split(/[：:]/)[0])})</b><br>${escapeHtml(blind)}</p>
         </div>
-        <div class="report-section" style="border-bottom:none;margin-bottom:0;">
+        <div class="report-section report-section--no-border">
             <h3>◈ 結構化解析</h3><p><b>■ 日常運作:</b><br>${escapeHtml(r.b)}</p><p><b>■ 極端衝突:</b><br>${escapeHtml(r.c)}</p><p><b>■ 覺醒進化:</b><br>${escapeHtml(r.g)}</p>
-            <h4 style="margin-top: 20px;">◈ 動態處方籤</h4><p style="color:#6ee7b7; font-weight: bold;">${escapeHtml(r.p)}</p>
+            <h4 class="u-mt-20">◈ 動態處方籤</h4><p class="tx-emerald-bold">${escapeHtml(r.p)}</p>
         </div>`;
 }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -25,18 +25,18 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="component.css">
     <link rel="stylesheet" href="landing.css">
-    <link rel="stylesheet" href="feature-enhancements.css?v=1">
-    <script src="toast.js?v=1" defer></script>
+    <link rel="stylesheet" href="feature-enhancements.css?v=2">
+    <script src="toast.js?v=2" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
     <script src="i18n.js?v=2" defer></script>
-    <script src="ui-handlers.js?v=1" defer></script>
+    <script src="ui-handlers.js?v=2" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 </head>
 <body class="landing-body">
     <header class="landing-header">
         <div class="logo" data-action="navigate" data-href="index.html" role="link" tabindex="0">🧠 認知幾何 V1</div>
         <div class="header-actions">
-            <button class="btn-outline is-cta" id="dash-nav-btn" style="display: none;" data-i18n="nav.dashboard">進入儀表板</button>
+            <button class="btn-outline is-cta is-init-hidden" id="dash-nav-btn" data-i18n="nav.dashboard">進入儀表板</button>
             <button class="btn-outline" id="auth-nav-btn" data-i18n="nav.login">登入 / 註冊</button>
             <div class="hamburger" role="button" tabindex="0" aria-label="開啟導覽選單" data-i18n="nav.openMenu" data-i18n-attr="aria-label" data-action="toggle-sidebar">☰</div>
         </div>
@@ -91,7 +91,7 @@
 
         <div class="archetype-section ego-section">
             <div class="section-title">☀️ 意識四面體 (Ego & Subconscious)</div>
-            <p style="color:#94a3b8; margin-bottom:20px; font-size:0.95rem;">這是你日常用來應對世界、建立自信與價值觀的舒適區，也就是我們測驗中「Phase A」主要測量的範圍。</p>
+            <p class="beebe-intro-p">這是你日常用來應對世界、建立自信與價值觀的舒適區，也就是我們測驗中「Phase A」主要測量的範圍。</p>
             
             <div class="archetype-grid">
                 <div class="a-card">
@@ -119,7 +119,7 @@
 
         <div class="archetype-section shadow-section">
             <div class="section-title">🌑 陰影四面體 (Unconscious Shadow)</div>
-            <p style="color:#94a3b8; margin-bottom:20px; font-size:0.95rem;">當日常功能失效、遭遇重大挫折或極端壓力時，大腦會強制啟動的防禦反撲機制。這正是「Phase B」極力挖掘的深層心理狀態。</p>
+            <p class="beebe-intro-p">當日常功能失效、遭遇重大挫折或極端壓力時，大腦會強制啟動的防禦反撲機制。這正是「Phase B」極力挖掘的深層心理狀態。</p>
             
             <div class="archetype-grid">
                 <div class="a-card">
@@ -147,9 +147,9 @@
 
         <div class="archetype-section interactive-section" id="beebe-explorer">
             <div class="section-title">🧪 互動探索：你的 8 功能堆疊</div>
-            <p style="color:#94a3b8; margin-bottom:18px; font-size:0.95rem;">
+            <p class="beebe-intro-p beebe-intro-p--snug">
                 選一個 MBTI 型，看你的大腦實際在 8 個原型位置放了哪些認知功能。
-                <strong style="color:#7dd3fc;">點任一張卡</strong>會 high-light 它對應的「軸線伴侶」——意識面與陰影面是同一條神經迴路的正反兩端。
+                <strong class="tx-cyan-light">點任一張卡</strong>會 high-light 它對應的「軸線伴侶」——意識面與陰影面是同一條神經迴路的正反兩端。
             </p>
 
             <div class="explorer-controls">

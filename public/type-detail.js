@@ -44,7 +44,7 @@
         const data = getPersonalityData(currentTargetType);
         const renderArea = document.getElementById('render-area');
         if (!data) {
-            renderArea.innerHTML = `<h2 style="color:#ef4444; text-align:center;">${_T('typeDetail.notFound', '找不到該人格型態的資料，請返回上一頁。')}</h2>`;
+            renderArea.innerHTML = `<h2 class="detail-not-found">${_T('typeDetail.notFound', '找不到該人格型態的資料，請返回上一頁。')}</h2>`;
             return;
         }
         const traitsHtml = data.traits.map(t => `<div class="trait-tag">◈ ${t}</div>`).join('');
@@ -58,7 +58,7 @@
                     <div class="stack-box"><div class="stack-role">${_T('typeDetail.stackEgo', '主導 (Ego)')}</div><div class="stack-func" data-tip="${getTip(data.stack.dom)}">${data.stack.dom}</div></div>
                     <div class="stack-box"><div class="stack-role">${_T('typeDetail.stackParent', '輔助 (Parent)')}</div><div class="stack-func" data-tip="${getTip(data.stack.aux)}">${data.stack.aux}</div></div>
                     <div class="stack-box"><div class="stack-role">${_T('typeDetail.stackChild', '第三 (Child)')}</div><div class="stack-func" data-tip="${getTip(data.stack.tert)}">${data.stack.tert}</div></div>
-                    <div class="stack-box" style="border-color: #ef4444;"><div class="stack-role" style="color: #fca5a5;">${_T('typeDetail.stackInferior', '劣勢 (Inferior)')}</div><div class="stack-func" style="color: #fca5a5;" data-tip="${getTip(data.stack.inf)}">${data.stack.inf}</div></div>
+                    <div class="stack-box stack-box--inferior"><div class="stack-role stack-role--inferior">${_T('typeDetail.stackInferior', '劣勢 (Inferior)')}</div><div class="stack-func stack-func--inferior" data-tip="${getTip(data.stack.inf)}">${data.stack.inf}</div></div>
                 </div>
             </div>
 

@@ -26,8 +26,13 @@
             `<span class="toast-icon" aria-hidden="true">${icon}</span>` +
             `<span class="toast-msg"></span>` +
             `<button class="toast-close" type="button" aria-label="關閉通知">×</button>` +
-            (duration > 0 ? `<span class="toast-progress"><span class="toast-progress-fill" style="animation-duration:${duration}ms"></span></span>` : '');
+            (duration > 0 ? `<span class="toast-progress"><span class="toast-progress-fill"></span></span>` : '');
         el.querySelector('.toast-msg').textContent = message;
+        // CSSOM 設動畫長度（CSP unsafe-inline 拔除後不能在 innerHTML 內塞 style="..."）
+        if (duration > 0) {
+            const fill = el.querySelector('.toast-progress-fill');
+            if (fill) fill.style.animationDuration = duration + 'ms';
+        }
         s.appendChild(el);
         requestAnimationFrame(() => el.classList.add('toast-in'));
 
