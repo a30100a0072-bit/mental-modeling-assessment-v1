@@ -95,7 +95,9 @@ function renderDashboard(records) {
         const val = document.getElementById('stat-avgq');
         if (card && val) {
             val.innerText = avgQ;
-            card.style.display = '';
+            // 移除初始化隱藏 class（原 `style="display:none"` 改 `.is-init-hidden`
+            // 後不能再用 `style.display=''` reveal — 那只清 inline 不影響 class）
+            card.classList.remove('is-init-hidden');
         }
     }
 

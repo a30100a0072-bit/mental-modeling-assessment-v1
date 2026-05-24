@@ -156,23 +156,26 @@
 /* Init-hidden：取代 #dash-nav-btn style="display:none" x8 */
 .is-init-hidden { display: none; }
 
-/* Margin utilities — 用於少數一次性 inline margin */
-.u-mt-15 { margin-top: 15px; }
-.u-mt-20 { margin-top: 20px; }
-.u-mt-25 { margin-top: 25px; }
-.u-mt-40 { margin-top: 40px; }
-.u-mb-15 { margin-bottom: 15px; }
-.u-mb-50 { margin-bottom: 50px; }
+/* Margin / Text 全部用 !important — utility class 慣例（對齊 Tailwind / Bootstrap）。
+ * 主要動機是要對抗 component.css 既有的 `.report-section p / h4` 選擇器
+ * (特異度 0,1,1)，否則套在 .report-section 內的 `<p class="tx-rose">` 等會被
+ * 預設色蓋掉，原本 inline style="color:#fca5a5" 因 specificity 1,0,0,0 不受影響。
+ */
+.u-mt-15 { margin-top: 15px !important; }
+.u-mt-20 { margin-top: 20px !important; }
+.u-mt-25 { margin-top: 25px !important; }
+.u-mt-40 { margin-top: 40px !important; }
+.u-mb-15 { margin-bottom: 15px !important; }
+.u-mb-50 { margin-bottom: 50px !important; }
 
-/* Text color utilities — 對齊現有 design token 但補幾個 inline-only 用過的色 */
-.tx-cyan { color: var(--c-cyan); }
-.tx-cyan-light { color: #7dd3fc; }
-.tx-soft-cyan { color: #e0f2fe; }
-.tx-slate-light { color: #94a3b8; }
-.tx-yellow { color: #fde047; }
-.tx-emerald-bold { color: #6ee7b7; font-weight: bold; }
-.tx-rose { color: #fca5a5; }
-.tx-rose-strong { color: #ef4444; }
+.tx-cyan { color: var(--c-cyan) !important; }
+.tx-cyan-light { color: #7dd3fc !important; }
+.tx-soft-cyan { color: #e0f2fe !important; }
+.tx-slate-light { color: #94a3b8 !important; }
+.tx-yellow { color: #fde047 !important; }
+.tx-emerald-bold { color: #6ee7b7 !important; font-weight: bold !important; }
+.tx-rose { color: #fca5a5 !important; }
+.tx-rose-strong { color: #ef4444 !important; }
 
 /* Dashboard 區塊標題：原 4 處 inline color/size 統一抽出 */
 .dash-section-h2 {
@@ -258,7 +261,9 @@
 /* result-render.js compatibility / report-section 變體 */
 .report-section--tight { padding-bottom: 10px; }
 .report-section--no-border { border-bottom: none; margin-bottom: 0; }
-.compat-hint {
+/* scope 加 .compat-section 前綴讓 (0,2,0) 贏過 .report-section p (0,1,1)；
+   .compat-hint 只用在 compat-section 內，前綴不會誤套到其他地方 */
+.compat-section .compat-hint {
     color: #94a3b8;
     font-size: 0.92rem;
     margin-bottom: 14px;
