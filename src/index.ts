@@ -1,5 +1,6 @@
-import { processAssessmentResult } from "./modules/assessment";
+﻿import { processAssessmentResult } from "./modules/assessment";
 import { logError, logEvent } from "./modules/log";
+import { ERR_CODE, errorResponse } from "./modules/errors";
 import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT } from "./sql/queries";
 
 // 認證走 chiyigo.com OIDC（PKCE + ES256 access_token + JWKS 本地驗）
@@ -63,7 +64,7 @@ export default {
         } else if (url.pathname.endsWith("/user/claim-guest-results")) {
           response = await handleClaimGuestResults(request, env, ctx, corsHeaders, traceId);
         } else {
-          response = new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
+          response = errorResponse(ERR_CODE.NOT_FOUND, "Not Found", 404, traceId, corsHeaders);
         }
       } else if (request.method === "GET" && url.pathname.endsWith("/auth/allowed-redirects")) {
         const origins = (env.SSO_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -73,11 +74,11 @@ export default {
       } else if (request.method === "DELETE" && url.pathname.endsWith("/user/account")) {
         response = await handleDeleteAccount(request, env, ctx, corsHeaders, traceId);
       } else {
-        response = new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: corsHeaders });
+        response = errorResponse(ERR_CODE.NOT_FOUND, "Not Found", 404, traceId, corsHeaders);
       }
     } catch (err) {
       logError(env, "fetch:uncaught", err, { traceId, method: request.method, path: url.pathname }, ctx);
-      response = new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500, headers: corsHeaders });
+      response = errorResponse(ERR_CODE.INTERNAL, "Internal Server Error", 500, traceId, corsHeaders);
     }
 
     logEvent("request", {
@@ -177,15 +178,15 @@ async function verifyChiyigoToken(token: string, _env: Env): Promise<ChiyigoIden
 async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string) {
     try {
         const authHeader = request.headers.get("Authorization");
-        if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+        if (!authHeader || !authHeader.startsWith("Bearer ")) return errorResponse(ERR_CODE.UNAUTHORIZED, "Unauthorized", 401, traceId, corsHeaders);
 
         const token = authHeader.split(" ")[1];
         const identity = await verifyChiyigoToken(token, env);
-        if (!identity) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+        if (!identity) return errorResponse(ERR_CODE.UNAUTHORIZED, "Invalid or Expired Token", 401, traceId, corsHeaders);
 
         // dashboard 正常使用每分鐘最多會打幾次 history（多次切 tab / 強制重整）：30 次寬鬆夠用。
         if (!(await checkRateLimit("history", identity.sub, 30, 60, env, ctx))) {
-            return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+            return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
         }
 
         // 加 LIMIT 200：dashboard 雷達/趨勢圖實際只用最近 N 筆，無上限會讓重度使用者 / 攻擊者讓 D1 慢查詢。
@@ -196,21 +197,21 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
         return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (error: any) {
         logError(env, "handleGetHistory", error, { traceId }, ctx);
-        return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
+        return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
     }
 }
 
 async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string) {
     const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return errorResponse(ERR_CODE.UNAUTHORIZED, "Unauthorized", 401, traceId, corsHeaders);
 
     const token = authHeader.split(" ")[1];
     const identity = await verifyChiyigoToken(token, env);
-    if (!identity) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+    if (!identity) return errorResponse(ERR_CODE.UNAUTHORIZED, "Invalid or Expired Token", 401, traceId, corsHeaders);
 
     // 帳號刪除是高破壞性操作，每小時最多 3 次足夠正常使用 + 防 spam 觸發大量 DELETE。
     if (!(await checkRateLimit("delete", identity.sub, 3, 3600, env, ctx))) {
-        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+        return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
     }
 
     const batchStmts = [
@@ -222,7 +223,7 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
         return new Response(JSON.stringify({ status: "Deleted" }), { headers: corsHeaders });
     } catch (err: any) {
         logError(env, "handleDeleteAccount", err, { traceId, sub: identity.sub }, ctx);
-        return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
+        return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
     }
 }
 
@@ -265,18 +266,18 @@ function getClientIp(request: Request): string {
 // Rate limit：每個 SSO sub 每 60 秒最多 5 次合併呼叫，降低惡意 / bug 的反覆認領噪音。
 async function handleClaimGuestResults(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string) {
     const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return errorResponse(ERR_CODE.UNAUTHORIZED, "Unauthorized", 401, traceId, corsHeaders);
 
     const token = authHeader.split(" ")[1];
     const identity = await verifyChiyigoToken(token, env);
-    if (!identity) return new Response(JSON.stringify({ error: "Invalid or Expired Token" }), { status: 401, headers: corsHeaders });
+    if (!identity) return errorResponse(ERR_CODE.UNAUTHORIZED, "Invalid or Expired Token", 401, traceId, corsHeaders);
 
     if (!(await checkRateLimit("claim", identity.sub, 5, 60, env, ctx))) {
-        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+        return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
     }
 
     let body: { guestIds?: string[] };
-    try { body = await request.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: corsHeaders }); }
+    try { body = await request.json(); } catch { return errorResponse(ERR_CODE.VALIDATION, "Invalid JSON", 400, traceId, corsHeaders); }
 
     const guestIds = (body.guestIds || []).filter(s => typeof s === "string" && s.length > 0 && s.length < 64).slice(0, 20);
     if (guestIds.length === 0) return new Response(JSON.stringify({ status: "Noop", claimed: 0 }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -291,7 +292,7 @@ async function handleClaimGuestResults(request: Request, env: Env, ctx: Executio
         return new Response(JSON.stringify({ status: "Claimed", claimed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (err: any) {
         logError(env, "handleClaimGuestResults:db", err, { traceId, sub: identity.sub, guestIdCount: guestIds.length }, ctx);
-        return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
+        return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
     }
 }
 
@@ -307,19 +308,19 @@ const TIME_SPENT_MS_MAX = 24 * 60 * 60 * 1000; // 24 小時
 const ALLOWED_VERSIONS = new Set(["A", "B", "C", "D", "E", "F"]);
 const GUEST_ONLY_VERSIONS = new Set(["A", "B"]);
 
-function badRequest(msg: string, corsHeaders: Record<string, string>): Response {
-    return new Response(JSON.stringify({ error: msg }), { status: 400, headers: corsHeaders });
+function badRequest(msg: string, traceId: string, corsHeaders: Record<string, string>): Response {
+    return errorResponse(ERR_CODE.VALIDATION, msg, 400, traceId, corsHeaders);
 }
 
 async function handleAssessmentSubmit(request: Request, env: Env, ctx: ExecutionContext, corsHeaders: Record<string, string>, traceId: string): Promise<Response> {
   try {
     const url = new URL(request.url);
     const routeMatch = url.pathname.match(/\/assess\/version-([a-f])$/i);
-    if (!routeMatch) return badRequest("Invalid route", corsHeaders);
+    if (!routeMatch) return badRequest("Invalid route", traceId, corsHeaders);
     const routeVersion = routeMatch[1].toUpperCase();
 
     let payload: { version?: string; rawScores?: unknown; timeSpentMs?: unknown; guestId?: unknown; questionsAnswered?: unknown };
-    try { payload = await request.json(); } catch { return badRequest("Invalid JSON", corsHeaders); }
+    try { payload = await request.json(); } catch { return badRequest("Invalid JSON", traceId, corsHeaders); }
 
     // assess rate limit：subject 用 IP+guestId 複合 key，對 NAT 大戶（學校 / 公司網路）友善 ——
     // 同 IP 不同瀏覽器各自記額度。guestId 可偽造但本 endpoint 是反 spam 不是反濫用，trade-off 可接受。
@@ -329,17 +330,17 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
         ? payload.guestId : "noguest";
     const rlSubject = `${getClientIp(request)}:${rlGuestKey}`;
     if (!(await checkRateLimit("assess", rlSubject, 10, 60, env, ctx))) {
-        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429, headers: corsHeaders });
+        return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
     }
 
     // rawScores: 必須是長度 8 的有限數字陣列、且每項落在合理範圍
     if (!Array.isArray(payload.rawScores) || payload.rawScores.length !== 8) {
-        return badRequest("Invalid rawScores", corsHeaders);
+        return badRequest("Invalid rawScores", traceId, corsHeaders);
     }
     const rawScores: number[] = [];
     for (const s of payload.rawScores) {
         if (typeof s !== "number" || !Number.isFinite(s) || s < RAW_SCORE_MIN || s > RAW_SCORE_MAX) {
-            return badRequest("Invalid rawScores value", corsHeaders);
+            return badRequest("Invalid rawScores value", traceId, corsHeaders);
         }
         rawScores.push(s);
     }
@@ -349,7 +350,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     if (payload.timeSpentMs !== undefined) {
         if (typeof payload.timeSpentMs !== "number" || !Number.isFinite(payload.timeSpentMs)
             || payload.timeSpentMs < TIME_SPENT_MS_MIN || payload.timeSpentMs > TIME_SPENT_MS_MAX) {
-            return badRequest("Invalid timeSpentMs", corsHeaders);
+            return badRequest("Invalid timeSpentMs", traceId, corsHeaders);
         }
         timeSpentMs = payload.timeSpentMs;
     }
@@ -357,14 +358,14 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     // version：白名單 + 必須與 route 一致（防止打 /version-a 但 body 寫 D 偽造模組來源）
     const bodyVersion = typeof payload.version === "string" ? payload.version.toUpperCase() : routeVersion;
     if (!ALLOWED_VERSIONS.has(bodyVersion) || bodyVersion !== routeVersion) {
-        return badRequest("Version mismatch", corsHeaders);
+        return badRequest("Version mismatch", traceId, corsHeaders);
     }
 
     // guestId：選填，但若有要是合理字串
     let guestId: string | null = null;
     if (payload.guestId !== undefined && payload.guestId !== null) {
         if (typeof payload.guestId !== "string" || payload.guestId.length === 0 || payload.guestId.length > 64) {
-            return badRequest("Invalid guestId", corsHeaders);
+            return badRequest("Invalid guestId", traceId, corsHeaders);
         }
         guestId = payload.guestId;
     }
@@ -374,7 +375,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     if (payload.questionsAnswered !== undefined && payload.questionsAnswered !== null) {
         if (typeof payload.questionsAnswered !== "number" || !Number.isFinite(payload.questionsAnswered)
             || payload.questionsAnswered < 0 || payload.questionsAnswered > 200) {
-            return badRequest("Invalid questionsAnswered", corsHeaders);
+            return badRequest("Invalid questionsAnswered", traceId, corsHeaders);
         }
         questionsAnswered = Math.round(payload.questionsAnswered);
     }
@@ -385,7 +386,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
         const identity = await verifyChiyigoToken(authHeader.split(" ")[1], env);
         if (!identity) {
             // 帶了 token 卻驗不過：必須拒絕，否則資料會被靜默存成訪客 → 使用者看不到歷史
-            return new Response(JSON.stringify({ error: "授權已失效，請重新登入後再提交" }), { status: 401, headers: corsHeaders });
+            return errorResponse(ERR_CODE.UNAUTHORIZED, "授權已失效，請重新登入後再提交", 401, traceId, corsHeaders);
         }
         finalUserId = identity.sub;
     }
@@ -393,7 +394,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     // 商業權限管控：A/B 開放訪客作答；C/D/E/F 必須登入
     // 前端 modal 是 UX 防護，這裡是硬牆，防止繞過 modal 直接打 API
     if (!finalUserId && !GUEST_ONLY_VERSIONS.has(routeVersion)) {
-        return new Response(JSON.stringify({ error: "此模組需登入後方可作答" }), { status: 401, headers: corsHeaders });
+        return errorResponse(ERR_CODE.UNAUTHORIZED, "此模組需登入後方可作答", 401, traceId, corsHeaders);
     }
 
     const result = processAssessmentResult(rawScores, timeSpentMs);
@@ -420,6 +421,6 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     return new Response(JSON.stringify({ status: "Calculated", reportId: reportId, data: resultData }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: any) {
     logError(env, "handleAssessmentSubmit", error, { traceId }, ctx);
-    return new Response(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: corsHeaders });
+    return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
   }
 }
