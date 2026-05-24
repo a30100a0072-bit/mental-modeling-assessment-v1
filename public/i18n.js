@@ -250,7 +250,7 @@
                 B: '▶ Module B (Stress)',
                 C: '▶ Module C (Vision)',
                 D: '▶ Module D (Behavior)',
-                E: '▶ Module E (Decisions)',
+                E: '▶ Module E (Decision)',
                 F: '▶ Module F (Cognition)'
             },
             home: {
@@ -258,8 +258,8 @@
                 cardB: { badge: 'Live', title: 'Phase B (Stress)', desc: 'Extreme defense scenarios. Pinpoints your Shadow blind spots and collapse trajectory.', time: '⏱ ~8 min' },
                 cardC: { badge: 'Live', title: 'Phase C (Vision)', desc: 'Inferior-function awakening. Measures Anima integration and growth potential.', time: '⏱ ~10 min', lock: '🔒 Login required' },
                 cardD: { badge: 'New Adaptive', title: 'Phase D (Daily Behavior)', desc: 'Habits, spatial interaction, and unconscious behaviors. Includes Likert + adaptive follow-ups.', time: '⏱ ~12 min', lock: '🔒 Login required' },
-                cardE: { badge: 'New Adaptive', title: 'Phase E (Decision Scenarios)', desc: 'Investing, high-pressure career choices, trade-offs. SJT-validated to remove faking.', time: '⏱ ~12 min', lock: '🔒 Login required' },
-                cardF: { badge: 'New Adaptive', title: 'Phase F (Cognitive Preference)', desc: 'Worldview, learning style, and value rank. Forced deconstruction of mental models.', time: '⏱ ~12 min', lock: '🔒 Login required' }
+                cardE: { badge: 'New Adaptive', title: 'Phase E (Decision Scenarios)', desc: 'Investing, high-pressure career choices, trade-offs. SJT-validated to filter out impression management.', time: '⏱ ~12 min', lock: '🔒 Login required' },
+                cardF: { badge: 'New Adaptive', title: 'Phase F (Cognitive Preference)', desc: 'Worldview, learning style, and value rankings. Forced deconstruction of mental models.', time: '⏱ ~12 min', lock: '🔒 Login required' }
             },
             phase: { A: 'Daily', B: 'Stress', C: 'Vision', D: 'Behavior', E: 'Decision', F: 'Cognition' },
             action: {
@@ -284,7 +284,7 @@
                 pleaseFinish: 'Please answer every question for accurate modeling.',
                 pleaseFinishCalibration: 'Please complete the final calibration questions.',
                 autosaved: 'Auto-saved',
-                leavingWarn: 'Your assessment is unsaved. Leaving will lose progress. Continue?',
+                leavingWarn: 'Your assessment is unsaved. Leaving now will discard your progress. Continue?',
                 resumeHeadline: 'Progress saved ({n} / 4 phases complete)',
                 resumeSub: 'You can close this window any time — your next visit will resume from here.',
                 pauseToast: 'Progress saved — your next visit will resume from here ✓',
@@ -306,15 +306,15 @@
                     C: ['PHASE 01: Ultimate Belief Awakening', 'PHASE 02: Subconscious Desire Projection', 'PHASE 03: Inferior-Function Integration', 'PHASE 04: Soul Anchor & Vision']
                 },
                 phaseDescs: {
-                    A: ['How your brain naturally takes in information when there is zero pressure.', 'Your default priority criteria for everyday decisions when resources are sufficient.', 'Your most habitual mode of handling routine tasks and people.', 'Your peak state when you feel extremely confident and fulfilled.'],
-                    B: ['Every scenario carries an extreme cost. Choose the deepest instinctive defense from pain.', 'Under extreme resource scarcity, your real decision priority is fully exposed.', 'Forces a coupling test of brain functions — you must make brutal trade-offs.', 'Reverse-measures unconscious physical defense. Recall honestly your loss-of-control rock-bottom.'],
-                    C: ['Stepping out of present reality — the trait you most genuinely admire deep down.', 'When defenses are dropped, your deepest yearning for self-transformation.', 'If you could overcome your fatal weakness, the height you hope to reach.', 'Measuring your Anima (subconscious), searching for the ultimate meaning of your life journey.']
+                    A: ['How your brain naturally processes information under zero pressure.', 'Your default decision priorities when resources are plentiful.', 'Your default approach to routine tasks and people.', 'Your peak state when you feel extremely confident and fulfilled.'],
+                    B: ['Every scenario carries an extreme cost. Pick your most instinctive defense under pain.', 'Under extreme resource scarcity, your real decision priority is fully exposed.', 'Forces your brain functions into conflict — brutal trade-offs required.', 'Reverse-measures unconscious physical defense. Honestly recall your rock-bottom moments of losing control.'],
+                    C: ['Stepping outside present reality — the trait you most genuinely admire.', 'When your defenses drop, your deepest yearning for self-transformation.', 'If you could overcome your fatal weakness, what heights would you reach?', 'Measures your Anima (subconscious), searching for life\'s ultimate meaning.']
                 }
             },
             quizDef: {
                 module: { D: 'Daily Behavior', E: 'Decision Scenario', F: 'Cognitive Preference' },
                 step1Header: 'Step 1: {module} Scale (Likert)',
-                step1Desc: 'Rate intuitively how each statement matches your real state. (1: strongly disagree — 5: strongly agree)',
+                step1Desc: 'Trust your gut to rate how well each statement matches you. (1: strongly disagree — 5: strongly agree)',
                 step2Header: 'Step 2: Forced Choice',
                 step2Desc: 'Between two mutually exclusive extreme scenarios, choose your brain’s most instinctive defense or preference.',
                 step3SjtHeader: 'Step 3: Situational Judgment (SJT)',
@@ -322,7 +322,7 @@
                 step3RankHeader: 'Step 3: Cognitive Structure Ranking',
                 step3RankDesc: 'Click options in order to rank them (click order = rank 1, 2, 3, 4). Click "Reset" on the right if you mis-click.',
                 btnStep1: 'Next (1/3)',
-                btnStep2: 'Boundary analysis (2/3)',
+                btnStep2: 'Analyze boundaries (2/3)',
                 btnStep3: 'Submit & compute final topology (3/3)',
                 rankResetBtn: '🔄 Reset',
                 rankPleaseFinish: 'Please finish ranking every option in question {n}.'
@@ -367,21 +367,21 @@
                 statAvgQ: 'Avg. questions answered',
                 aggregatedHeader: '🧠 Aggregated Overview',
                 trendHeader: '📉 Dichotomy Trend (Time Series)',
-                trendHint: 'E / N / T / J probabilities across each assessment (16-type posterior), showing how your preference drifts over time.',
-                compareHeader: '🆚 Module Compare',
-                compareHint: 'Latest energy distribution per module, overlaid. Daily (A) vs Stress (B) vs Vision (C) gap shows your real switch trajectory.',
+                trendHint: 'E / N / T / J probabilities across your assessments (16-type posterior), showing how your preferences drift over time.',
+                compareHeader: '🆚 Module Comparison',
+                compareHint: 'Latest energy distribution per module, overlaid. The gap between Daily (A), Stress (B), and Vision (C) reveals how your mind actually switches between contexts.',
                 timelineHeader: '📈 Type Evolution',
                 historyHeader: '◈ History & Versions',
                 btnNewQuiz: '➕ Start a new assessment',
-                emptyTitle: 'No mind model built yet',
-                emptyDesc: 'Pick any module below for your first self-modeling. Your results will be recorded here.',
+                emptyTitle: 'No assessments yet',
+                emptyDesc: 'Pick any module below to start your first assessment. Your results will appear here.',
                 dangerHeader: '⚠️ GDPR Right to Erasure',
-                dangerDesc: 'This triggers a hard delete — permanently erasing your account, password hash, and all mind-modeling history. Not recoverable.',
+                dangerDesc: 'This triggers a hard delete — permanently erasing your account and all mind-modeling history. This cannot be undone.',
                 btnDelete: 'Permanently destroy file',
                 deleteConfirm: '⚠️ Warning: this permanently deletes your account and all assessment history. This is irreversible. Proceed?',
-                deleteSuccess: 'Your neural-link file has been permanently destroyed from the system.',
+                deleteSuccess: 'Your neural-link file has been permanently destroyed.',
                 deleteAuthExpired: 'Session expired, please sign in again.',
-                deleteFailed: 'Destruction failed, please try again later.',
+                deleteFailed: 'Delete failed, please try again later.',
                 fetchFailed: 'Could not connect to history database',
                 noAuth: 'No neural-link authorization detected, please sign in again.'
             },
@@ -390,22 +390,22 @@
                 notFound: 'Connection lost',
                 unauthorized: 'Session expired, please sign in again',
                 pageNotFoundTitle: '404 — Cognitive path not found',
-                engineFail: 'Algorithm engine connection failed. Please confirm the Cloudflare Worker is on the latest deploy.',
-                cacheCorrupt: 'Detected mobile browser cache corruption — please clear cache and reload.'
+                engineFail: 'Algorithm engine connection failed. Please confirm the Cloudflare Worker is running the latest version.',
+                cacheCorrupt: 'Mobile browser cache appears corrupted — please clear cache and reload.'
             },
             ui: {
                 langToggle: 'Toggle language',
                 tagline404: 'This cognitive path is not on our topology map. The link may be expired, the page moved, or the URL mistyped.',
                 btnBackHome: 'Back to home',
                 btnDashboard: 'Dashboard',
-                contactReport: 'If you reached here from an external link with a correct path, please report by email.',
+                contactReport: 'If you reached here from an external link with a correct path, please let us know by email.',
                 contentZhOnly: '⚠️ Assessment questions are currently in Traditional Chinese only — UI and personality reports are in English.'
             },
             typeDetail: {
                 stackEgo: 'Dominant (Ego)',
                 stackParent: 'Auxiliary (Parent)',
                 stackChild: 'Tertiary (Child)',
-                stackInferior: 'Inferior',
+                stackInferior: 'Inferior (Anima)',
                 tabCore: '◈ Core Traits',
                 tabCareer: '💼 Career',
                 tabRelationship: '❤️ Relationships',

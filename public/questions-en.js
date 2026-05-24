@@ -94,7 +94,7 @@
             options: [
                 { text: "A. Open navigation and dive into back alleys you've never tried.", dims: ["Ne", "Se"] },
                 { text: "B. Calculate the time cost of each alternative, pick the most efficient.", dims: ["Te"] },
-                { text: "C. Annoyed — take an old route I know is safe.", dims: ["Si"] },
+                { text: "C. Annoyed; I take an old route I know is safe.", dims: ["Si"] },
                 { text: "D. Predict where this traffic will eventually choke up, route around it ahead of time.", dims: ["Ni"] }
             ]
         },
@@ -430,7 +430,7 @@
     const m4Data_A = [
         { q: "Entering peak (flow) state:", a: "Extreme physical operation and environmental control", b: "Perfect detail recall and order", dA: ["Se"], dB: ["Si"], w: 2 },
         { q: "Greatest sense of achievement from:", a: "High-efficiency completion of a huge complex project", b: "Cracking a logic puzzle no one else could solve", dA: ["Te"], dB: ["Ti"], w: 2 },
-        { q: "Best-case future expectation:", a: "Everything inside my precise prediction", b: "Endless possibilities and novel exploration", dA: ["Ni"], dB: ["Ne"], w: 2 },
+        { q: "Best-case future expectation:", a: "Everything unfolds within my precise prediction", b: "Endless possibilities and novel exploration", dA: ["Ni"], dB: ["Ne"], w: 2 },
         { q: "Feeling self-worth comes from:", a: "Successfully moving the room emotionally — being beloved", b: "Holding inner conviction without drifting with the tide", dA: ["Fe"], dB: ["Fi"], w: 2 },
         { q: "Most-enjoyed leisure mode:", a: "Burning physical energy and sweat without restraint", b: "Free-flowing creative jam with people", dA: ["Se"], dB: ["Ne"], w: 2 },
         { q: "Source of deep peace:", a: "The instant of seeing through a thing's essence", b: "A safe house full of beautiful memories", dA: ["Ni"], dB: ["Si"], w: 2 },
@@ -519,7 +519,7 @@
         { q: "Confronted with chaos beyond comprehension:", a: "Self-blame and catastrophic delusion", b: "Crush it with crude binary thinking", dA: ["Fi", "Ni"], dB: ["Te", "Si"], w: 2 },
         { q: "Faith betrayed for personal gain:", a: "Indulge in danger and rationalize it", b: "Spin a story to fish for sympathy", dA: ["Se", "Ti"], dB: ["Ne", "Fe"], w: 2 },
         { q: "Trapped in an unchanging environment:", a: "Build paranoid defensive conspiracy theories", b: "Ruminate over past social slip-ups", dA: ["Ni", "Ti"], dB: ["Si", "Fe"], w: 2 },
-        { q: "Lost all sense of life meaning:", a: "Coldly switch battlefields, abandon the old crew", b: "No-floor compliance with mass entertainment", dA: ["Te", "Ne"], dB: ["Fe", "Se"], w: 2 }
+        { q: "Lost all sense of life meaning:", a: "Coldly switch battlefields, abandon the old crew", b: "Bottomless conformity with mass entertainment", dA: ["Te", "Ne"], dB: ["Fe", "Se"], w: 2 }
     ];
 
     // ==========================================
@@ -595,7 +595,7 @@
         { q: "The limit of your potential lies in:", a: "Cashing out your grand vision into the world by force, perfectly", b: "Stabilizing your unbounded ideas through rigorous historical experience", dA: ["Ni", "Te"], dB: ["Ne", "Si"], w: 2 },
         { q: "The hero's journey ending you most yearn for:", a: "After extreme sensory adventure, see through the underlying logic and choose retreat", b: "After countless emotional betrayals, still embrace the world with love", dA: ["Se", "Ti"], dB: ["Fe", "Ni"], w: 2 },
         { q: "The hardest yet most worthwhile life-discipline:", a: "Admit you don't know the future and learn to enjoy the uncertainty of now", b: "Admit you over-rely on logic and learn to accept your own emotional fragility", dA: ["Ne", "Si"], dB: ["Ti", "Fe"], w: 2 },
-        { q: "In the end, what do you want your existence to mean to the world?", a: "An unfalling lighthouse — providing absolute objective and cold guidance", b: "An unending campfire — providing absolute warmth and selfless protection", dA: ["Te", "Ni"], dB: ["Fe", "Si"], w: 2 }
+        { q: "In the end, what do you want your existence to mean to the world?", a: "An everlasting lighthouse — providing absolute objective and cold guidance", b: "An unending campfire — providing absolute warmth and selfless protection", dA: ["Te", "Ni"], dB: ["Fe", "Si"], w: 2 }
     ];
 
     // Expose
