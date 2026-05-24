@@ -1,5 +1,6 @@
 import { env } from "cloudflare:test";
 import { describe, it, expect, beforeAll } from "vitest";
+import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT } from "../src/sql/queries";
 
 // Migration smoke test：保證 migrations/ 全套跑完後，D1 schema 與 worker
 // 實際 query 的欄位、index 完全對齊。
@@ -52,15 +53,59 @@ async function columnNames(table: string): Promise<Set<string>> {
 // 把 SQL 預處理成：移除 `--` 行註解、依 `;` 拆 statement、逐筆 prepare().run()。
 // production migrate 走 wrangler `d1 migrations apply` 是另一條 path，這裡只是
 // 在 vitest 內模擬出夠接近的 schema 推進效果。
+//
+// Stateful parser（取代舊版 naive split）：追蹤 single-quote / double-quote 內，
+// 也追蹤 `--` line-comment 是否處於字串字面值之外。
+// 守住的場景：
+//   - `'foo;bar'`、`'a -- b'`、`"col;name"` 內含 `;` 或 `--` 不會被誤切
+//   - SQLite 字串字面值跳脫是 doubled quote (`'it''s'`)，本 parser 在
+//     quote 內遇到下一個同類 quote 即視為結束（next char 若仍是同 quote，
+//     parser 把它當「再進入新 quote」處理 — 行為等價）
+//   - 區塊註解 `/* ... */` 目前 migrations 無使用，本 parser 不處理（fail
+//     mode 是該 statement 包含註解字串送 prepare()，SQLite 會接受）
 function splitStatements(sql: string): string[] {
-    const noComments = sql.replace(/\r\n/g, "\n")
-        .split("\n")
-        .map(line => line.replace(/--.*$/, ""))
-        .join("\n");
-    return noComments
-        .split(";")
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+    const src = sql.replace(/\r\n/g, "\n");
+    const stmts: string[] = [];
+    let cur = "";
+    let inSingle = false;
+    let inDouble = false;
+    let inLineComment = false;
+    for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+        if (inLineComment) {
+            if (ch === "\n") inLineComment = false;
+            // 不累加到 cur — 註解整段丟掉
+            continue;
+        }
+        if (inSingle) {
+            cur += ch;
+            if (ch === "'") inSingle = false;
+            continue;
+        }
+        if (inDouble) {
+            cur += ch;
+            if (ch === '"') inDouble = false;
+            continue;
+        }
+        // 非 quote 非註解 — 開始判斷分隔符與註解起點
+        if (ch === "-" && src[i + 1] === "-") {
+            inLineComment = true;
+            i++; // 跳過第二個 `-`
+            continue;
+        }
+        if (ch === "'") { inSingle = true; cur += ch; continue; }
+        if (ch === '"') { inDouble = true; cur += ch; continue; }
+        if (ch === ";") {
+            const trimmed = cur.trim();
+            if (trimmed.length > 0) stmts.push(trimmed);
+            cur = "";
+            continue;
+        }
+        cur += ch;
+    }
+    const tail = cur.trim();
+    if (tail.length > 0) stmts.push(tail);
+    return stmts;
 }
 
 beforeAll(async () => {
@@ -76,6 +121,54 @@ beforeAll(async () => {
             }
         }
     }
+});
+
+describe("splitStatements parser — 邊界場景防迴歸", () => {
+    it("基本：依 ; 拆 statement、trim 空白、丟空 statement", () => {
+        const r = splitStatements("SELECT 1; SELECT 2;\n  SELECT 3");
+        expect(r).toEqual(["SELECT 1", "SELECT 2", "SELECT 3"]);
+    });
+
+    it("single-quote 字串內含 `;` 不會被誤切", () => {
+        const r = splitStatements("INSERT INTO t VALUES ('foo;bar'); SELECT 1;");
+        expect(r).toEqual(["INSERT INTO t VALUES ('foo;bar')", "SELECT 1"]);
+    });
+
+    it("double-quote 字串內含 `;` 不會被誤切", () => {
+        const r = splitStatements('SELECT "a;b" FROM t; SELECT 2;');
+        expect(r).toEqual(['SELECT "a;b" FROM t', "SELECT 2"]);
+    });
+
+    it("`--` 行註解到行尾為止，不影響後續 statement", () => {
+        const r = splitStatements("SELECT 1; -- comment ; with semicolon\nSELECT 2;");
+        expect(r).toEqual(["SELECT 1", "SELECT 2"]);
+    });
+
+    it("字串字面值內的 `--` 不視為註解（不會吃掉後續內容）", () => {
+        const r = splitStatements("INSERT INTO t VALUES ('a -- b'); SELECT 1;");
+        expect(r).toEqual(["INSERT INTO t VALUES ('a -- b')", "SELECT 1"]);
+    });
+
+    it("混合：字串內 `;`、`--` 行註解內 `;`、正常 statement 拆分", () => {
+        const sql = `
+            -- header comment with ; semicolon
+            CREATE TABLE x (id TEXT DEFAULT 'a;b;c');
+            INSERT INTO x VALUES ('-- not comment');
+            -- trailing comment
+            SELECT * FROM x;
+        `;
+        const r = splitStatements(sql);
+        expect(r).toEqual([
+            "CREATE TABLE x (id TEXT DEFAULT 'a;b;c')",
+            "INSERT INTO x VALUES ('-- not comment')",
+            "SELECT * FROM x",
+        ]);
+    });
+
+    it("末尾無 `;` 也要保留最後一筆 statement", () => {
+        const r = splitStatements("SELECT 1; SELECT 2");
+        expect(r).toEqual(["SELECT 1", "SELECT 2"]);
+    });
 });
 
 describe("migration smoke", () => {
@@ -131,19 +224,16 @@ describe("migration smoke", () => {
     });
 
     it("worker's history SELECT runs against migrated schema", async () => {
-        // 用 worker 完全相同的 SQL；只要欄位 mismatch（漂移）就會 throw
-        const r = await MM_DB_D1.prepare(
-            "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, questions_answered, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC LIMIT 200"
-        ).bind("nobody").all();
+        // 用 src/sql/queries.ts 共用常數；worker 與本 spec 都從同一處 import，
+        // 任何 schema 改動（欄位增刪 / 別名 / LIMIT 變動）兩端必同步，無法 drift。
+        const r = await MM_DB_D1.prepare(SELECT_HISTORY_BY_USER).bind("nobody").all();
         expect(r.success).toBe(true);
         expect(Array.isArray(r.results)).toBe(true);
     });
 
     it("worker's assessment INSERT runs against migrated schema", async () => {
         const id = `smoke-${crypto.randomUUID()}`;
-        const r = await MM_DB_D1.prepare(
-            `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).bind(
+        const r = await MM_DB_D1.prepare(INSERT_ASSESSMENT).bind(
             id,
             null,
             "smoke-guest",

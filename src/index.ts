@@ -1,5 +1,6 @@
 import { processAssessmentResult } from "./modules/assessment";
 import { logError, logEvent } from "./modules/log";
+import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT } from "./sql/queries";
 
 // 認證走 chiyigo.com OIDC（PKCE + ES256 access_token + JWKS 本地驗）
 // 本 Worker 只負責：測驗提交、歷史查詢、帳號刪除（皆透過 chiyigo token 驗身分）
@@ -189,9 +190,8 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
 
         // 加 LIMIT 200：dashboard 雷達/趨勢圖實際只用最近 N 筆，無上限會讓重度使用者 / 攻擊者讓 D1 慢查詢。
         // 200 估算：一年每天測 1 卷仍綽綽有餘；真要更多再走 cursor pagination。
-        const historyReq = await env.MM_DB_D1.prepare(
-            "SELECT id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, questions_answered, created_at as timestamp FROM assessments WHERE user_id = ? ORDER BY created_at DESC LIMIT 200"
-        ).bind(identity.sub).all();
+        // SQL 走 src/sql/queries.ts 常數讓 migration smoke test 對拍同一份字串，防止 schema drift。
+        const historyReq = await env.MM_DB_D1.prepare(SELECT_HISTORY_BY_USER).bind(identity.sub).all();
 
         return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (error: any) {
@@ -399,11 +399,9 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     const result = processAssessmentResult(rawScores, timeSpentMs);
     const reportId = crypto.randomUUID();
 
-    // psychic_energy_index 欄位將於 migration 0012 移除（2026-05-23 backlog）；
-    // INSERT 此處停寫，prod column 暫保留並走 DEFAULT 0.0，等 migration apply 後完全消失。
-    await env.MM_DB_D1.prepare(
-        `INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(
+    // INSERT SQL 走 src/sql/queries.ts 常數讓 migration smoke test 對拍同一份字串，
+    // 任何欄位增刪兩端立刻 schema mismatch fail，防 silent drift（health audit 黃燈收尾）。
+    await env.MM_DB_D1.prepare(INSERT_ASSESSMENT).bind(
         reportId,
         finalUserId,
         guestId,
