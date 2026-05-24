@@ -288,6 +288,6 @@
  * 或定位 anchor」的 baseline。caller (result-render.js / dashboard.js / toast.js)
  * 在 innerHTML 後跑 querySelectorAll([data-*]) 設定 .style.x。
  *
- * 注意：.match-bar-fill / .timeline-dot / .cmp-dot / .toast-progress-fill
- * 既有的 CSS（component.css）已經包好布局，只缺動態值；本批不重複定義靜態屬性。
+ * 注意：.match-bar-fill / .tl-dot / .cmp-dot / .toast-progress-fill
+ * 既有的 CSS（component.css / global.css）已經包好布局，只缺動態值；本批不重複定義靜態屬性。
  */

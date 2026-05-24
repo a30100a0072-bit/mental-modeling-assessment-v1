@@ -433,10 +433,12 @@ function renderTimeline(records) {
         const temp = temperament(type);
         const date = new Date(r.timestamp).toLocaleDateString('zh-TW');
         const left = n === 1 ? 50 : (i / (n - 1)) * 100;
-        // dynamic left 走 data-left → 後續 CSSOM 設位置，不在 innerHTML 內塞 style=""
-        return `<div class="timeline-dot tl-${temp}" data-left="${left}" data-tip="${date} · ${type}"></div>`;
+        // 用 .tl-dot（component.css 已定義 position:absolute / width / height / tooltip
+        // ::after）；舊版誤寫 .timeline-dot 沒對應 CSS，dots 缺 absolute positioning。
+        // dynamic left 走 data-left → 後續 CSSOM 設位置，不在 innerHTML 內塞 style=""。
+        return `<div class="tl-dot tl-${temp}" data-left="${left}" data-tip="${date} · ${type}"></div>`;
     }).join('');
-    track.querySelectorAll('.timeline-dot[data-left]').forEach(el => {
+    track.querySelectorAll('.tl-dot[data-left]').forEach(el => {
         el.style.left = el.getAttribute('data-left') + '%';
     });
 
