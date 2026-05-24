@@ -3,6 +3,19 @@ name = "mental-modeling-assessment-v1"
 main = "src/index.ts"
 compatibility_date = "2026-04-06"
 
+# Pages 部署輸出目錄（本 repo 是 worker + pages 混合 — worker 處理 /api/*、
+# pages 提供 public/ 靜態檔）。`wrangler pages deploy` 需此欄位定位輸出目錄。
+#
+# **必須放在所有 [section] / [[array]] 之前**，否則 TOML 會把它吞進前一個
+# array entry（例如放在 [[migrations]] 後會被當成 migrations[N].pages_build_output_dir
+# → 兩種 deploy 都會噴錯位 warning）。
+#
+# 已知 trade-off（wrangler 4.94+）：此欄位存在會讓 `wrangler deploy` 噴 WARN
+# 「Pages project, use wrangler pages deploy instead」— 誤判，worker deploy 仍正常運作。
+# 移除此欄位則 `wrangler pages deploy` 會反過來噴 missing-field warning。
+# 兩種狀態都只有 1 個誤導性 warning，當前選擇讓 Pages 路徑乾淨（CLI 更常用）。
+pages_build_output_dir = "public"
+
 # 【雲端警衛設定】攔截所有發向 mbti.chiyigo.com/api/ 的請求，轉交給這個 Worker 處理
 routes = [
   { pattern = "mbti.chiyigo.com/api/*", zone_name = "chiyigo.com" }
@@ -35,11 +48,6 @@ new_sqlite_classes = ["AssessmentSession"]
 [[migrations]]
 tag = "v2"
 deleted_classes = ["AssessmentSession"]
-
-# Pages 部署輸出目錄。雖然本 repo 的 wrangler.toml 主要是 Worker config，
-# `wrangler pages deploy` 仍會讀這個欄位，沒設會在每次 deploy log 噴 warning。
-# 必須放頂層（不能放 [observability] 內，TOML 會誤判成該 table 的欄位）。
-pages_build_output_dir = "public"
 
 [observability]
 enabled = true
