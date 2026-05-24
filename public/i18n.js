@@ -177,7 +177,7 @@
                 emptyTitle: '尚未建立任何神經模型',
                 emptyDesc: '從下方任一模組開始你的第一次自我建模，結果會被記錄在這裡。',
                 dangerHeader: '⚠️ GDPR 遺忘權限 (Data Deletion)',
-                dangerDesc: '執行此操作將觸發硬刪除 (Hard Delete)，永久清除您的帳號、密碼雜湊與所有大腦建模紀錄，無法復原。',
+                dangerDesc: '執行此操作將觸發硬刪除 (Hard Delete)，永久清除您的帳號與所有大腦建模紀錄，此操作無法復原。',
                 btnDelete: '永久銷毀檔案',
                 deleteConfirm: '⚠️ 警告：這將永久刪除您的帳號與所有測驗歷史。此操作不可逆。確定執行嗎？',
                 deleteSuccess: '您的神經連結檔案已從系統中永久銷毀。',
