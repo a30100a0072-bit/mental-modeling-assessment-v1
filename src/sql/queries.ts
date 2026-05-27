@@ -19,3 +19,8 @@ export const SELECT_HISTORY_BY_USER =
 
 export const INSERT_ASSESSMENT =
     "INSERT INTO assessments (id, user_id, guest_id, assessment_version, raw_scores, z_scores, result_distribution, primary_type, time_spent_ms, questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+// audit_log INSERT — 寫入點：recordAudit (src/modules/log.ts) + migrations.spec.ts smoke。
+// bind 順序：ts, event, actor_sub, trace_id, metadata
+export const INSERT_AUDIT_LOG =
+    "INSERT INTO audit_log (ts, event, actor_sub, trace_id, metadata) VALUES (?, ?, ?, ?, ?)";

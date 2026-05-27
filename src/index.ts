@@ -1,5 +1,5 @@
 ﻿import { processAssessmentResult } from "./modules/assessment";
-import { logError, logEvent } from "./modules/log";
+import { logError, logEvent, recordAudit } from "./modules/log";
 import { ERR_CODE, errorResponse } from "./modules/errors";
 import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT } from "./sql/queries";
 
@@ -219,7 +219,9 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
     ];
 
     try {
-        await env.MM_DB_D1.batch(batchStmts);
+        const batchRes = await env.MM_DB_D1.batch(batchStmts);
+        const deletedCount = batchRes[0]?.meta?.changes ?? 0;
+        recordAudit(env, traceId, "delete_account", identity.sub, { deletedCount }, ctx);
         return new Response(JSON.stringify({ status: "Deleted" }), { headers: corsHeaders });
     } catch (err: any) {
         logError(env, "handleDeleteAccount", err, { traceId, sub: identity.sub }, ctx);
@@ -289,6 +291,7 @@ async function handleClaimGuestResults(request: Request, env: Env, ctx: Executio
         ).bind(identity.sub, ...guestIds);
         const res = await stmt.run();
         const claimed = (res as any)?.meta?.changes ?? 0;
+        recordAudit(env, traceId, "claim_guest", identity.sub, { guestIdCount: guestIds.length, claimed }, ctx);
         return new Response(JSON.stringify({ status: "Claimed", claimed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (err: any) {
         logError(env, "handleClaimGuestResults:db", err, { traceId, sub: identity.sub, guestIdCount: guestIds.length }, ctx);

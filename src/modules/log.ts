@@ -1,3 +1,5 @@
+import { INSERT_AUDIT_LOG } from "../sql/queries";
+
 // 結構化錯誤觀測：本身極簡，依賴外部 sink 做長期保存。
 //
 // 訊號流向：
@@ -65,4 +67,50 @@ export function logEvent(
     ...context,
   };
   console.log(JSON.stringify(payload));
+}
+
+// 敏感操作 audit log — 持久化到 D1 audit_log 表。
+//
+// 與 logEvent 的差別：
+//   - logEvent：所有 request 一行一筆，走 console.log → Workers Logs (3 天 retention)
+//   - recordAudit：只敏感操作（delete / claim 等），落 D1 永久保留供事後 forensic
+//
+// 設計取捨：
+//   - fire-and-forget via ctx.waitUntil：主回應不被 D1 寫入阻塞（D1 延遲約 10-50ms）
+//   - try/catch 容錯：audit 失敗（表不存在 / D1 抖動）只 console.error，不阻斷主流程
+//     —— 寧可丟失一筆 audit 也不能因 audit 寫入失敗讓 delete_account / claim 整個 fail
+//   - actor_sub 可 null：未來若有訪客敏感操作（目前無）保留欄位空間
+//   - metadata 只塞 non-PII 計數類資料（deletedCount / claimed），CLAUDE.md「log 禁洩漏敏感」
+interface AuditEnv {
+  MM_DB_D1: D1Database;
+}
+
+export function recordAudit(
+  env: AuditEnv,
+  traceId: string,
+  event: string,
+  actorSub: string | null,
+  metadata: Record<string, unknown> = {},
+  ctx?: { waitUntil(p: Promise<unknown>): void }
+): void {
+  const ts = Date.now();
+  const metaStr = JSON.stringify(metadata);
+  const write = env.MM_DB_D1
+    .prepare(INSERT_AUDIT_LOG)
+    .bind(ts, event, actorSub, traceId, metaStr)
+    .run()
+    .catch((err: unknown) => {
+      // audit 失敗不能阻斷主流程，但要 console.error 落 Workers Logs
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(JSON.stringify({
+        level: "error",
+        ts: new Date().toISOString(),
+        label: "recordAudit:fail",
+        message,
+        traceId,
+        event,
+        actorSub,
+      }));
+    });
+  if (ctx) ctx.waitUntil(write);
 }

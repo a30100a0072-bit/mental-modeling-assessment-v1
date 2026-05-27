@@ -1,6 +1,6 @@
 import { env } from "cloudflare:test";
 import { describe, it, expect, beforeAll } from "vitest";
-import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT } from "../src/sql/queries";
+import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT, INSERT_AUDIT_LOG } from "../src/sql/queries";
 
 // Migration smoke test：保證 migrations/ 全套跑完後，D1 schema 與 worker
 // 實際 query 的欄位、index 完全對齊。
@@ -192,6 +192,8 @@ describe("migration smoke", () => {
         expect(names.has("personality_profiles")).toBe(true);
         expect(names.has("question_matrix")).toBe(true);
         expect(names.has("system_config")).toBe(true);
+        // 0013 加入：敏感操作 audit log
+        expect(names.has("audit_log")).toBe(true);
         // 0006 把 SSO 化前自家會員系統殘骸 drop 掉，這些 table 不應再出現
         expect(names.has("users")).toBe(false);
         expect(names.has("security_logs")).toBe(false);
@@ -219,8 +221,19 @@ describe("migration smoke", () => {
         expect(idx.has("idx_assessments_user_created")).toBe(true);
         expect(idx.has("idx_assessments_guest_id")).toBe(true);
         expect(idx.has("idx_assessments_user_id")).toBe(true);
+        // 0013 audit_log indices：forensic query (actor) + event 分佈
+        expect(idx.has("idx_audit_log_actor_ts")).toBe(true);
+        expect(idx.has("idx_audit_log_event_ts")).toBe(true);
         // 0011 drop：questions_answered 從未被 WHERE/ORDER BY 用到
         expect(idx.has("idx_assessments_questions_answered")).toBe(false);
+    });
+
+    it("audit_log has all columns the worker references", async () => {
+        const cols = await columnNames("audit_log");
+        const required = ["id", "ts", "event", "actor_sub", "trace_id", "metadata"];
+        for (const c of required) {
+            expect(cols.has(c), `audit_log missing column: ${c}`).toBe(true);
+        }
     });
 
     it("worker's history SELECT runs against migrated schema", async () => {
@@ -244,6 +257,18 @@ describe("migration smoke", () => {
             "XXXX",
             1000,
             65,
+        ).run();
+        expect(r.success).toBe(true);
+        expect(r.meta.changes).toBe(1);
+    });
+
+    it("worker's audit_log INSERT runs against migrated schema", async () => {
+        const r = await MM_DB_D1.prepare(INSERT_AUDIT_LOG).bind(
+            Date.now(),
+            "delete_account",
+            "smoke-sub",
+            "smoke-trace",
+            JSON.stringify({ deletedCount: 0 }),
         ).run();
         expect(r.success).toBe(true);
         expect(r.meta.changes).toBe(1);
