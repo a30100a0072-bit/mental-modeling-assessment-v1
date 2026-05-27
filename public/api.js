@@ -39,7 +39,9 @@ async function proceedToResultAPI() {
 
         let guestId = localStorage.getItem('mbti_guest_id');
         if (!guestId) {
-            guestId = "guest_" + Math.random().toString(36).substr(2, 9);
+            // CSPRNG 122 bits entropy + UUID v4 標準格式。
+            // 既有 localStorage 'guest_xxx' 值繼續沿用（worker 端 length<=64 兩種格式都通過）。
+            guestId = crypto.randomUUID();
             localStorage.setItem('mbti_guest_id', guestId);
         }
 
