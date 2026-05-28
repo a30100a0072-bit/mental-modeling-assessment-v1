@@ -375,6 +375,11 @@ td { color: var(--c-cyan); padding: 10px; border-top: 1px solid var(--bd-subtle)
 #image-preview { width: 100%; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--bd-default); }
 .action-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 0 0 16px 0; }
 .action-buttons button { font-size: 0.88rem; padding: 14px 12px; }
+/* 結果頁 CTA 主次階層：分享卡 = 唯一主行動（跨整列強調），其餘降為 outline 次級，降低選擇癱瘓 */
+.result-cta-primary { grid-column: 1 / -1; font-size: 1rem; padding: 16px; letter-spacing: 1px; }
+.action-buttons .btn-outline { border-radius: var(--r-xl); }
+.action-buttons .btn-outline.is-talo-outline { border-color: var(--c-purple); color: var(--c-purple-soft); }
+.action-buttons .btn-outline.is-talo-outline:hover { background: var(--c-purple); color: #fff; border-color: var(--c-purple); }
 
 /* RWD 響應式 (手機版清單單排) */
 @media (max-width: 480px) { .match-list { grid-template-columns: 1fr; } }

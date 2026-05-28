@@ -36,20 +36,20 @@
       } catch (_) {}
     })();
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="title" content="MBTI 認知幾何與高壓解析 V1版">
-    <meta name="description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+    <meta name="description" content="檢視你歷次測驗的人格演化軌跡、四軸傾向時間序列與模組差異對比，掌握你的心智拓撲如何隨時間漂移。">
 
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://mbti.chiyigo.com/">
-    <meta property="og:title" content="MBTI 認知幾何與高壓解析 V1版">
-    <meta property="og:description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+    <meta property="og:url" content="https://mbti.chiyigo.com/dashboard.html">
+    <meta property="og:title" content="心智歷史儀表板｜MBTI 認知幾何">
+    <meta property="og:description" content="檢視你歷次測驗的人格演化軌跡、四軸傾向時間序列與模組差異對比，掌握你的心智拓撲如何隨時間漂移。">
     <meta property="og:image" content="https://mbti.chiyigo.com/og-image.jpg">
 
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://mbti.chiyigo.com/">
-    <meta property="twitter:title" content="MBTI 認知幾何與高壓解析 V1版">
-    <meta property="twitter:description" content="突破傳統 MBTI 測驗限制！基於榮格八維與畢比模型，精準測量你的日常舒適圈、高壓防禦機制與潛意識願景。">
+    <meta property="twitter:url" content="https://mbti.chiyigo.com/dashboard.html">
+    <meta property="twitter:title" content="心智歷史儀表板｜MBTI 認知幾何">
+    <meta property="twitter:description" content="檢視你歷次測驗的人格演化軌跡、四軸傾向時間序列與模組差異對比，掌握你的心智拓撲如何隨時間漂移。">
     <meta property="twitter:image" content="https://mbti.chiyigo.com/og-image.jpg">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     
@@ -69,12 +69,15 @@
     <link rel="stylesheet" href="feature-enhancements.css?v=3">
     <script src="toast.js?v=2" defer></script>
     <script src="theme-toggle.js?v=1" defer></script>
-    <script src="i18n.js?v=4" defer></script>
+    <script src="i18n.js?v=5" defer></script>
     <script src="ui-handlers.js?v=2" defer></script>
     <script src="gtag-init.js?v=1" async></script>
 
-    <!-- chart.js 未鎖版號（業務端依 latest 修 bug），暫無 SRI；下次升級時改 @x.y 並補 integrity -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+    <!-- chart.js pin @4.5.1 + SRI（CLAUDE.md §套件管理 版本固定）。升級時：改版號 → 重新下載
+         dist/chart.umd.min.js 算 sha384 base64 更新 integrity，兩處（assessment / dashboard）同步 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
+            integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
+            crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"
             integrity="sha384-M00GJNq2IplZCB3+JOJEl2H0un45ODvqJSSnIc4DvG8gPn8RX5ToITFXcv3AvOx5"
             crossorigin="anonymous"></script>

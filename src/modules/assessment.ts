@@ -125,3 +125,31 @@ export function processAssessmentResult(rawScores: number[], _timeSpentMs: numbe
         zScores
     };
 }
+
+/**
+ * 5. 異常分數偵測（observability，不拒絕、不改結果）
+ *
+ * 邊界驗證（長度 / 有限數 / ±1000）已在 route handler 擋掉髒資料；本函式辨識的是
+ * 「在合法範圍內、但數學上無法產生有鑑別力結果」的提交——典型是腳本 / bot / God-Mode
+ * ZERO 注入，或使用者整份沒作答。這類輸入經 z-score 後全為 0，與 16 型 cosine 相似度
+ * 全為 0，softmax 退化成均分，primaryType 只能取字母序，結果無意義卻仍會被照常持久化。
+ *
+ * 刻意「只回報、不拒絕」：前端「🔴 系統塌陷警告」是設計過的 UX 狀態，後端硬擋會破壞它。
+ * 呼叫端拿 flags 寫一筆 warn log（Workers Logs），供上線後監控腳本提交 / 異常作答比例。
+ *
+ * 回傳 flags（互斥）：
+ *   - "all_zero"     八維全 0：等同沒作答 / God-Mode ZERO。
+ *   - "zero_variance" 八維非零但完全相同：使用者每題選同一格，無偏好訊號。
+ */
+export function detectScoreAnomalies(rawScores: number[]): string[] {
+    const n = rawScores.length;
+    if (n === 0) return [];
+
+    if (rawScores.every(s => s === 0)) return ["all_zero"];
+
+    const mean = rawScores.reduce((a, b) => a + b, 0) / n;
+    const variance = rawScores.reduce((a, b) => a + (b - mean) ** 2, 0) / n;
+    if (variance === 0) return ["zero_variance"];
+
+    return [];
+}

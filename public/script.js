@@ -46,6 +46,11 @@ if (!['A', 'B', 'C', 'D', 'E', 'F'].includes(MM.version)) {
     MM.version = 'B'; // 防呆預設
 }
 
+// God Mode（?dev=god）採 deny-by-default allowlist：只有本機 dev host 放行。
+// 生產站與任何未知 host（preview / 別名 / 攻擊者鏡像）一律禁用，避免有人用 ?dev=god
+// 或直接 window.injectGodMode() 拿任意分數打 V1 大腦 API。需在其他 host 測試時顯式加進清單。
+const IS_DEV_ENV = ['localhost', '127.0.0.1'].includes(location.hostname);
+
 // 動態題庫指標 helper — pick EN bank when mbti_locale==='en' 且 questions-en.js 已載入
 function _pickQB(zhBank, key) {
     if (typeof window.pickEnBank === 'function') {
@@ -100,6 +105,7 @@ function updateProgress(p, max = 5) {
 }
 
 window.injectGodMode = function(mode) {
+    if (!IS_DEV_ENV) { console.warn('[God Mode] disabled in production'); return; }
     MM.flags.godMode = true;
     if (mode === 'INTJ') Object.assign(MM.scores, { Ti: 15, Te: 35, Fi: 20, Fe: -10, Ni: 45, Ne: 10, Si: -15, Se: -25 });
     else if (mode === 'ESFP') Object.assign(MM.scores, { Ti: -15, Te: 10, Fi: 35, Fe: 20, Ni: -25, Ne: -10, Si: 15, Se: 45 });
@@ -120,7 +126,7 @@ function initApp() {
         }
     }
 
-    if (urlParams.get('dev') === 'god') {
+    if (IS_DEV_ENV && urlParams.get('dev') === 'god') {
         const devConsole = document.getElementById('dev-console');
         if (devConsole) { devConsole.classList.remove('hidden'); devConsole.removeAttribute('hidden'); }
     }
@@ -614,13 +620,13 @@ function generateImageForMobile() {
     // [防呆] 拉長截圖渲染時間與強制 CORS
     setTimeout(() => {
         html2canvas(target, { backgroundColor:'#0b1120', scale: 2, useCORS:true, allowTaint:false, y:0, scrollY:0 }).then(c => { 
-            document.getElementById('action-btns').style.display='flex'; 
+            document.getElementById('action-btns').style.display='';
             document.getElementById('restart-btn').style.display='block'; 
             document.getElementById('watermark').classList.add('hidden'); 
             document.getElementById('image-preview').src = c.toDataURL('image/jpeg', 0.9); 
             document.getElementById('image-modal').classList.remove('hidden'); 
         }).catch(err => {
-            document.getElementById('action-btns').style.display='flex'; 
+            document.getElementById('action-btns').style.display='';
             document.getElementById('restart-btn').style.display='block'; 
             document.getElementById('watermark').classList.add('hidden'); 
             (window.toast || alert)('圖片生成失敗，請稍後重試。', { type: 'error' });

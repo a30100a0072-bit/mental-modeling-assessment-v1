@@ -25,14 +25,19 @@ function escapeHtml(s) {
     }[ch]));
 }
 
+// i18n helper：有 window.t 走當前語系翻譯（en 缺 key 會自動 fallback 回中文），否則回 fallback。
+// 刻意維持「各 function 內 local 宣告」而非頂層 const — result-render.js 與 script.js 同為
+// classic script 共用 global lexical scope，頂層重複 const 名稱會 SyntaxError 整檔失效。
 function renderResult(isShared) {
+    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     let gripHTML = "";
     if(!isShared && !MM.flags.sharedView && !['D','E','F'].includes(MM.version)) {
         const p1S = getPhaseScores(0); const p4S = getPhaseScores(3);
         const p1Top = Object.keys(p1S).reduce((a,b)=>p1S[a]>p1S[b]?a:b); const p4Top = Object.keys(p4S).reduce((a,b)=>p4S[a]>p4S[b]?a:b);
         if (ENGINE.antagonist[p1Top] === p4Top) {
             const gripExit = window.ENGloc ? window.ENGloc('gripExit') : ENGINE.gripExit;
-            gripHTML = `<div class="diag-grip"><b>⚠️ 深層 Grip 狀態警告</b><br>核心(${p1Top})在高壓完全翻轉為對立面(${p4Top})。<div class="grip-exit"><b>💡 退出戰略：</b><br>${escapeHtml(gripExit[p1Top]||'請減少極端消耗。')}</div></div>`;
+            const gripExitTxt = escapeHtml(gripExit[p1Top] || _T('result.diag.gripExitFallback', null, '請減少極端消耗。'));
+            gripHTML = `<div class="diag-grip"><b>${_T('result.diag.gripTitle', null, '⚠️ 深層 Grip 狀態警告')}</b><br>${_T('result.diag.gripFlip', { core: p1Top, opp: p4Top }, `核心(${p1Top})在高壓完全翻轉為對立面(${p4Top})。`)}<div class="grip-exit"><b>${_T('result.diag.gripExitLabel', null, '💡 退出戰略：')}</b><br>${gripExitTxt}</div></div>`;
         }
     }
     document.getElementById('grip-warning').innerHTML = gripHTML;
@@ -41,11 +46,17 @@ function renderResult(isShared) {
     document.getElementById('mbti-type').innerText = primary;
 
     const topProb = MM.backend.probs[primary] || 0.0;
-    const probLabel = MM.flags.sharedView ? "本地解碼概率" : "雲端判定概率";
+    const probLabel = MM.flags.sharedView
+        ? _T('result.msg.localProb', null, '本地解碼機率')
+        : _T('result.msg.cloudProb', null, '雲端判定機率');
     document.getElementById('spectrum-subtitle').innerHTML = `<span class="tx-soft-cyan">${probLabel}: ${Math.round(topProb)}%</span>`;
 
     const mag = Math.sqrt(ENGINE.dimKeys.reduce((s,k)=>s+MM.scores[k]**2, 0))||1;
-    document.getElementById('topology-diagnosis').innerHTML = (mag < 10) ? `<div class="diag-danger">🔴 系統塌陷警告：能量互相抵銷，效度偏移。</div>` : (MM.flags.trifurcationWarning ? `<div class="diag-warning">🟡 三向分岔畸變：前三維度糾纏過渡期。</div>` : `<div class="diag-safe">🟢 動態平衡拓撲 (Dynamic Symmetry)：健康非對稱幾何張力。</div>`);
+    document.getElementById('topology-diagnosis').innerHTML = (mag < 10)
+        ? `<div class="diag-danger">${_T('result.diag.topoCollapse', null, '🔴 系統塌陷警告：能量互相抵銷，效度偏移。')}</div>`
+        : (MM.flags.trifurcationWarning
+            ? `<div class="diag-warning">${_T('result.diag.topoTrifurcation', null, '🟡 三向分岔畸變：前三維度糾纏過渡期。')}</div>`
+            : `<div class="diag-safe">${_T('result.diag.topoBalance', null, '🟢 動態平衡拓撲 (Dynamic Symmetry)：健康非對稱幾何張力。')}</div>`);
 
     const norm = {}; ENGINE.dimKeys.forEach(k => norm[k] = Math.max(0, Math.min(100, Math.round(((MM.scores[k]+15)/45)*100))));
 
@@ -54,7 +65,6 @@ function renderResult(isShared) {
     const tipsLoc = window.ENGloc ? window.ENGloc('tips') : ENGINE.tips;
     document.getElementById('score-table-container').innerHTML = `<table><tr>${ENGINE.dimKeys.map(k=>{const tip = escapeHtml(tipsLoc[k]); return `<th data-tip="${tip}" title="${tip}">${k}</th>`;}).join('')}</tr><tr>${ENGINE.dimKeys.map(k=>`<td>${norm[k]}%</td>`).join('')}</tr></table>`;
 
-    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     const tagEgo = _T('result.tag.ego', null, 'EGO');
     const tagSub = _T('result.tag.subconscious', null, '潛意識');
     const tagShadow = _T('result.tag.shadow', null, '陰影');
@@ -112,13 +122,13 @@ function renderResult(isShared) {
 //   - Mirror：相同核心價值，但 J/P 偏好相反。互相照鏡子，磨合中成長。
 //   - Activator：相同氣質但 I/E 相反，能量極性互推進，破解卡關。
 function buildCompatSection(primary) {
+    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     if (!primary || primary.length !== 4) return '';
     const sides = (typeof ENGINE !== 'undefined' && ENGINE.sides[primary]) || [];
     const dual = sides[1];
     const mirror = primary.slice(0, 3) + (primary[3] === 'J' ? 'P' : 'J');
     const activator = (primary[0] === 'I' ? 'E' : 'I') + primary.slice(1);
 
-    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     const cards = [
         { type: dual,      label: _T('result.label.compatDuality',   null, '🔮 互補伴侶'), sub: 'Duality',   desc: _T('result.label.compatDualityDesc',   null, '你的劣勢，是 TA 的英雄。最深的安全感與互補。') },
         { type: mirror,    label: _T('result.label.compatMirror',    null, '🪞 鏡像成長'), sub: 'Mirror',    desc: _T('result.label.compatMirrorDesc',    null, '相同核心價值，但執行風格相反。互相照鏡子。') },
@@ -177,6 +187,7 @@ function updateCharts(p, norm, probs, sorted) {
 }
 
 function updateDetail(type) {
+    const _T = (k, vars, fb) => (typeof window.t === 'function' ? window.t(k, vars, fb) : fb);
     document.querySelectorAll('.match-item').forEach(el => el.classList.remove('active'));
     document.getElementById('btn-'+type)?.classList.add('active');
 
@@ -196,19 +207,19 @@ function updateDetail(type) {
 
     document.getElementById('detail-box').innerHTML = `
         <div class="report-section">
-            <h3>◈ 心智四面體解構 (4 Sides of the Mind)</h3>
-            <p><b>1. Ego (自我) - ${s[0]} :</b><br>您的日常操作系統與意識主體，負責應對大部分的常規現實。</p>
-            <p><b>2. Subconscious (潛意識/阿尼瑪) - ${s[1]} :</b><br>您的隱藏渴望。在極度放鬆、充滿安全感或渴望被愛時，您會卸下 ${type} 的冰冷武裝，展現出 ${s[1]} 的隨性與熱情特質。</p>
-            <p><b>3. Unconscious (無意識陰影) - ${s[2]} :</b><br>您的防禦反撲。當遭遇重大挫折、背叛或中年危機時，大腦會切換至 ${s[2]}，以憤世嫉俗或破壞性的方式冷酷地反擊外界。</p>
-            <p><b>4. Superego (超我寄生體) - ${s[3]} :</b><br>您的終極毀滅模式。在面臨生死存亡或被逼入絕對絕境時，盲點功能全面接管，展現出 ${s[3]} 最具破壞性與惡意的極端防禦型態，玉石俱焚。</p>
+            <h3>${_T('result.detail.tetraTitle', null, '◈ 心智四面體解構 (4 Sides of the Mind)')}</h3>
+            <p><b>${_T('result.detail.egoLabel', { fn: s[0] }, `1. Ego (自我) - ${s[0]} :`)}</b><br>${_T('result.detail.egoBody', null, '您的日常操作系統與意識主體，負責應對大部分的常規現實。')}</p>
+            <p><b>${_T('result.detail.subLabel', { fn: s[1] }, `2. Subconscious (潛意識/阿尼瑪) - ${s[1]} :`)}</b><br>${_T('result.detail.subBody', { type: type, fn: s[1] }, `您的隱藏渴望。在極度放鬆、充滿安全感或渴望被愛時，您會卸下 ${type} 的冰冷武裝，展現出 ${s[1]} 的隨性與熱情特質。`)}</p>
+            <p><b>${_T('result.detail.uncLabel', { fn: s[2] }, `3. Unconscious (無意識陰影) - ${s[2]} :`)}</b><br>${_T('result.detail.uncBody', { fn: s[2] }, `您的防禦反撲。當遭遇重大挫折、背叛或中年危機時，大腦會切換至 ${s[2]}，以憤世嫉俗或破壞性的方式冷酷地反擊外界。`)}</p>
+            <p><b>${_T('result.detail.superLabel', { fn: s[3] }, `4. Superego (超我寄生體) - ${s[3]} :`)}</b><br>${_T('result.detail.superBody', { fn: s[3] }, `您的終極毀滅模式。在面臨生死存亡或被逼入絕對絕境時，盲點功能全面接管，展現出 ${s[3]} 最具破壞性與惡意的極端防禦型態，玉石俱焚。`)}</p>
         </div>
         <div class="report-section">
-            <h3>◈ 實測塌陷盲區 (The Real Trickster)</h3>
+            <h3>${_T('result.detail.tricksterTitle', null, '◈ 實測塌陷盲區 (The Real Trickster)')}</h3>
             <p class="tx-rose"><b>${ENGINE.antagonist[stack[2]]} (${escapeHtml((tipsLoc[ENGINE.antagonist[stack[2]]] || '').split(/[：:]/)[0])})</b><br>${escapeHtml(blind)}</p>
         </div>
         <div class="report-section report-section--no-border">
-            <h3>◈ 結構化解析</h3><p><b>■ 日常運作:</b><br>${escapeHtml(r.b)}</p><p><b>■ 極端衝突:</b><br>${escapeHtml(r.c)}</p><p><b>■ 覺醒進化:</b><br>${escapeHtml(r.g)}</p>
-            <h4 class="u-mt-20">◈ 動態處方籤</h4><p class="tx-emerald-bold">${escapeHtml(r.p)}</p>
+            <h3>${_T('result.detail.structTitle', null, '◈ 結構化解析')}</h3><p><b>${_T('result.detail.daily', null, '■ 日常運作:')}</b><br>${escapeHtml(r.b)}</p><p><b>${_T('result.detail.conflict', null, '■ 極端衝突:')}</b><br>${escapeHtml(r.c)}</p><p><b>${_T('result.detail.awaken', null, '■ 覺醒進化:')}</b><br>${escapeHtml(r.g)}</p>
+            <h4 class="u-mt-20">${_T('result.detail.prescription', null, '◈ 動態處方籤')}</h4><p class="tx-emerald-bold">${escapeHtml(r.p)}</p>
         </div>`;
 }
 

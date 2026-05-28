@@ -1,4 +1,4 @@
-﻿import { processAssessmentResult } from "./modules/assessment";
+﻿import { processAssessmentResult, detectScoreAnomalies } from "./modules/assessment";
 import { logError, logEvent, recordAudit } from "./modules/log";
 import { ERR_CODE, errorResponse } from "./modules/errors";
 import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT } from "./sql/queries";
@@ -398,6 +398,14 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     // 前端 modal 是 UX 防護，這裡是硬牆，防止繞過 modal 直接打 API
     if (!finalUserId && !GUEST_ONLY_VERSIONS.has(routeVersion)) {
         return errorResponse(ERR_CODE.UNAUTHORIZED, "此模組需登入後方可作答", 401, traceId, corsHeaders);
+    }
+
+    // 異常偵測（observability，不拒絕）：腳本 / bot / 沒作答的提交會產生無鑑別力結果，
+    // 仍照常存檔與回傳（保留前端「系統塌陷」UX），但留 warn log 供上線後監控比例。
+    // 不記分數本體與帳號 id（CLAUDE.md「log 禁洩漏敏感」），只記是否登入與旗標。
+    const anomalies = detectScoreAnomalies(rawScores);
+    if (anomalies.length > 0) {
+        logEvent("assess_anomaly", { traceId, version: routeVersion, authed: !!finalUserId, flags: anomalies }, "warn");
     }
 
     const result = processAssessmentResult(rawScores, timeSpentMs);

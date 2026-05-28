@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { processAssessmentResult, calculateZScores, IDEAL_PROFILES, SOFTMAX_TAU } from "../src/modules/assessment";
+import { processAssessmentResult, calculateZScores, IDEAL_PROFILES, SOFTMAX_TAU, detectScoreAnomalies } from "../src/modules/assessment";
 // vite 原生支援 ?raw — 把 engine.js 內容當字串讀進來做漂移檢查
 // @ts-expect-error - vite raw import 沒有對應的 TS 宣告
 import engineSrc from "../public/engine.js?raw";
@@ -51,6 +51,31 @@ describe("algorithm: processAssessmentResult — 邊界與不變量", () => {
     const r = processAssessmentResult([1, 2, 3, 4, 5, 6, 7, 8], 0);
     expect(Object.keys(IDEAL_PROFILES)).toContain(r.primaryType);
     expect(r.zScores).toHaveLength(8);
+  });
+});
+
+describe("algorithm: detectScoreAnomalies — 無鑑別力提交偵測（observability）", () => {
+  it("八維全 0（沒作答 / God-Mode ZERO）→ all_zero", () => {
+    expect(detectScoreAnomalies([0, 0, 0, 0, 0, 0, 0, 0])).toEqual(["all_zero"]);
+  });
+
+  it("八維非零但完全相同（每題選同格）→ zero_variance", () => {
+    expect(detectScoreAnomalies([5, 5, 5, 5, 5, 5, 5, 5])).toEqual(["zero_variance"]);
+    expect(detectScoreAnomalies([-3, -3, -3, -3, -3, -3, -3, -3])).toEqual(["zero_variance"]);
+  });
+
+  it("正常有變異的輸入 → 無 flag", () => {
+    expect(detectScoreAnomalies([3, 1, 4, 1, 5, 9, 2, 6])).toEqual([]);
+    // 與 IDEAL_PROFILES 任一型對拍：合法作答不得誤報
+    expect(detectScoreAnomalies(IDEAL_PROFILES["INTJ"])).toEqual([]);
+  });
+
+  it("all_zero 與 zero_variance 互斥（全零只回 all_zero，不重複標記）", () => {
+    expect(detectScoreAnomalies([0, 0, 0, 0, 0, 0, 0, 0])).not.toContain("zero_variance");
+  });
+
+  it("空陣列 → 無 flag（防呆，實際 route 已擋長度）", () => {
+    expect(detectScoreAnomalies([])).toEqual([]);
   });
 });
 

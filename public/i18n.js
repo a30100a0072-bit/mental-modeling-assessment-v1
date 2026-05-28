@@ -157,7 +157,33 @@
                     shareFailed: '產生分享卡失敗：{msg}',
                     copySuccess: '防篡改連結已複製'
                 },
-                tag: { ego: 'EGO', subconscious: '潛意識', shadow: '陰影' }
+                tag: { ego: 'EGO', subconscious: '潛意識', shadow: '陰影' },
+                diag: {
+                    gripTitle: '⚠️ 深層 Grip 狀態警告',
+                    gripFlip: '核心({core})在高壓完全翻轉為對立面({opp})。',
+                    gripExitLabel: '💡 退出戰略：',
+                    gripExitFallback: '請減少極端消耗。',
+                    topoCollapse: '🔴 系統塌陷警告：能量互相抵銷，效度偏移。',
+                    topoTrifurcation: '🟡 三向分岔畸變：前三維度糾纏過渡期。',
+                    topoBalance: '🟢 動態平衡拓撲 (Dynamic Symmetry)：健康非對稱幾何張力。'
+                },
+                detail: {
+                    tetraTitle: '◈ 心智四面體解構 (4 Sides of the Mind)',
+                    egoLabel: '1. Ego (自我) - {fn} :',
+                    egoBody: '您的日常操作系統與意識主體，負責應對大部分的常規現實。',
+                    subLabel: '2. Subconscious (潛意識/阿尼瑪) - {fn} :',
+                    subBody: '您的隱藏渴望。在極度放鬆、充滿安全感或渴望被愛時，您會卸下 {type} 的冰冷武裝，展現出 {fn} 的隨性與熱情特質。',
+                    uncLabel: '3. Unconscious (無意識陰影) - {fn} :',
+                    uncBody: '您的防禦反撲。當遭遇重大挫折、背叛或中年危機時，大腦會切換至 {fn}，以憤世嫉俗或破壞性的方式冷酷地反擊外界。',
+                    superLabel: '4. Superego (超我寄生體) - {fn} :',
+                    superBody: '您的終極毀滅模式。在面臨生死存亡或被逼入絕對絕境時，盲點功能全面接管，展現出 {fn} 最具破壞性與惡意的極端防禦型態，玉石俱焚。',
+                    tricksterTitle: '◈ 實測塌陷盲區 (The Real Trickster)',
+                    structTitle: '◈ 結構化解析',
+                    daily: '■ 日常運作:',
+                    conflict: '■ 極端衝突:',
+                    awaken: '■ 覺醒進化:',
+                    prescription: '◈ 動態處方籤'
+                }
             },
             dashboard: {
                 title: '心智歷史儀表板',
@@ -356,7 +382,33 @@
                     shareFailed: 'Failed to generate share card: {msg}',
                     copySuccess: 'Tamper-proof link copied'
                 },
-                tag: { ego: 'EGO', subconscious: 'Subconscious', shadow: 'Shadow' }
+                tag: { ego: 'EGO', subconscious: 'Subconscious', shadow: 'Shadow' },
+                diag: {
+                    gripTitle: '⚠️ Deep Grip State Warning',
+                    gripFlip: 'Under stress your core ({core}) flips entirely into its opposite ({opp}).',
+                    gripExitLabel: '💡 Exit strategy:',
+                    gripExitFallback: 'Reduce extreme energy drain.',
+                    topoCollapse: '🔴 System Collapse Warning: energies cancel each other out, validity drifts.',
+                    topoTrifurcation: '🟡 Trifurcation Distortion: the top three dimensions are entangled in transition.',
+                    topoBalance: '🟢 Dynamic Symmetry: healthy asymmetric geometric tension.'
+                },
+                detail: {
+                    tetraTitle: '◈ The 4 Sides of the Mind',
+                    egoLabel: '1. Ego - {fn}:',
+                    egoBody: 'Your everyday operating system and conscious core, handling most of routine reality.',
+                    subLabel: '2. Subconscious (Anima) - {fn}:',
+                    subBody: 'Your hidden longing. When deeply relaxed, secure, or craving to be loved, you drop {type}\'s cold armor and reveal {fn}\'s spontaneous, passionate side.',
+                    uncLabel: '3. Unconscious Shadow - {fn}:',
+                    uncBody: 'Your defensive counterstrike. After major setbacks, betrayal, or a midlife crisis, your mind switches to {fn}, coldly striking back at the world with cynicism or destruction.',
+                    superLabel: '4. Superego - {fn}:',
+                    superBody: 'Your ultimate destruction mode. Cornered into a life-or-death dead end, your blind-spot function seizes full control, unleashing {fn}\'s most destructive and malicious extreme — scorched earth.',
+                    tricksterTitle: '◈ Measured Collapse Blind Spot (The Real Trickster)',
+                    structTitle: '◈ Structured Analysis',
+                    daily: '■ Daily operation:',
+                    conflict: '■ Extreme conflict:',
+                    awaken: '■ Awakening evolution:',
+                    prescription: '◈ Dynamic Prescription'
+                }
             },
             dashboard: {
                 title: 'Mind History Dashboard',
