@@ -524,21 +524,6 @@ function preCalculatePhase1To4() {
     });
 }
 
-// Route A: 算「只到第 uptoPhase phase」的 partial scores（不 mutate MM.scores），
-// 用來餵 calculateLocalProbabilities → evaluateConfidence。
-// 與 preCalculatePhase1To4 邏輯對稱（同樣 +w / -w*0.5 antagonist 扣分）但 scope 縮短。
-function calculatePartialPhaseScores(uptoPhase) {
-    const partial = { Ti:0, Te:0, Fi:0, Fe:0, Ni:0, Ne:0, Si:0, Se:0 };
-    [m1Data, m2Data, m3Data, m4Data].slice(0, uptoPhase).forEach((list, pIdx) => {
-        list.forEach((item, i) => {
-            const ans = MM.state.answers[`q_${pIdx+1}_${i}`];
-            if (ans === 'a') item.dA.forEach(d => { partial[d] += item.w; partial[ENGINE.antagonist[d]] -= item.w * 0.5; });
-            else if (ans === 'b') item.dB.forEach(d => { partial[d] += item.w; partial[ENGINE.antagonist[d]] -= item.w * 0.5; });
-        });
-    });
-    return partial;
-}
-
 // 進入 phase 2/3/4 開頭注入「進度已存檔」存檔提示。
 // 設計原則 (feedback_assessment_integrity)：
 //   - 不顯示已預測的型 / 信心（中途給結論=失專業）

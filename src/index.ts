@@ -1,7 +1,7 @@
 ﻿import { processAssessmentResult, detectScoreAnomalies } from "./modules/assessment";
 import { logError, logEvent, recordAudit } from "./modules/log";
 import { ERR_CODE, errorResponse } from "./modules/errors";
-import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT } from "./sql/queries";
+import { SELECT_HISTORY_BY_USER, INSERT_ASSESSMENT, buildClaimGuestResultsSql } from "./sql/queries";
 
 // 認證走 chiyigo.com OIDC（PKCE + ES256 access_token + JWKS 本地驗）
 // 本 Worker 只負責：測驗提交、歷史查詢、帳號刪除（皆透過 chiyigo token 驗身分）
@@ -20,6 +20,10 @@ const STATIC_ALLOWED_ORIGINS = new Set<string>([
   "https://mbti.chiyigo.com",
   "https://chiyigo.com",
 ]);
+
+// guestId 長度上限：assess 寫入與 claim 認領必須共用同一上限，否則邊界值（剛好等於上限）
+// 能存進去卻認領不回（資料孤兒）。現網 guestId 為 randomUUID(36)，留 64 容納 legacy 格式。
+const GUEST_ID_MAX_LEN = 64;
 
 function buildCorsHeaders(request: Request, env: Env): Record<string, string> {
   const origin = request.headers.get("Origin") || "";
@@ -185,7 +189,7 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
         if (!identity) return errorResponse(ERR_CODE.UNAUTHORIZED, "Invalid or Expired Token", 401, traceId, corsHeaders);
 
         // dashboard 正常使用每分鐘最多會打幾次 history（多次切 tab / 強制重整）：30 次寬鬆夠用。
-        if (!(await checkRateLimit("history", identity.sub, 30, 60, env, ctx))) {
+        if (!(await checkRateLimit("history", identity.sub, 30, 60, env, ctx, traceId))) {
             return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
         }
 
@@ -195,7 +199,7 @@ async function handleGetHistory(request: Request, env: Env, ctx: ExecutionContex
         const historyReq = await env.MM_DB_D1.prepare(SELECT_HISTORY_BY_USER).bind(identity.sub).all();
 
         return new Response(JSON.stringify({ status: "Success", data: historyReq.results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    } catch (error: any) {
+    } catch (error) {
         logError(env, "handleGetHistory", error, { traceId }, ctx);
         return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
     }
@@ -210,7 +214,7 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
     if (!identity) return errorResponse(ERR_CODE.UNAUTHORIZED, "Invalid or Expired Token", 401, traceId, corsHeaders);
 
     // 帳號刪除是高破壞性操作，每小時最多 3 次足夠正常使用 + 防 spam 觸發大量 DELETE。
-    if (!(await checkRateLimit("delete", identity.sub, 3, 3600, env, ctx))) {
+    if (!(await checkRateLimit("delete", identity.sub, 3, 3600, env, ctx, traceId))) {
         return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
     }
 
@@ -223,7 +227,7 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
         const deletedCount = batchRes[0]?.meta?.changes ?? 0;
         recordAudit(env, traceId, "delete_account", identity.sub, { deletedCount }, ctx);
         return new Response(JSON.stringify({ status: "Deleted" }), { headers: corsHeaders });
-    } catch (err: any) {
+    } catch (err) {
         logError(env, "handleDeleteAccount", err, { traceId, sub: identity.sub }, ctx);
         return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
     }
@@ -239,7 +243,8 @@ async function handleDeleteAccount(request: Request, env: Env, ctx: ExecutionCon
 //   subject: 計數主體（登入 sub / guestId / IP），同一 subject 共用計數
 //   max:     窗口內最多 N 次
 //   ttlSec:  窗口長度
-async function checkRateLimit(name: string, subject: string, max: number, ttlSec: number, env: Env, ctx: ExecutionContext): Promise<boolean> {
+//   traceId: 關聯 request log；KV 異常 error log 用它對拍，不再記 subject（含 IP/sub，PII）
+async function checkRateLimit(name: string, subject: string, max: number, ttlSec: number, env: Env, ctx: ExecutionContext, traceId: string): Promise<boolean> {
     const key = `rl:${name}:${subject}`;
     try {
         const cur = parseInt((await env.MM_CACHE_KV.get(key)) || "0", 10);
@@ -247,7 +252,7 @@ async function checkRateLimit(name: string, subject: string, max: number, ttlSec
         await env.MM_CACHE_KV.put(key, String(cur + 1), { expirationTtl: ttlSec });
         return true;
     } catch (err) {
-        logError(env, "checkRateLimit:kv", err, { name, subject }, ctx);
+        logError(env, "checkRateLimit:kv", err, { name, traceId }, ctx);
         return true;
     }
 }
@@ -274,26 +279,25 @@ async function handleClaimGuestResults(request: Request, env: Env, ctx: Executio
     const identity = await verifyChiyigoToken(token, env);
     if (!identity) return errorResponse(ERR_CODE.UNAUTHORIZED, "Invalid or Expired Token", 401, traceId, corsHeaders);
 
-    if (!(await checkRateLimit("claim", identity.sub, 5, 60, env, ctx))) {
+    if (!(await checkRateLimit("claim", identity.sub, 5, 60, env, ctx, traceId))) {
         return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
     }
 
     let body: { guestIds?: string[] };
     try { body = await request.json(); } catch { return errorResponse(ERR_CODE.VALIDATION, "Invalid JSON", 400, traceId, corsHeaders); }
 
-    const guestIds = (body.guestIds || []).filter(s => typeof s === "string" && s.length > 0 && s.length < 64).slice(0, 20);
+    const guestIds = (body.guestIds || []).filter(s => typeof s === "string" && s.length > 0 && s.length <= GUEST_ID_MAX_LEN).slice(0, 20);
     if (guestIds.length === 0) return new Response(JSON.stringify({ status: "Noop", claimed: 0 }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     try {
-        const placeholders = guestIds.map(() => "?").join(",");
         const stmt = env.MM_DB_D1.prepare(
-            `UPDATE assessments SET user_id = ?, guest_id = NULL WHERE user_id IS NULL AND guest_id IN (${placeholders})`
+            buildClaimGuestResultsSql(guestIds.length)
         ).bind(identity.sub, ...guestIds);
         const res = await stmt.run();
-        const claimed = (res as any)?.meta?.changes ?? 0;
+        const claimed = res?.meta?.changes ?? 0;
         recordAudit(env, traceId, "claim_guest", identity.sub, { guestIdCount: guestIds.length, claimed }, ctx);
         return new Response(JSON.stringify({ status: "Claimed", claimed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    } catch (err: any) {
+    } catch (err) {
         logError(env, "handleClaimGuestResults:db", err, { traceId, sub: identity.sub, guestIdCount: guestIds.length }, ctx);
         return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
     }
@@ -329,10 +333,10 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     // 同 IP 不同瀏覽器各自記額度。guestId 可偽造但本 endpoint 是反 spam 不是反濫用，trade-off 可接受。
     // 沒帶 guestId 的請求（極少數舊 client）退化成純 IP 計數，行為跟原本一致。
     // 正常使用者一卷 5–15 分鐘，一分鐘 10 次已經是異常 spam；6 卷 ×2 重試也只 12。
-    const rlGuestKey = (typeof payload.guestId === "string" && payload.guestId.length > 0 && payload.guestId.length <= 64)
+    const rlGuestKey = (typeof payload.guestId === "string" && payload.guestId.length > 0 && payload.guestId.length <= GUEST_ID_MAX_LEN)
         ? payload.guestId : "noguest";
     const rlSubject = `${getClientIp(request)}:${rlGuestKey}`;
-    if (!(await checkRateLimit("assess", rlSubject, 10, 60, env, ctx))) {
+    if (!(await checkRateLimit("assess", rlSubject, 10, 60, env, ctx, traceId))) {
         return errorResponse(ERR_CODE.RATE_LIMITED, "Too Many Requests", 429, traceId, corsHeaders);
     }
 
@@ -367,7 +371,7 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
     // guestId：選填，但若有要是合理字串
     let guestId: string | null = null;
     if (payload.guestId !== undefined && payload.guestId !== null) {
-        if (typeof payload.guestId !== "string" || payload.guestId.length === 0 || payload.guestId.length > 64) {
+        if (typeof payload.guestId !== "string" || payload.guestId.length === 0 || payload.guestId.length > GUEST_ID_MAX_LEN) {
             return badRequest("Invalid guestId", traceId, corsHeaders);
         }
         guestId = payload.guestId;
@@ -426,11 +430,12 @@ async function handleAssessmentSubmit(request: Request, env: Env, ctx: Execution
         questionsAnswered
     ).run();
 
+    // report 結果不再寫 KV：無任何讀取端（只有 rl:* 被讀），結果已 inline 回傳 + 落 D1。
+    // 未來若做 shareable-report-by-id 再補 GET route + 對應 KV/D1 讀取端。
     const resultData = { id: reportId, ...result, timestamp: new Date().toISOString() };
-    await env.MM_CACHE_KV.put(`report:${reportId}`, JSON.stringify(resultData), { expirationTtl: 86400 });
 
     return new Response(JSON.stringify({ status: "Calculated", reportId: reportId, data: resultData }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  } catch (error: any) {
+  } catch (error) {
     logError(env, "handleAssessmentSubmit", error, { traceId }, ctx);
     return errorResponse(ERR_CODE.INTERNAL, "Internal Error", 500, traceId, corsHeaders);
   }

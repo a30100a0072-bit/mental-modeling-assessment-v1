@@ -200,11 +200,13 @@
     }
 
     // -------- 長量表休息點：每 10 題插入軟提示，幫使用者眼睛喘氣 --------
+    // icon 與文字分離：避免依賴 emoji UTF-16 長度做 slice（EN 翻譯前綴長度不同會切錯字）；
+    // 文字走 i18n (_T)，無翻譯時 fall back 中文。
     const REST_TIPS = [
-        '☕ 已完成 10 題，深呼吸 3 秒再繼續。憑直覺答最準。',
-        '🧘 已完成 20 題，提醒自己：沒有對錯，只有最像你的選項。',
-        '🌿 已完成 30 題，剩下不多了，繼續保持節奏。',
-        '🎯 已完成 40 題，一鼓作氣到底。'
+        { icon: '☕', key: 'quiz.restTip1', fb: '已完成 10 題，深呼吸 3 秒再繼續。憑直覺答最準。' },
+        { icon: '🧘', key: 'quiz.restTip2', fb: '已完成 20 題，提醒自己：沒有對錯，只有最像你的選項。' },
+        { icon: '🌿', key: 'quiz.restTip3', fb: '已完成 30 題，剩下不多了，繼續保持節奏。' },
+        { icon: '🎯', key: 'quiz.restTip4', fb: '已完成 40 題，一鼓作氣到底。' }
     ];
     function injectRestHints() {
         const qs = getQuestions();
@@ -212,12 +214,21 @@
         // 先清掉舊的 hint（換 phase 時會重渲染）
         document.querySelectorAll('.rest-hint').forEach(n => n.remove());
         for (let i = 10; i < qs.length; i += 10) {
-            const tipIdx = (i / 10) - 1;
-            const msg = REST_TIPS[tipIdx] || `已完成 ${i} 題，繼續加油 ✨`;
+            const tip = REST_TIPS[(i / 10) - 1];
+            const icon = tip ? tip.icon : '✨';
+            const text = tip ? _T(tip.key, null, tip.fb) : _T('quiz.restTipGeneric', { n: i }, `已完成 ${i} 題，繼續加油`);
             const hint = document.createElement('div');
             hint.className = 'rest-hint';
             hint.setAttribute('aria-hidden', 'true');
-            hint.innerHTML = `<span class="rest-hint-icon">${msg.slice(0, 2)}</span><span class="rest-hint-text">${msg.slice(2).trim()}</span>`;
+            // textContent 而非 innerHTML：i18n 字串非 *Html key，杜絕注入面。
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'rest-hint-icon';
+            iconSpan.textContent = icon;
+            const textSpan = document.createElement('span');
+            textSpan.className = 'rest-hint-text';
+            textSpan.textContent = text;
+            hint.appendChild(iconSpan);
+            hint.appendChild(textSpan);
             qs[i].parentNode.insertBefore(hint, qs[i]);
         }
     }

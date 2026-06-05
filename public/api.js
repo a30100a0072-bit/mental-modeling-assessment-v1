@@ -29,12 +29,13 @@ async function proceedToResultAPI() {
     document.getElementById('loading-screen').classList.remove('hidden');
     window.scrollTo(0,0);
 
-    // 如果不是 God Mode，執行正常的算分邏輯 (在 script.js 中)
-    if (!window.MM.flags.godMode) {
-        calculateFinalRawScores();
-    }
-
     try {
+        // calculateFinalRawScores 放進 try：它可能 throw（restored localStorage 越界索引等），
+        // 必須被下方 catch 接住復原 UI，否則 loading 畫面永久卡死。
+        if (!window.MM.flags.godMode) {
+            calculateFinalRawScores();
+        }
+
         const token = sessionStorage.getItem('chiyigo_access_token');
 
         let guestId = localStorage.getItem('mbti_guest_id');
@@ -52,7 +53,9 @@ async function proceedToResultAPI() {
             window.MM.scores.Ti, window.MM.scores.Te, window.MM.scores.Fi, window.MM.scores.Fe
         ];
 
-        const timeSpentMs = Date.now() - window.MM.startTime;
+        // clamp 到 worker 接受範圍 [1, 24h]：tab 開超過 24h 才提交，未 clamp 會被 worker 400 拒、
+        // api.js 視為硬失敗顯示 engineFail。timeSpentMs server 端 received-but-unused，clamp 無副作用。
+        const timeSpentMs = Math.min(Math.max(Date.now() - window.MM.startTime, 1), 24 * 60 * 60 * 1000);
 
         // Route A: 計算實際答了多少題（MM.state.answers 內 q_*_* 開頭的 key 數，
         // 排除 phase5 ranking 等非題型 key），讓 worker 寫 D1 時能存進 questions_answered 欄位。
@@ -94,10 +97,6 @@ async function proceedToResultAPI() {
         const result = await response.json();
 
         if (result.status === "Calculated" && result.data && result.data.probabilities) {
-            if (!token && result.reportId) {
-                localStorage.setItem('mbti_guest_report_id', result.reportId);
-            }
-
             // [修復核心 1]：紀錄後端強制傳來的最終判斷，不再給前端猜測空間
             window.MM.backend.primaryType = result.data.primaryType;
 

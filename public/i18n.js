@@ -101,6 +101,11 @@
                 subProgressDone: '✅ 本段全數完成（{total} 題）',
                 etaMinutes: '· 預估還需 {n} 分鐘',
                 etaSeconds: '· 預估還需 {n} 秒',
+                restTip1: '已完成 10 題，深呼吸 3 秒再繼續。憑直覺答最準。',
+                restTip2: '已完成 20 題，提醒自己：沒有對錯，只有最像你的選項。',
+                restTip3: '已完成 30 題，剩下不多了，繼續保持節奏。',
+                restTip4: '已完成 40 題，一鼓作氣到底。',
+                restTipGeneric: '已完成 {n} 題，繼續加油',
                 phaseHeaders: {
                     A: ['PHASE 01: 日常資訊濾鏡', 'PHASE 02: 舒適圈價值偏好', 'PHASE 03: 慣性任務處理', 'PHASE 04: 心流與自我驗證'],
                     B: ['PHASE 01: 內外傾代價純化', 'PHASE 02: 同域感知判斷交火', 'PHASE 03: 榮格軸向拮抗檢驗', 'PHASE 04: 系統崩潰極端防禦'],
@@ -228,6 +233,13 @@
                 contactReport: '如果你是從外部連結點過來且確定路徑正確，請寄信回報。',
                 contentZhOnly: '⚠️ 題目與人格報告目前僅提供繁體中文；介面已切換為英文。'
             },
+            wall: {
+                title: '權限鎖定',
+                desc: '覺醒願景 (Phase C)、日常行為 (Phase D)、決策情境 (Phase E)、認知偏好 (Phase F) 屬於深度解析模組，需建立神經連結檔案後方可解鎖。基礎模組 Phase A 與高壓防禦 Phase B 訪客即可作答。',
+                ctaLogin: '前往註冊 / 登入',
+                ctaA: '先測量基礎版 (Phase A)',
+                ctaB: '先測量高壓防禦 (Phase B)'
+            },
             typeDetail: {
                 stackEgo: '主導 (Ego)',
                 stackParent: '輔助 (Parent)',
@@ -326,6 +338,11 @@
                 subProgressDone: '✅ Section complete ({total} questions)',
                 etaMinutes: '· ~{n} min remaining',
                 etaSeconds: '· ~{n} sec remaining',
+                restTip1: "10 done — take 3 deep breaths before continuing. Trusting your gut is most accurate.",
+                restTip2: "20 done — remember: there are no right answers, only the option most like you.",
+                restTip3: "30 done — not many left. Keep your rhythm.",
+                restTip4: "40 done — push through to the finish.",
+                restTipGeneric: "{n} done — keep going.",
                 phaseHeaders: {
                     A: ['PHASE 01: Daily Information Filter', 'PHASE 02: Comfort-Zone Value Preference', 'PHASE 03: Habitual Task Handling', 'PHASE 04: Flow & Self-Validation'],
                     B: ['PHASE 01: E/I Cost Purification', 'PHASE 02: Same-Domain Perception/Judgment Conflict', 'PHASE 03: Jungian Axis Antagonism', 'PHASE 04: System Collapse — Extreme Defense'],
@@ -452,6 +469,13 @@
                 btnDashboard: 'Dashboard',
                 contactReport: 'If you reached here from an external link with a correct path, please let us know by email.',
                 contentZhOnly: '⚠️ Assessment questions are currently in Traditional Chinese only — UI and personality reports are in English.'
+            },
+            wall: {
+                title: 'Access Locked',
+                desc: 'Awakening Vision (Phase C), Daily Behavior (Phase D), Decision Scenarios (Phase E), and Cognitive Preference (Phase F) are deep-analysis modules — unlock them by creating your neural-link profile. Base module Phase A and Stress Defense Phase B are open to guests.',
+                ctaLogin: 'Sign up / Log in',
+                ctaA: 'Try the base version first (Phase A)',
+                ctaB: 'Try Stress Defense first (Phase B)'
             },
             typeDetail: {
                 stackEgo: 'Dominant (Ego)',

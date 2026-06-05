@@ -1,7 +1,9 @@
 // public/personality-data.js
 // v1 認知幾何與高壓防禦模型 - 16人格深度百科資料庫 (演化與腦神經擴充版)
 
-const PERSONALITY_DATABASE = {
+// classic <script>（非 module）中 top-level const 不會掛上 window；消費端 type-detail.js
+// 讀 window.PERSONALITY_DATABASE，故必須顯式掛 window（對齊 EN sibling personality-data-en.js）。
+window.PERSONALITY_DATABASE = {
     // ==========================================
     // 🟣 分析家 (Analysts) - NT 氣質 (系統架構與災備創新)
     // ==========================================

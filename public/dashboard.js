@@ -391,7 +391,6 @@ function renderDichotomyTrend(records) {
 
     // 首末對比：哪一軸漂移最大
     const first = points[0], last = points[points.length - 1];
-    const deltas = ['E', 'N', 'T', 'F', 'J', 'P'].slice();
     const axes = [
         { key: 'E', pos: 'E', neg: 'I' },
         { key: 'N', pos: 'N', neg: 'S' },

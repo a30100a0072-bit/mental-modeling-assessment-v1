@@ -127,11 +127,15 @@ function calculateLocalProbabilities(scores) {
         expSum += ev;
     });
 
+    // 先把 probs round 成 2dp 再排序，對齊 server assessment.ts（server 排「已 round 值」+ 字母序
+    // tie-break）。若排未 round 的 raw exp，兩 type 的 raw 不同但 round 後相同時 FE/BE 會選出不同
+    // primaryType（分享頁 headline 漂移）。test/algorithm.spec.ts 的 rounding-tie + fuzz 對拍鎖死。
+    Object.keys(probs).forEach(t => { probs[t] = Number(((probs[t] / expSum) * 100).toFixed(2)); });
+
     let sorted = Object.keys(probs).sort((a, b) => {
         if (probs[b] !== probs[a]) return probs[b] - probs[a];
         return a.localeCompare(b);
     });
-    sorted.forEach(t => { probs[t] = Number(((probs[t] / expSum) * 100).toFixed(2)); });
 
     return { probs, sorted };
 }
@@ -218,8 +222,11 @@ function calculatePartialScores(answers, upToPhase, version) {
             let key = `q_3_sjt_${i}`;
             if(answers[key]) {
                 let optIdx = parseInt(answers[key]);
-                let dims = activeSJT[i].options[optIdx].dims;
-                dims.forEach(d => finalScores[d] += 2.0); 
+                // 防 restored localStorage 越界/NaN index：options[optIdx] 為 undefined 時存取 .dims
+                // 會 throw TypeError，而 caller (api.js) 在 try 外，會卡死 loading 畫面。
+                const opt = activeSJT[i].options[optIdx];
+                if (!opt) continue;
+                opt.dims.forEach(d => finalScores[d] += 2.0);
             }
         }
     }
@@ -232,8 +239,10 @@ function calculatePartialScores(answers, upToPhase, version) {
             if(answers[key]) {
                 let rankArr = answers[key].split(',').map(Number);
                 rankArr.forEach((optIdx, rankPos) => {
-                    let dim = activeRanking[i].items[optIdx].dim;
-                    finalScores[dim] += rankWeights[rankPos];
+                    // 同 SJT：越界/NaN index 時 items[optIdx] 為 undefined，存取 .dim 會 throw。
+                    const it = activeRanking[i].items[optIdx];
+                    if (!it) return;
+                    finalScores[it.dim] += rankWeights[rankPos];
                 });
             }
         }

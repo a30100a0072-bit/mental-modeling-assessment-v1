@@ -194,4 +194,24 @@ describe("algorithm: engine.js z-score 公式與 TS 端對拍", () => {
     expect(m, "找不到 calculatePartialScores 函式範圍").toBeTruthy();
     expect(m![0], "calculatePartialScores 內不該再出現 `|| 1` std fallback").not.toMatch(/\/\s*8\s*\)\s*\|\|\s*1\s*;/);
   });
+
+  it("rounding-tie 邊界：FE/BE primaryType 一致（2026-06-05 scan 修正排序基準漂移）", () => {
+    // 修正前 engine.js 排「未 round 的 raw exp」、assessment.ts 排「已 round 值」，
+    // raw 不同但 round 後相同的 tie 輸入會選出不同 primaryType。此 input 即實測一例。
+    const tie = [3, -2, -4, 3, 3, 3, 4, -4];
+    expect(calcLocal(toScoresObj(tie)).sorted[0]).toBe(processAssessmentResult(tie, 1000).primaryType);
+  });
+
+  it("fuzz：小整數輸入空間 FE.sorted[0] 恆等於 BE.primaryType（鎖死 rounding/tie-break 漂移）", () => {
+    // 確定性 LCG（不用 Math.random，CI 可重現）掃 400 組 -5..5 的 8 維輸入，
+    // 逐組斷言前端 calculateLocalProbabilities 冠軍型 === 後端 processAssessmentResult。
+    let seed = 1234567;
+    const nextInt = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed; };
+    for (let n = 0; n < 400; n++) {
+      const arr = Array.from({ length: 8 }, () => (nextInt() % 11) - 5);
+      const fe = calcLocal(toScoresObj(arr)).sorted[0];
+      const be = processAssessmentResult(arr, 1000).primaryType;
+      expect(fe, `FE/BE primaryType 漂移 @ input ${JSON.stringify(arr)}`).toBe(be);
+    }
+  });
 });

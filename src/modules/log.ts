@@ -18,6 +18,19 @@ interface LogEnv {
   ERROR_WEBHOOK_URL?: string;
 }
 
+// PII redaction：logError 的 context 可能帶 client IP / account sub（rate-limit subject、
+// handler 帶入的 identity.sub），這些會同時進 Workers Logs 與外部 webhook。
+// CLAUDE.md「Log 禁洩漏敏感（PII 必 redact）」→ 對 sensitive key 一律遮蔽；traceId 仍保留
+// 供關聯 request log。注意：recordAudit 把 actor_sub 落 D1 是另一條 sanctioned forensic channel。
+const SENSITIVE_LOG_KEYS = new Set(["subject", "sub", "ip", "clientIp", "email", "guestId"]);
+function redactContext(context: LogContext): LogContext {
+  const out: LogContext = {};
+  for (const k of Object.keys(context)) {
+    out[k] = SENSITIVE_LOG_KEYS.has(k) ? "[redacted]" : context[k];
+  }
+  return out;
+}
+
 export function logError(
   env: LogEnv,
   label: string,
@@ -33,7 +46,7 @@ export function logError(
     label,
     message,
     stack,
-    ...context,
+    ...redactContext(context),
   };
 
   // 一律寫 console（Workers logs / wrangler tail / Logpush 都吃）
@@ -46,7 +59,10 @@ export function logError(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    }).catch(() => { /* webhook 失敗不能再回頭 log，會無限遞迴 */ });
+      // 外部 sink 黑洞時不能無界 pending：waitUntil 會拖到 Workers wall-clock ceiling，
+      // 每條錯誤路徑都被拉長。5s timeout 後 abort，既有 .catch 吞 AbortError。
+      signal: AbortSignal.timeout(5000),
+    }).catch(() => { /* webhook 失敗 / timeout abort 不能再回頭 log，會無限遞迴 */ });
     // 確保 worker 不會在 webhook 飛在路上時就被 GC（CF 會 abort pending fetch）
     if (ctx) ctx.waitUntil(send);
   }

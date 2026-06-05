@@ -24,3 +24,13 @@ export const INSERT_ASSESSMENT =
 // bind 順序：ts, event, actor_sub, trace_id, metadata
 export const INSERT_AUDIT_LOG =
     "INSERT INTO audit_log (ts, event, actor_sub, trace_id, metadata) VALUES (?, ?, ?, ?, ?)";
+
+// guest 認領 UPDATE — 寫入點：handleClaimGuestResults (src/index.ts) + claim-isolation.spec.ts。
+// 動態 IN placeholders（guestIds 數量不定）。worker 與 isolation 測試共用此 builder，
+// 確保測的是 production 真實 SQL：未來若 refactor 拿掉 `WHERE user_id IS NULL` 或改 bind
+// 順序，會讓某 user 認領他人已歸屬 row（cross-user 隔離回歸），negative test 會立刻 fail。
+// bind 順序：new_user_id, ...guestIds
+export function buildClaimGuestResultsSql(guestIdCount: number): string {
+    const placeholders = Array.from({ length: guestIdCount }, () => "?").join(",");
+    return `UPDATE assessments SET user_id = ?, guest_id = NULL WHERE user_id IS NULL AND guest_id IN (${placeholders})`;
+}

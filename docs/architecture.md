@@ -8,8 +8,8 @@
 - **前端**：Cloudflare Pages，`public/` 目錄下原生 HTML/CSS/JS（無建置步驟）。
 - **後端**：Cloudflare Worker (`src/index.ts`)，路由 `mbti.chiyigo.com/api/*` 由 Worker 接管。
 - **資料庫**：D1 (`mm_assessment_db`)，binding `MM_DB_D1`。
-- **快取**：KV (`MM_CACHE_KV`)，用於 `/user/claim-guest-results` rate limit 計數（TTL 60s）與單筆 report 結果暫存（`report:<uuid>`，TTL 24h）。
-- **訊息佇列**：Queue (`MM_EVENT_QUEUE`)，目前只有空骨架。
+- **快取**：KV (`MM_CACHE_KV`)，用於 rate limit 計數（`rl:*`：assess / claim / history / delete，TTL 依 endpoint）。report 結果暫存（`report:<uuid>`）已移除——無讀取端。
+- **訊息佇列**：無。`MM_EVENT_QUEUE` 已於 2026-05-16 health audit 移除（producer 未綁、consumer 只 console.log）。
 
 ## 2. 認證模型 — chiyigo.com OIDC（PKCE + ES256 + JWKS）
 
